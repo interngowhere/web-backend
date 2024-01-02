@@ -2,6 +2,7 @@ package schema
 
 import (
 	"entgo.io/ent"
+	"entgo.io/ent/schema"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
@@ -10,6 +11,14 @@ import (
 // ThreadKudo holds the schema definition for the ThreadKudo entity.
 type ThreadKudo struct {
 	ent.Schema
+}
+
+// Annotations of the ThreadKudo to generate composite 
+// primary key from user_id and thread_id.
+func (ThreadKudo) Annotations() []schema.Annotation {
+    return []schema.Annotation{
+        field.ID("user_id", "thread_id"),
+    }
 }
 
 // Fields of the ThreadKudo.
