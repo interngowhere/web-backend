@@ -23,7 +23,6 @@ func (Topic) Fields() []ent.Field {
 		field.String("description").
 			MaxLen(4096).
 			Optional(),
-		field.Strings("moderators"),
 		field.String("created_by").
 			MaxLen(255),
 		field.Time("created_at").
@@ -36,5 +35,8 @@ func (Topic) Fields() []ent.Field {
 func (Topic) Edges() []ent.Edge {
 	return []ent.Edge{
         edge.To("topic_threads", Thread.Type),
+		edge.From("topic_moderators", User.Type).
+            Ref("moderated_topics").
+            Through("moderators", Moderator.Type),
     }
 }

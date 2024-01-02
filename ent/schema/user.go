@@ -39,8 +39,6 @@ func (User) Fields() []ent.Field {
 			MaxLen(255).
 			Sensitive().
 			Optional(),
-		field.Bool("is_moderator").
-			Default(false),
 		field.Time("created_at").
 			Default(time.Now()).
 			Immutable(),
@@ -56,5 +54,7 @@ func (User) Edges() []ent.Edge {
 		edge.To("user_comments", Comment.Type),
 		edge.To("kudoed_comments", Comment.Type).
 			Through("comment_kudoes", CommentKudo.Type),
+		edge.To("moderated_topics", Topic.Type).
+			Through("moderators", Moderator.Type),
     }
 }
