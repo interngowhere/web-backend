@@ -92,6 +92,20 @@ func (uc *UserCreate) SetNillableSalt(s *string) *UserCreate {
 	return uc
 }
 
+// SetEmailVerified sets the "email_verified" field.
+func (uc *UserCreate) SetEmailVerified(b bool) *UserCreate {
+	uc.mutation.SetEmailVerified(b)
+	return uc
+}
+
+// SetNillableEmailVerified sets the "email_verified" field if the given value is not nil.
+func (uc *UserCreate) SetNillableEmailVerified(b *bool) *UserCreate {
+	if b != nil {
+		uc.SetEmailVerified(*b)
+	}
+	return uc
+}
+
 // SetCreatedAt sets the "created_at" field.
 func (uc *UserCreate) SetCreatedAt(t time.Time) *UserCreate {
 	uc.mutation.SetCreatedAt(t)
@@ -230,6 +244,10 @@ func (uc *UserCreate) ExecX(ctx context.Context) {
 
 // defaults sets the default values of the builder before save.
 func (uc *UserCreate) defaults() {
+	if _, ok := uc.mutation.EmailVerified(); !ok {
+		v := user.DefaultEmailVerified
+		uc.mutation.SetEmailVerified(v)
+	}
 	if _, ok := uc.mutation.CreatedAt(); !ok {
 		v := user.DefaultCreatedAt
 		uc.mutation.SetCreatedAt(v)
@@ -272,6 +290,9 @@ func (uc *UserCreate) check() error {
 		if err := user.SaltValidator(v); err != nil {
 			return &ValidationError{Name: "salt", err: fmt.Errorf(`ent: validator failed for field "User.salt": %w`, err)}
 		}
+	}
+	if _, ok := uc.mutation.EmailVerified(); !ok {
+		return &ValidationError{Name: "email_verified", err: errors.New(`ent: missing required field "User.email_verified"`)}
 	}
 	if _, ok := uc.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "User.created_at"`)}
@@ -334,6 +355,10 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 	if value, ok := uc.mutation.Salt(); ok {
 		_spec.SetField(user.FieldSalt, field.TypeString, value)
 		_node.Salt = value
+	}
+	if value, ok := uc.mutation.EmailVerified(); ok {
+		_spec.SetField(user.FieldEmailVerified, field.TypeBool, value)
+		_node.EmailVerified = value
 	}
 	if value, ok := uc.mutation.CreatedAt(); ok {
 		_spec.SetField(user.FieldCreatedAt, field.TypeTime, value)

@@ -30,6 +30,8 @@ type User struct {
 	Hash string `json:"-"`
 	// Salt holds the value of the "salt" field.
 	Salt string `json:"-"`
+	// EmailVerified holds the value of the "email_verified" field.
+	EmailVerified bool `json:"email_verified,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
@@ -138,6 +140,8 @@ func (*User) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
+		case user.FieldEmailVerified:
+			values[i] = new(sql.NullBool)
 		case user.FieldEmail, user.FieldUsername, user.FieldFirstName, user.FieldLastName, user.FieldHash, user.FieldSalt:
 			values[i] = new(sql.NullString)
 		case user.FieldCreatedAt:
@@ -200,6 +204,12 @@ func (u *User) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field salt", values[i])
 			} else if value.Valid {
 				u.Salt = value.String
+			}
+		case user.FieldEmailVerified:
+			if value, ok := values[i].(*sql.NullBool); !ok {
+				return fmt.Errorf("unexpected type %T for field email_verified", values[i])
+			} else if value.Valid {
+				u.EmailVerified = value.Bool
 			}
 		case user.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -298,6 +308,9 @@ func (u *User) String() string {
 	builder.WriteString("hash=<sensitive>")
 	builder.WriteString(", ")
 	builder.WriteString("salt=<sensitive>")
+	builder.WriteString(", ")
+	builder.WriteString("email_verified=")
+	builder.WriteString(fmt.Sprintf("%v", u.EmailVerified))
 	builder.WriteString(", ")
 	builder.WriteString("created_at=")
 	builder.WriteString(u.CreatedAt.Format(time.ANSIC))

@@ -27,6 +27,8 @@ const (
 	FieldHash = "hash"
 	// FieldSalt holds the string denoting the salt field in the database.
 	FieldSalt = "salt"
+	// FieldEmailVerified holds the string denoting the email_verified field in the database.
+	FieldEmailVerified = "email_verified"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
 	FieldCreatedAt = "created_at"
 	// EdgeUserThreads holds the string denoting the user_threads edge name in mutations.
@@ -108,6 +110,7 @@ var Columns = []string{
 	FieldLastName,
 	FieldHash,
 	FieldSalt,
+	FieldEmailVerified,
 	FieldCreatedAt,
 }
 
@@ -144,6 +147,8 @@ var (
 	LastNameValidator func(string) error
 	// SaltValidator is a validator for the "salt" field. It is called by the builders before save.
 	SaltValidator func(string) error
+	// DefaultEmailVerified holds the default value on creation for the "email_verified" field.
+	DefaultEmailVerified bool
 	// DefaultCreatedAt holds the default value on creation for the "created_at" field.
 	DefaultCreatedAt time.Time
 	// DefaultID holds the default value on creation for the "id" field.
@@ -186,6 +191,11 @@ func ByHash(opts ...sql.OrderTermOption) OrderOption {
 // BySalt orders the results by the salt field.
 func BySalt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldSalt, opts...).ToFunc()
+}
+
+// ByEmailVerified orders the results by the email_verified field.
+func ByEmailVerified(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldEmailVerified, opts...).ToFunc()
 }
 
 // ByCreatedAt orders the results by the created_at field.

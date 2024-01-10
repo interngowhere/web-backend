@@ -179,6 +179,7 @@ var (
 		{Name: "last_name", Type: field.TypeString, Nullable: true, Size: 255},
 		{Name: "hash", Type: field.TypeString, Unique: true, Nullable: true},
 		{Name: "salt", Type: field.TypeString, Nullable: true, Size: 255},
+		{Name: "email_verified", Type: field.TypeBool, Default: false},
 		{Name: "created_at", Type: field.TypeTime},
 	}
 	// UsersTable holds the schema information for the "users" table.

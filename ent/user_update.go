@@ -138,6 +138,20 @@ func (uu *UserUpdate) ClearSalt() *UserUpdate {
 	return uu
 }
 
+// SetEmailVerified sets the "email_verified" field.
+func (uu *UserUpdate) SetEmailVerified(b bool) *UserUpdate {
+	uu.mutation.SetEmailVerified(b)
+	return uu
+}
+
+// SetNillableEmailVerified sets the "email_verified" field if the given value is not nil.
+func (uu *UserUpdate) SetNillableEmailVerified(b *bool) *UserUpdate {
+	if b != nil {
+		uu.SetEmailVerified(*b)
+	}
+	return uu
+}
+
 // AddUserThreadIDs adds the "user_threads" edge to the Thread entity by IDs.
 func (uu *UserUpdate) AddUserThreadIDs(ids ...int) *UserUpdate {
 	uu.mutation.AddUserThreadIDs(ids...)
@@ -421,6 +435,9 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if uu.mutation.SaltCleared() {
 		_spec.ClearField(user.FieldSalt, field.TypeString)
+	}
+	if value, ok := uu.mutation.EmailVerified(); ok {
+		_spec.SetField(user.FieldEmailVerified, field.TypeBool, value)
 	}
 	if uu.mutation.UserThreadsCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -775,6 +792,20 @@ func (uuo *UserUpdateOne) ClearSalt() *UserUpdateOne {
 	return uuo
 }
 
+// SetEmailVerified sets the "email_verified" field.
+func (uuo *UserUpdateOne) SetEmailVerified(b bool) *UserUpdateOne {
+	uuo.mutation.SetEmailVerified(b)
+	return uuo
+}
+
+// SetNillableEmailVerified sets the "email_verified" field if the given value is not nil.
+func (uuo *UserUpdateOne) SetNillableEmailVerified(b *bool) *UserUpdateOne {
+	if b != nil {
+		uuo.SetEmailVerified(*b)
+	}
+	return uuo
+}
+
 // AddUserThreadIDs adds the "user_threads" edge to the Thread entity by IDs.
 func (uuo *UserUpdateOne) AddUserThreadIDs(ids ...int) *UserUpdateOne {
 	uuo.mutation.AddUserThreadIDs(ids...)
@@ -1088,6 +1119,9 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 	}
 	if uuo.mutation.SaltCleared() {
 		_spec.ClearField(user.FieldSalt, field.TypeString)
+	}
+	if value, ok := uuo.mutation.EmailVerified(); ok {
+		_spec.SetField(user.FieldEmailVerified, field.TypeBool, value)
 	}
 	if uuo.mutation.UserThreadsCleared() {
 		edge := &sqlgraph.EdgeSpec{

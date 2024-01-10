@@ -39,6 +39,8 @@ func (User) Fields() []ent.Field {
 			MaxLen(255).
 			Sensitive().
 			Optional(),
+		field.Bool("email_verified").
+			Default(false),
 		field.Time("created_at").
 			Default(time.Now()).
 			Immutable(),

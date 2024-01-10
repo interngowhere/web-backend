@@ -4167,6 +4167,7 @@ type UserMutation struct {
 	last_name               *string
 	hash                    *string
 	salt                    *string
+	email_verified          *bool
 	created_at              *time.Time
 	clearedFields           map[string]struct{}
 	user_threads            map[int]struct{}
@@ -4561,6 +4562,42 @@ func (m *UserMutation) ResetSalt() {
 	delete(m.clearedFields, user.FieldSalt)
 }
 
+// SetEmailVerified sets the "email_verified" field.
+func (m *UserMutation) SetEmailVerified(b bool) {
+	m.email_verified = &b
+}
+
+// EmailVerified returns the value of the "email_verified" field in the mutation.
+func (m *UserMutation) EmailVerified() (r bool, exists bool) {
+	v := m.email_verified
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldEmailVerified returns the old "email_verified" field's value of the User entity.
+// If the User object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UserMutation) OldEmailVerified(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldEmailVerified is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldEmailVerified requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldEmailVerified: %w", err)
+	}
+	return oldValue.EmailVerified, nil
+}
+
+// ResetEmailVerified resets all changes to the "email_verified" field.
+func (m *UserMutation) ResetEmailVerified() {
+	m.email_verified = nil
+}
+
 // SetCreatedAt sets the "created_at" field.
 func (m *UserMutation) SetCreatedAt(t time.Time) {
 	m.created_at = &t
@@ -4901,7 +4938,7 @@ func (m *UserMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *UserMutation) Fields() []string {
-	fields := make([]string, 0, 7)
+	fields := make([]string, 0, 8)
 	if m.email != nil {
 		fields = append(fields, user.FieldEmail)
 	}
@@ -4919,6 +4956,9 @@ func (m *UserMutation) Fields() []string {
 	}
 	if m.salt != nil {
 		fields = append(fields, user.FieldSalt)
+	}
+	if m.email_verified != nil {
+		fields = append(fields, user.FieldEmailVerified)
 	}
 	if m.created_at != nil {
 		fields = append(fields, user.FieldCreatedAt)
@@ -4943,6 +4983,8 @@ func (m *UserMutation) Field(name string) (ent.Value, bool) {
 		return m.Hash()
 	case user.FieldSalt:
 		return m.Salt()
+	case user.FieldEmailVerified:
+		return m.EmailVerified()
 	case user.FieldCreatedAt:
 		return m.CreatedAt()
 	}
@@ -4966,6 +5008,8 @@ func (m *UserMutation) OldField(ctx context.Context, name string) (ent.Value, er
 		return m.OldHash(ctx)
 	case user.FieldSalt:
 		return m.OldSalt(ctx)
+	case user.FieldEmailVerified:
+		return m.OldEmailVerified(ctx)
 	case user.FieldCreatedAt:
 		return m.OldCreatedAt(ctx)
 	}
@@ -5018,6 +5062,13 @@ func (m *UserMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetSalt(v)
+		return nil
+	case user.FieldEmailVerified:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetEmailVerified(v)
 		return nil
 	case user.FieldCreatedAt:
 		v, ok := value.(time.Time)
@@ -5119,6 +5170,9 @@ func (m *UserMutation) ResetField(name string) error {
 		return nil
 	case user.FieldSalt:
 		m.ResetSalt()
+		return nil
+	case user.FieldEmailVerified:
+		m.ResetEmailVerified()
 		return nil
 	case user.FieldCreatedAt:
 		m.ResetCreatedAt()
