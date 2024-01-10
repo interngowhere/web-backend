@@ -64,10 +64,10 @@ func init() {
 	topicDescTitle := topicFields[0].Descriptor()
 	// topic.TitleValidator is a validator for the "title" field. It is called by the builders before save.
 	topic.TitleValidator = topicDescTitle.Validators[0].(func(string) error)
-	// topicDescShortTitle is the schema descriptor for short_title field.
-	topicDescShortTitle := topicFields[1].Descriptor()
-	// topic.ShortTitleValidator is a validator for the "short_title" field. It is called by the builders before save.
-	topic.ShortTitleValidator = topicDescShortTitle.Validators[0].(func(string) error)
+	// topicDescShortDescription is the schema descriptor for short_description field.
+	topicDescShortDescription := topicFields[1].Descriptor()
+	// topic.ShortDescriptionValidator is a validator for the "short_description" field. It is called by the builders before save.
+	topic.ShortDescriptionValidator = topicDescShortDescription.Validators[0].(func(string) error)
 	// topicDescDescription is the schema descriptor for description field.
 	topicDescDescription := topicFields[2].Descriptor()
 	// topic.DescriptionValidator is a validator for the "description" field. It is called by the builders before save.

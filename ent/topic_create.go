@@ -29,9 +29,9 @@ func (tc *TopicCreate) SetTitle(s string) *TopicCreate {
 	return tc
 }
 
-// SetShortTitle sets the "short_title" field.
-func (tc *TopicCreate) SetShortTitle(s string) *TopicCreate {
-	tc.mutation.SetShortTitle(s)
+// SetShortDescription sets the "short_description" field.
+func (tc *TopicCreate) SetShortDescription(s string) *TopicCreate {
+	tc.mutation.SetShortDescription(s)
 	return tc
 }
 
@@ -158,12 +158,12 @@ func (tc *TopicCreate) check() error {
 			return &ValidationError{Name: "title", err: fmt.Errorf(`ent: validator failed for field "Topic.title": %w`, err)}
 		}
 	}
-	if _, ok := tc.mutation.ShortTitle(); !ok {
-		return &ValidationError{Name: "short_title", err: errors.New(`ent: missing required field "Topic.short_title"`)}
+	if _, ok := tc.mutation.ShortDescription(); !ok {
+		return &ValidationError{Name: "short_description", err: errors.New(`ent: missing required field "Topic.short_description"`)}
 	}
-	if v, ok := tc.mutation.ShortTitle(); ok {
-		if err := topic.ShortTitleValidator(v); err != nil {
-			return &ValidationError{Name: "short_title", err: fmt.Errorf(`ent: validator failed for field "Topic.short_title": %w`, err)}
+	if v, ok := tc.mutation.ShortDescription(); ok {
+		if err := topic.ShortDescriptionValidator(v); err != nil {
+			return &ValidationError{Name: "short_description", err: fmt.Errorf(`ent: validator failed for field "Topic.short_description": %w`, err)}
 		}
 	}
 	if v, ok := tc.mutation.Description(); ok {
@@ -204,9 +204,9 @@ func (tc *TopicCreate) createSpec() (*Topic, *sqlgraph.CreateSpec) {
 		_spec.SetField(topic.FieldTitle, field.TypeString, value)
 		_node.Title = value
 	}
-	if value, ok := tc.mutation.ShortTitle(); ok {
-		_spec.SetField(topic.FieldShortTitle, field.TypeString, value)
-		_node.ShortTitle = value
+	if value, ok := tc.mutation.ShortDescription(); ok {
+		_spec.SetField(topic.FieldShortDescription, field.TypeString, value)
+		_node.ShortDescription = value
 	}
 	if value, ok := tc.mutation.Description(); ok {
 		_spec.SetField(topic.FieldDescription, field.TypeString, value)

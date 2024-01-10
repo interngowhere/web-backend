@@ -19,8 +19,8 @@ type Topic struct {
 	ID int `json:"id,omitempty"`
 	// Title holds the value of the "title" field.
 	Title string `json:"title,omitempty"`
-	// ShortTitle holds the value of the "short_title" field.
-	ShortTitle string `json:"short_title,omitempty"`
+	// ShortDescription holds the value of the "short_description" field.
+	ShortDescription string `json:"short_description,omitempty"`
 	// Description holds the value of the "description" field.
 	Description string `json:"description,omitempty"`
 	// ProfilePicURL holds the value of the "profile_pic_url" field.
@@ -80,7 +80,7 @@ func (*Topic) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case topic.FieldID:
 			values[i] = new(sql.NullInt64)
-		case topic.FieldTitle, topic.FieldShortTitle, topic.FieldDescription, topic.FieldProfilePicURL:
+		case topic.FieldTitle, topic.FieldShortDescription, topic.FieldDescription, topic.FieldProfilePicURL:
 			values[i] = new(sql.NullString)
 		case topic.FieldCreatedAt:
 			values[i] = new(sql.NullTime)
@@ -111,11 +111,11 @@ func (t *Topic) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				t.Title = value.String
 			}
-		case topic.FieldShortTitle:
+		case topic.FieldShortDescription:
 			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field short_title", values[i])
+				return fmt.Errorf("unexpected type %T for field short_description", values[i])
 			} else if value.Valid {
-				t.ShortTitle = value.String
+				t.ShortDescription = value.String
 			}
 		case topic.FieldDescription:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -189,8 +189,8 @@ func (t *Topic) String() string {
 	builder.WriteString("title=")
 	builder.WriteString(t.Title)
 	builder.WriteString(", ")
-	builder.WriteString("short_title=")
-	builder.WriteString(t.ShortTitle)
+	builder.WriteString("short_description=")
+	builder.WriteString(t.ShortDescription)
 	builder.WriteString(", ")
 	builder.WriteString("description=")
 	builder.WriteString(t.Description)

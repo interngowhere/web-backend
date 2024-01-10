@@ -60,9 +60,9 @@ func Title(v string) predicate.Topic {
 	return predicate.Topic(sql.FieldEQ(FieldTitle, v))
 }
 
-// ShortTitle applies equality check predicate on the "short_title" field. It's identical to ShortTitleEQ.
-func ShortTitle(v string) predicate.Topic {
-	return predicate.Topic(sql.FieldEQ(FieldShortTitle, v))
+// ShortDescription applies equality check predicate on the "short_description" field. It's identical to ShortDescriptionEQ.
+func ShortDescription(v string) predicate.Topic {
+	return predicate.Topic(sql.FieldEQ(FieldShortDescription, v))
 }
 
 // Description applies equality check predicate on the "description" field. It's identical to DescriptionEQ.
@@ -145,69 +145,69 @@ func TitleContainsFold(v string) predicate.Topic {
 	return predicate.Topic(sql.FieldContainsFold(FieldTitle, v))
 }
 
-// ShortTitleEQ applies the EQ predicate on the "short_title" field.
-func ShortTitleEQ(v string) predicate.Topic {
-	return predicate.Topic(sql.FieldEQ(FieldShortTitle, v))
+// ShortDescriptionEQ applies the EQ predicate on the "short_description" field.
+func ShortDescriptionEQ(v string) predicate.Topic {
+	return predicate.Topic(sql.FieldEQ(FieldShortDescription, v))
 }
 
-// ShortTitleNEQ applies the NEQ predicate on the "short_title" field.
-func ShortTitleNEQ(v string) predicate.Topic {
-	return predicate.Topic(sql.FieldNEQ(FieldShortTitle, v))
+// ShortDescriptionNEQ applies the NEQ predicate on the "short_description" field.
+func ShortDescriptionNEQ(v string) predicate.Topic {
+	return predicate.Topic(sql.FieldNEQ(FieldShortDescription, v))
 }
 
-// ShortTitleIn applies the In predicate on the "short_title" field.
-func ShortTitleIn(vs ...string) predicate.Topic {
-	return predicate.Topic(sql.FieldIn(FieldShortTitle, vs...))
+// ShortDescriptionIn applies the In predicate on the "short_description" field.
+func ShortDescriptionIn(vs ...string) predicate.Topic {
+	return predicate.Topic(sql.FieldIn(FieldShortDescription, vs...))
 }
 
-// ShortTitleNotIn applies the NotIn predicate on the "short_title" field.
-func ShortTitleNotIn(vs ...string) predicate.Topic {
-	return predicate.Topic(sql.FieldNotIn(FieldShortTitle, vs...))
+// ShortDescriptionNotIn applies the NotIn predicate on the "short_description" field.
+func ShortDescriptionNotIn(vs ...string) predicate.Topic {
+	return predicate.Topic(sql.FieldNotIn(FieldShortDescription, vs...))
 }
 
-// ShortTitleGT applies the GT predicate on the "short_title" field.
-func ShortTitleGT(v string) predicate.Topic {
-	return predicate.Topic(sql.FieldGT(FieldShortTitle, v))
+// ShortDescriptionGT applies the GT predicate on the "short_description" field.
+func ShortDescriptionGT(v string) predicate.Topic {
+	return predicate.Topic(sql.FieldGT(FieldShortDescription, v))
 }
 
-// ShortTitleGTE applies the GTE predicate on the "short_title" field.
-func ShortTitleGTE(v string) predicate.Topic {
-	return predicate.Topic(sql.FieldGTE(FieldShortTitle, v))
+// ShortDescriptionGTE applies the GTE predicate on the "short_description" field.
+func ShortDescriptionGTE(v string) predicate.Topic {
+	return predicate.Topic(sql.FieldGTE(FieldShortDescription, v))
 }
 
-// ShortTitleLT applies the LT predicate on the "short_title" field.
-func ShortTitleLT(v string) predicate.Topic {
-	return predicate.Topic(sql.FieldLT(FieldShortTitle, v))
+// ShortDescriptionLT applies the LT predicate on the "short_description" field.
+func ShortDescriptionLT(v string) predicate.Topic {
+	return predicate.Topic(sql.FieldLT(FieldShortDescription, v))
 }
 
-// ShortTitleLTE applies the LTE predicate on the "short_title" field.
-func ShortTitleLTE(v string) predicate.Topic {
-	return predicate.Topic(sql.FieldLTE(FieldShortTitle, v))
+// ShortDescriptionLTE applies the LTE predicate on the "short_description" field.
+func ShortDescriptionLTE(v string) predicate.Topic {
+	return predicate.Topic(sql.FieldLTE(FieldShortDescription, v))
 }
 
-// ShortTitleContains applies the Contains predicate on the "short_title" field.
-func ShortTitleContains(v string) predicate.Topic {
-	return predicate.Topic(sql.FieldContains(FieldShortTitle, v))
+// ShortDescriptionContains applies the Contains predicate on the "short_description" field.
+func ShortDescriptionContains(v string) predicate.Topic {
+	return predicate.Topic(sql.FieldContains(FieldShortDescription, v))
 }
 
-// ShortTitleHasPrefix applies the HasPrefix predicate on the "short_title" field.
-func ShortTitleHasPrefix(v string) predicate.Topic {
-	return predicate.Topic(sql.FieldHasPrefix(FieldShortTitle, v))
+// ShortDescriptionHasPrefix applies the HasPrefix predicate on the "short_description" field.
+func ShortDescriptionHasPrefix(v string) predicate.Topic {
+	return predicate.Topic(sql.FieldHasPrefix(FieldShortDescription, v))
 }
 
-// ShortTitleHasSuffix applies the HasSuffix predicate on the "short_title" field.
-func ShortTitleHasSuffix(v string) predicate.Topic {
-	return predicate.Topic(sql.FieldHasSuffix(FieldShortTitle, v))
+// ShortDescriptionHasSuffix applies the HasSuffix predicate on the "short_description" field.
+func ShortDescriptionHasSuffix(v string) predicate.Topic {
+	return predicate.Topic(sql.FieldHasSuffix(FieldShortDescription, v))
 }
 
-// ShortTitleEqualFold applies the EqualFold predicate on the "short_title" field.
-func ShortTitleEqualFold(v string) predicate.Topic {
-	return predicate.Topic(sql.FieldEqualFold(FieldShortTitle, v))
+// ShortDescriptionEqualFold applies the EqualFold predicate on the "short_description" field.
+func ShortDescriptionEqualFold(v string) predicate.Topic {
+	return predicate.Topic(sql.FieldEqualFold(FieldShortDescription, v))
 }
 
-// ShortTitleContainsFold applies the ContainsFold predicate on the "short_title" field.
-func ShortTitleContainsFold(v string) predicate.Topic {
-	return predicate.Topic(sql.FieldContainsFold(FieldShortTitle, v))
+// ShortDescriptionContainsFold applies the ContainsFold predicate on the "short_description" field.
+func ShortDescriptionContainsFold(v string) predicate.Topic {
+	return predicate.Topic(sql.FieldContainsFold(FieldShortDescription, v))
 }
 
 // DescriptionEQ applies the EQ predicate on the "description" field.

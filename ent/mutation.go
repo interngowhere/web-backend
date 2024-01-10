@@ -3403,7 +3403,7 @@ type TopicMutation struct {
 	typ                     string
 	id                      *int
 	title                   *string
-	short_title             *string
+	short_description       *string
 	description             *string
 	profile_pic_url         *string
 	created_at              *time.Time
@@ -3553,40 +3553,40 @@ func (m *TopicMutation) ResetTitle() {
 	m.title = nil
 }
 
-// SetShortTitle sets the "short_title" field.
-func (m *TopicMutation) SetShortTitle(s string) {
-	m.short_title = &s
+// SetShortDescription sets the "short_description" field.
+func (m *TopicMutation) SetShortDescription(s string) {
+	m.short_description = &s
 }
 
-// ShortTitle returns the value of the "short_title" field in the mutation.
-func (m *TopicMutation) ShortTitle() (r string, exists bool) {
-	v := m.short_title
+// ShortDescription returns the value of the "short_description" field in the mutation.
+func (m *TopicMutation) ShortDescription() (r string, exists bool) {
+	v := m.short_description
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldShortTitle returns the old "short_title" field's value of the Topic entity.
+// OldShortDescription returns the old "short_description" field's value of the Topic entity.
 // If the Topic object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *TopicMutation) OldShortTitle(ctx context.Context) (v string, err error) {
+func (m *TopicMutation) OldShortDescription(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldShortTitle is only allowed on UpdateOne operations")
+		return v, errors.New("OldShortDescription is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldShortTitle requires an ID field in the mutation")
+		return v, errors.New("OldShortDescription requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldShortTitle: %w", err)
+		return v, fmt.Errorf("querying old value for OldShortDescription: %w", err)
 	}
-	return oldValue.ShortTitle, nil
+	return oldValue.ShortDescription, nil
 }
 
-// ResetShortTitle resets all changes to the "short_title" field.
-func (m *TopicMutation) ResetShortTitle() {
-	m.short_title = nil
+// ResetShortDescription resets all changes to the "short_description" field.
+func (m *TopicMutation) ResetShortDescription() {
+	m.short_description = nil
 }
 
 // SetDescription sets the "description" field.
@@ -3869,8 +3869,8 @@ func (m *TopicMutation) Fields() []string {
 	if m.title != nil {
 		fields = append(fields, topic.FieldTitle)
 	}
-	if m.short_title != nil {
-		fields = append(fields, topic.FieldShortTitle)
+	if m.short_description != nil {
+		fields = append(fields, topic.FieldShortDescription)
 	}
 	if m.description != nil {
 		fields = append(fields, topic.FieldDescription)
@@ -3891,8 +3891,8 @@ func (m *TopicMutation) Field(name string) (ent.Value, bool) {
 	switch name {
 	case topic.FieldTitle:
 		return m.Title()
-	case topic.FieldShortTitle:
-		return m.ShortTitle()
+	case topic.FieldShortDescription:
+		return m.ShortDescription()
 	case topic.FieldDescription:
 		return m.Description()
 	case topic.FieldProfilePicURL:
@@ -3910,8 +3910,8 @@ func (m *TopicMutation) OldField(ctx context.Context, name string) (ent.Value, e
 	switch name {
 	case topic.FieldTitle:
 		return m.OldTitle(ctx)
-	case topic.FieldShortTitle:
-		return m.OldShortTitle(ctx)
+	case topic.FieldShortDescription:
+		return m.OldShortDescription(ctx)
 	case topic.FieldDescription:
 		return m.OldDescription(ctx)
 	case topic.FieldProfilePicURL:
@@ -3934,12 +3934,12 @@ func (m *TopicMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetTitle(v)
 		return nil
-	case topic.FieldShortTitle:
+	case topic.FieldShortDescription:
 		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetShortTitle(v)
+		m.SetShortDescription(v)
 		return nil
 	case topic.FieldDescription:
 		v, ok := value.(string)
@@ -4029,8 +4029,8 @@ func (m *TopicMutation) ResetField(name string) error {
 	case topic.FieldTitle:
 		m.ResetTitle()
 		return nil
-	case topic.FieldShortTitle:
-		m.ResetShortTitle()
+	case topic.FieldShortDescription:
+		m.ResetShortDescription()
 		return nil
 	case topic.FieldDescription:
 		m.ResetDescription()

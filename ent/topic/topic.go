@@ -16,8 +16,8 @@ const (
 	FieldID = "id"
 	// FieldTitle holds the string denoting the title field in the database.
 	FieldTitle = "title"
-	// FieldShortTitle holds the string denoting the short_title field in the database.
-	FieldShortTitle = "short_title"
+	// FieldShortDescription holds the string denoting the short_description field in the database.
+	FieldShortDescription = "short_description"
 	// FieldDescription holds the string denoting the description field in the database.
 	FieldDescription = "description"
 	// FieldProfilePicURL holds the string denoting the profile_pic_url field in the database.
@@ -57,7 +57,7 @@ const (
 var Columns = []string{
 	FieldID,
 	FieldTitle,
-	FieldShortTitle,
+	FieldShortDescription,
 	FieldDescription,
 	FieldProfilePicURL,
 	FieldCreatedAt,
@@ -82,8 +82,8 @@ func ValidColumn(column string) bool {
 var (
 	// TitleValidator is a validator for the "title" field. It is called by the builders before save.
 	TitleValidator func(string) error
-	// ShortTitleValidator is a validator for the "short_title" field. It is called by the builders before save.
-	ShortTitleValidator func(string) error
+	// ShortDescriptionValidator is a validator for the "short_description" field. It is called by the builders before save.
+	ShortDescriptionValidator func(string) error
 	// DescriptionValidator is a validator for the "description" field. It is called by the builders before save.
 	DescriptionValidator func(string) error
 	// DefaultCreatedAt holds the default value on creation for the "created_at" field.
@@ -103,9 +103,9 @@ func ByTitle(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldTitle, opts...).ToFunc()
 }
 
-// ByShortTitle orders the results by the short_title field.
-func ByShortTitle(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldShortTitle, opts...).ToFunc()
+// ByShortDescription orders the results by the short_description field.
+func ByShortDescription(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldShortDescription, opts...).ToFunc()
 }
 
 // ByDescription orders the results by the description field.
