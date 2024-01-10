@@ -32,16 +32,23 @@ func (cu *CommentUpdate) Where(ps ...predicate.Comment) *CommentUpdate {
 }
 
 // SetParentID sets the "parent_id" field.
-func (cu *CommentUpdate) SetParentID(s string) *CommentUpdate {
-	cu.mutation.SetParentID(s)
+func (cu *CommentUpdate) SetParentID(i int) *CommentUpdate {
+	cu.mutation.ResetParentID()
+	cu.mutation.SetParentID(i)
 	return cu
 }
 
 // SetNillableParentID sets the "parent_id" field if the given value is not nil.
-func (cu *CommentUpdate) SetNillableParentID(s *string) *CommentUpdate {
-	if s != nil {
-		cu.SetParentID(*s)
+func (cu *CommentUpdate) SetNillableParentID(i *int) *CommentUpdate {
+	if i != nil {
+		cu.SetParentID(*i)
 	}
+	return cu
+}
+
+// AddParentID adds i to the "parent_id" field.
+func (cu *CommentUpdate) AddParentID(i int) *CommentUpdate {
+	cu.mutation.AddParentID(i)
 	return cu
 }
 
@@ -166,11 +173,6 @@ func (cu *CommentUpdate) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (cu *CommentUpdate) check() error {
-	if v, ok := cu.mutation.ParentID(); ok {
-		if err := comment.ParentIDValidator(v); err != nil {
-			return &ValidationError{Name: "parent_id", err: fmt.Errorf(`ent: validator failed for field "Comment.parent_id": %w`, err)}
-		}
-	}
 	if v, ok := cu.mutation.Content(); ok {
 		if err := comment.ContentValidator(v); err != nil {
 			return &ValidationError{Name: "content", err: fmt.Errorf(`ent: validator failed for field "Comment.content": %w`, err)}
@@ -198,7 +200,10 @@ func (cu *CommentUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 	}
 	if value, ok := cu.mutation.ParentID(); ok {
-		_spec.SetField(comment.FieldParentID, field.TypeString, value)
+		_spec.SetField(comment.FieldParentID, field.TypeInt, value)
+	}
+	if value, ok := cu.mutation.AddedParentID(); ok {
+		_spec.AddField(comment.FieldParentID, field.TypeInt, value)
 	}
 	if value, ok := cu.mutation.Content(); ok {
 		_spec.SetField(comment.FieldContent, field.TypeString, value)
@@ -304,16 +309,23 @@ type CommentUpdateOne struct {
 }
 
 // SetParentID sets the "parent_id" field.
-func (cuo *CommentUpdateOne) SetParentID(s string) *CommentUpdateOne {
-	cuo.mutation.SetParentID(s)
+func (cuo *CommentUpdateOne) SetParentID(i int) *CommentUpdateOne {
+	cuo.mutation.ResetParentID()
+	cuo.mutation.SetParentID(i)
 	return cuo
 }
 
 // SetNillableParentID sets the "parent_id" field if the given value is not nil.
-func (cuo *CommentUpdateOne) SetNillableParentID(s *string) *CommentUpdateOne {
-	if s != nil {
-		cuo.SetParentID(*s)
+func (cuo *CommentUpdateOne) SetNillableParentID(i *int) *CommentUpdateOne {
+	if i != nil {
+		cuo.SetParentID(*i)
 	}
+	return cuo
+}
+
+// AddParentID adds i to the "parent_id" field.
+func (cuo *CommentUpdateOne) AddParentID(i int) *CommentUpdateOne {
+	cuo.mutation.AddParentID(i)
 	return cuo
 }
 
@@ -451,11 +463,6 @@ func (cuo *CommentUpdateOne) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (cuo *CommentUpdateOne) check() error {
-	if v, ok := cuo.mutation.ParentID(); ok {
-		if err := comment.ParentIDValidator(v); err != nil {
-			return &ValidationError{Name: "parent_id", err: fmt.Errorf(`ent: validator failed for field "Comment.parent_id": %w`, err)}
-		}
-	}
 	if v, ok := cuo.mutation.Content(); ok {
 		if err := comment.ContentValidator(v); err != nil {
 			return &ValidationError{Name: "content", err: fmt.Errorf(`ent: validator failed for field "Comment.content": %w`, err)}
@@ -500,7 +507,10 @@ func (cuo *CommentUpdateOne) sqlSave(ctx context.Context) (_node *Comment, err e
 		}
 	}
 	if value, ok := cuo.mutation.ParentID(); ok {
-		_spec.SetField(comment.FieldParentID, field.TypeString, value)
+		_spec.SetField(comment.FieldParentID, field.TypeInt, value)
+	}
+	if value, ok := cuo.mutation.AddedParentID(); ok {
+		_spec.AddField(comment.FieldParentID, field.TypeInt, value)
 	}
 	if value, ok := cuo.mutation.Content(); ok {
 		_spec.SetField(comment.FieldContent, field.TypeString, value)

@@ -23,9 +23,7 @@ func init() {
 	// commentDescParentID is the schema descriptor for parent_id field.
 	commentDescParentID := commentFields[0].Descriptor()
 	// comment.DefaultParentID holds the default value on creation for the parent_id field.
-	comment.DefaultParentID = commentDescParentID.Default.(string)
-	// comment.ParentIDValidator is a validator for the "parent_id" field. It is called by the builders before save.
-	comment.ParentIDValidator = commentDescParentID.Validators[0].(func(string) error)
+	comment.DefaultParentID = commentDescParentID.Default.(int)
 	// commentDescContent is the schema descriptor for content field.
 	commentDescContent := commentFields[1].Descriptor()
 	// comment.ContentValidator is a validator for the "content" field. It is called by the builders before save.

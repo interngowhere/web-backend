@@ -48,7 +48,8 @@ type CommentMutation struct {
 	op                     Op
 	typ                    string
 	id                     *int
-	parent_id              *string
+	parent_id              *int
+	addparent_id           *int
 	content                *string
 	modified_at            *time.Time
 	created_at             *time.Time
@@ -164,12 +165,13 @@ func (m *CommentMutation) IDs(ctx context.Context) ([]int, error) {
 }
 
 // SetParentID sets the "parent_id" field.
-func (m *CommentMutation) SetParentID(s string) {
-	m.parent_id = &s
+func (m *CommentMutation) SetParentID(i int) {
+	m.parent_id = &i
+	m.addparent_id = nil
 }
 
 // ParentID returns the value of the "parent_id" field in the mutation.
-func (m *CommentMutation) ParentID() (r string, exists bool) {
+func (m *CommentMutation) ParentID() (r int, exists bool) {
 	v := m.parent_id
 	if v == nil {
 		return
@@ -180,7 +182,7 @@ func (m *CommentMutation) ParentID() (r string, exists bool) {
 // OldParentID returns the old "parent_id" field's value of the Comment entity.
 // If the Comment object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *CommentMutation) OldParentID(ctx context.Context) (v string, err error) {
+func (m *CommentMutation) OldParentID(ctx context.Context) (v int, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldParentID is only allowed on UpdateOne operations")
 	}
@@ -194,9 +196,28 @@ func (m *CommentMutation) OldParentID(ctx context.Context) (v string, err error)
 	return oldValue.ParentID, nil
 }
 
+// AddParentID adds i to the "parent_id" field.
+func (m *CommentMutation) AddParentID(i int) {
+	if m.addparent_id != nil {
+		*m.addparent_id += i
+	} else {
+		m.addparent_id = &i
+	}
+}
+
+// AddedParentID returns the value that was added to the "parent_id" field in this mutation.
+func (m *CommentMutation) AddedParentID() (r int, exists bool) {
+	v := m.addparent_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
 // ResetParentID resets all changes to the "parent_id" field.
 func (m *CommentMutation) ResetParentID() {
 	m.parent_id = nil
+	m.addparent_id = nil
 }
 
 // SetContent sets the "content" field.
@@ -586,7 +607,7 @@ func (m *CommentMutation) OldField(ctx context.Context, name string) (ent.Value,
 func (m *CommentMutation) SetField(name string, value ent.Value) error {
 	switch name {
 	case comment.FieldParentID:
-		v, ok := value.(string)
+		v, ok := value.(int)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
@@ -627,13 +648,21 @@ func (m *CommentMutation) SetField(name string, value ent.Value) error {
 // AddedFields returns all numeric fields that were incremented/decremented during
 // this mutation.
 func (m *CommentMutation) AddedFields() []string {
-	return nil
+	var fields []string
+	if m.addparent_id != nil {
+		fields = append(fields, comment.FieldParentID)
+	}
+	return fields
 }
 
 // AddedField returns the numeric value that was incremented/decremented on a field
 // with the given name. The second boolean return value indicates that this field
 // was not set, or was not defined in the schema.
 func (m *CommentMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case comment.FieldParentID:
+		return m.AddedParentID()
+	}
 	return nil, false
 }
 
@@ -642,6 +671,13 @@ func (m *CommentMutation) AddedField(name string) (ent.Value, bool) {
 // type.
 func (m *CommentMutation) AddField(name string, value ent.Value) error {
 	switch name {
+	case comment.FieldParentID:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddParentID(v)
+		return nil
 	}
 	return fmt.Errorf("unknown Comment numeric field %s", name)
 }

@@ -407,7 +407,7 @@ func (cq *CommentQuery) WithCommentKudoes(opts ...func(*CommentKudoQuery)) *Comm
 // Example:
 //
 //	var v []struct {
-//		ParentID string `json:"parent_id,omitempty"`
+//		ParentID int `json:"parent_id,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
@@ -430,7 +430,7 @@ func (cq *CommentQuery) GroupBy(field string, fields ...string) *CommentGroupBy 
 // Example:
 //
 //	var v []struct {
-//		ParentID string `json:"parent_id,omitempty"`
+//		ParentID int `json:"parent_id,omitempty"`
 //	}
 //
 //	client.Comment.Query().

@@ -11,7 +11,7 @@ var (
 	// CommentsColumns holds the columns for the "comments" table.
 	CommentsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
-		{Name: "parent_id", Type: field.TypeString, Size: 255, Default: ""},
+		{Name: "parent_id", Type: field.TypeInt, Default: 0},
 		{Name: "content", Type: field.TypeString, Size: 4096},
 		{Name: "modified_at", Type: field.TypeTime, Nullable: true},
 		{Name: "created_at", Type: field.TypeTime},

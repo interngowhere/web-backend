@@ -24,15 +24,15 @@ type CommentCreate struct {
 }
 
 // SetParentID sets the "parent_id" field.
-func (cc *CommentCreate) SetParentID(s string) *CommentCreate {
-	cc.mutation.SetParentID(s)
+func (cc *CommentCreate) SetParentID(i int) *CommentCreate {
+	cc.mutation.SetParentID(i)
 	return cc
 }
 
 // SetNillableParentID sets the "parent_id" field if the given value is not nil.
-func (cc *CommentCreate) SetNillableParentID(s *string) *CommentCreate {
-	if s != nil {
-		cc.SetParentID(*s)
+func (cc *CommentCreate) SetNillableParentID(i *int) *CommentCreate {
+	if i != nil {
+		cc.SetParentID(*i)
 	}
 	return cc
 }
@@ -164,11 +164,6 @@ func (cc *CommentCreate) check() error {
 	if _, ok := cc.mutation.ParentID(); !ok {
 		return &ValidationError{Name: "parent_id", err: errors.New(`ent: missing required field "Comment.parent_id"`)}
 	}
-	if v, ok := cc.mutation.ParentID(); ok {
-		if err := comment.ParentIDValidator(v); err != nil {
-			return &ValidationError{Name: "parent_id", err: fmt.Errorf(`ent: validator failed for field "Comment.parent_id": %w`, err)}
-		}
-	}
 	if _, ok := cc.mutation.Content(); !ok {
 		return &ValidationError{Name: "content", err: errors.New(`ent: missing required field "Comment.content"`)}
 	}
@@ -216,7 +211,7 @@ func (cc *CommentCreate) createSpec() (*Comment, *sqlgraph.CreateSpec) {
 		_spec = sqlgraph.NewCreateSpec(comment.Table, sqlgraph.NewFieldSpec(comment.FieldID, field.TypeInt))
 	)
 	if value, ok := cc.mutation.ParentID(); ok {
-		_spec.SetField(comment.FieldParentID, field.TypeString, value)
+		_spec.SetField(comment.FieldParentID, field.TypeInt, value)
 		_node.ParentID = value
 	}
 	if value, ok := cc.mutation.Content(); ok {

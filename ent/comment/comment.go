@@ -101,9 +101,7 @@ func ValidColumn(column string) bool {
 
 var (
 	// DefaultParentID holds the default value on creation for the "parent_id" field.
-	DefaultParentID string
-	// ParentIDValidator is a validator for the "parent_id" field. It is called by the builders before save.
-	ParentIDValidator func(string) error
+	DefaultParentID int
 	// ContentValidator is a validator for the "content" field. It is called by the builders before save.
 	ContentValidator func(string) error
 	// DefaultCreatedAt holds the default value on creation for the "created_at" field.
