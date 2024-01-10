@@ -7,7 +7,6 @@ import (
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
-	"entgo.io/ent/schema/field"
 	"github.com/interngowhere/web-backend/ent/commentkudo"
 	"github.com/interngowhere/web-backend/ent/predicate"
 )
@@ -40,7 +39,7 @@ func (ckd *CommentKudoDelete) ExecX(ctx context.Context) int {
 }
 
 func (ckd *CommentKudoDelete) sqlExec(ctx context.Context) (int, error) {
-	_spec := sqlgraph.NewDeleteSpec(commentkudo.Table, sqlgraph.NewFieldSpec(commentkudo.FieldID, field.TypeInt))
+	_spec := sqlgraph.NewDeleteSpec(commentkudo.Table, nil)
 	if ps := ckd.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {

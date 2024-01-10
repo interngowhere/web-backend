@@ -267,7 +267,7 @@ func newKudoedUsersStep() *sqlgraph.Step {
 func newThreadKudoesStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(ThreadKudoesInverseTable, FieldID),
+		sqlgraph.To(ThreadKudoesInverseTable, ThreadKudoesColumn),
 		sqlgraph.Edge(sqlgraph.O2M, true, ThreadKudoesTable, ThreadKudoesColumn),
 	)
 }

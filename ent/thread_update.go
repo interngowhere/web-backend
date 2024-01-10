@@ -16,7 +16,6 @@ import (
 	"github.com/interngowhere/web-backend/ent/predicate"
 	"github.com/interngowhere/web-backend/ent/tag"
 	"github.com/interngowhere/web-backend/ent/thread"
-	"github.com/interngowhere/web-backend/ent/threadkudo"
 	"github.com/interngowhere/web-backend/ent/topic"
 	"github.com/interngowhere/web-backend/ent/user"
 )
@@ -144,21 +143,6 @@ func (tu *ThreadUpdate) AddKudoedUsers(u ...*User) *ThreadUpdate {
 	return tu.AddKudoedUserIDs(ids...)
 }
 
-// AddThreadKudoIDs adds the "thread_kudoes" edge to the ThreadKudo entity by IDs.
-func (tu *ThreadUpdate) AddThreadKudoIDs(ids ...int) *ThreadUpdate {
-	tu.mutation.AddThreadKudoIDs(ids...)
-	return tu
-}
-
-// AddThreadKudoes adds the "thread_kudoes" edges to the ThreadKudo entity.
-func (tu *ThreadUpdate) AddThreadKudoes(t ...*ThreadKudo) *ThreadUpdate {
-	ids := make([]int, len(t))
-	for i := range t {
-		ids[i] = t[i].ID
-	}
-	return tu.AddThreadKudoIDs(ids...)
-}
-
 // Mutation returns the ThreadMutation object of the builder.
 func (tu *ThreadUpdate) Mutation() *ThreadMutation {
 	return tu.mutation
@@ -231,27 +215,6 @@ func (tu *ThreadUpdate) RemoveKudoedUsers(u ...*User) *ThreadUpdate {
 		ids[i] = u[i].ID
 	}
 	return tu.RemoveKudoedUserIDs(ids...)
-}
-
-// ClearThreadKudoes clears all "thread_kudoes" edges to the ThreadKudo entity.
-func (tu *ThreadUpdate) ClearThreadKudoes() *ThreadUpdate {
-	tu.mutation.ClearThreadKudoes()
-	return tu
-}
-
-// RemoveThreadKudoIDs removes the "thread_kudoes" edge to ThreadKudo entities by IDs.
-func (tu *ThreadUpdate) RemoveThreadKudoIDs(ids ...int) *ThreadUpdate {
-	tu.mutation.RemoveThreadKudoIDs(ids...)
-	return tu
-}
-
-// RemoveThreadKudoes removes "thread_kudoes" edges to ThreadKudo entities.
-func (tu *ThreadUpdate) RemoveThreadKudoes(t ...*ThreadKudo) *ThreadUpdate {
-	ids := make([]int, len(t))
-	for i := range t {
-		ids[i] = t[i].ID
-	}
-	return tu.RemoveThreadKudoIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -493,51 +456,6 @@ func (tu *ThreadUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if tu.mutation.ThreadKudoesCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   thread.ThreadKudoesTable,
-			Columns: []string{thread.ThreadKudoesColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(threadkudo.FieldID, field.TypeInt),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := tu.mutation.RemovedThreadKudoesIDs(); len(nodes) > 0 && !tu.mutation.ThreadKudoesCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   thread.ThreadKudoesTable,
-			Columns: []string{thread.ThreadKudoesColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(threadkudo.FieldID, field.TypeInt),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := tu.mutation.ThreadKudoesIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   thread.ThreadKudoesTable,
-			Columns: []string{thread.ThreadKudoesColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(threadkudo.FieldID, field.TypeInt),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
 	if n, err = sqlgraph.UpdateNodes(ctx, tu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{thread.Label}
@@ -668,21 +586,6 @@ func (tuo *ThreadUpdateOne) AddKudoedUsers(u ...*User) *ThreadUpdateOne {
 	return tuo.AddKudoedUserIDs(ids...)
 }
 
-// AddThreadKudoIDs adds the "thread_kudoes" edge to the ThreadKudo entity by IDs.
-func (tuo *ThreadUpdateOne) AddThreadKudoIDs(ids ...int) *ThreadUpdateOne {
-	tuo.mutation.AddThreadKudoIDs(ids...)
-	return tuo
-}
-
-// AddThreadKudoes adds the "thread_kudoes" edges to the ThreadKudo entity.
-func (tuo *ThreadUpdateOne) AddThreadKudoes(t ...*ThreadKudo) *ThreadUpdateOne {
-	ids := make([]int, len(t))
-	for i := range t {
-		ids[i] = t[i].ID
-	}
-	return tuo.AddThreadKudoIDs(ids...)
-}
-
 // Mutation returns the ThreadMutation object of the builder.
 func (tuo *ThreadUpdateOne) Mutation() *ThreadMutation {
 	return tuo.mutation
@@ -755,27 +658,6 @@ func (tuo *ThreadUpdateOne) RemoveKudoedUsers(u ...*User) *ThreadUpdateOne {
 		ids[i] = u[i].ID
 	}
 	return tuo.RemoveKudoedUserIDs(ids...)
-}
-
-// ClearThreadKudoes clears all "thread_kudoes" edges to the ThreadKudo entity.
-func (tuo *ThreadUpdateOne) ClearThreadKudoes() *ThreadUpdateOne {
-	tuo.mutation.ClearThreadKudoes()
-	return tuo
-}
-
-// RemoveThreadKudoIDs removes the "thread_kudoes" edge to ThreadKudo entities by IDs.
-func (tuo *ThreadUpdateOne) RemoveThreadKudoIDs(ids ...int) *ThreadUpdateOne {
-	tuo.mutation.RemoveThreadKudoIDs(ids...)
-	return tuo
-}
-
-// RemoveThreadKudoes removes "thread_kudoes" edges to ThreadKudo entities.
-func (tuo *ThreadUpdateOne) RemoveThreadKudoes(t ...*ThreadKudo) *ThreadUpdateOne {
-	ids := make([]int, len(t))
-	for i := range t {
-		ids[i] = t[i].ID
-	}
-	return tuo.RemoveThreadKudoIDs(ids...)
 }
 
 // Where appends a list predicates to the ThreadUpdate builder.
@@ -1040,51 +922,6 @@ func (tuo *ThreadUpdateOne) sqlSave(ctx context.Context) (_node *Thread, err err
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if tuo.mutation.ThreadKudoesCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   thread.ThreadKudoesTable,
-			Columns: []string{thread.ThreadKudoesColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(threadkudo.FieldID, field.TypeInt),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := tuo.mutation.RemovedThreadKudoesIDs(); len(nodes) > 0 && !tuo.mutation.ThreadKudoesCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   thread.ThreadKudoesTable,
-			Columns: []string{thread.ThreadKudoesColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(threadkudo.FieldID, field.TypeInt),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := tuo.mutation.ThreadKudoesIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   thread.ThreadKudoesTable,
-			Columns: []string{thread.ThreadKudoesColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(threadkudo.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {

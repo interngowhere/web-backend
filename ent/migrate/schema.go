@@ -40,7 +40,6 @@ var (
 	}
 	// CommentKudosColumns holds the columns for the "comment_kudos" table.
 	CommentKudosColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeInt, Increment: true},
 		{Name: "user_id", Type: field.TypeUUID},
 		{Name: "comment_id", Type: field.TypeInt},
 	}
@@ -48,26 +47,44 @@ var (
 	CommentKudosTable = &schema.Table{
 		Name:       "comment_kudos",
 		Columns:    CommentKudosColumns,
-		PrimaryKey: []*schema.Column{CommentKudosColumns[0]},
+		PrimaryKey: []*schema.Column{CommentKudosColumns[0], CommentKudosColumns[1]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "comment_kudos_users_user",
-				Columns:    []*schema.Column{CommentKudosColumns[1]},
+				Columns:    []*schema.Column{CommentKudosColumns[0]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
 				Symbol:     "comment_kudos_comments_comment",
-				Columns:    []*schema.Column{CommentKudosColumns[2]},
+				Columns:    []*schema.Column{CommentKudosColumns[1]},
 				RefColumns: []*schema.Column{CommentsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 		},
-		Indexes: []*schema.Index{
+	}
+	// ModeratorsColumns holds the columns for the "moderators" table.
+	ModeratorsColumns = []*schema.Column{
+		{Name: "moderator_id", Type: field.TypeUUID},
+		{Name: "topic_id", Type: field.TypeInt},
+	}
+	// ModeratorsTable holds the schema information for the "moderators" table.
+	ModeratorsTable = &schema.Table{
+		Name:       "moderators",
+		Columns:    ModeratorsColumns,
+		PrimaryKey: []*schema.Column{ModeratorsColumns[0], ModeratorsColumns[1]},
+		ForeignKeys: []*schema.ForeignKey{
 			{
-				Name:    "commentkudo_user_id_comment_id",
-				Unique:  true,
-				Columns: []*schema.Column{CommentKudosColumns[1], CommentKudosColumns[2]},
+				Symbol:     "moderators_users_moderator",
+				Columns:    []*schema.Column{ModeratorsColumns[0]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "moderators_topics_topic",
+				Columns:    []*schema.Column{ModeratorsColumns[1]},
+				RefColumns: []*schema.Column{TopicsColumns[0]},
+				OnDelete:   schema.NoAction,
 			},
 		},
 	}
@@ -115,7 +132,6 @@ var (
 	}
 	// ThreadKudosColumns holds the columns for the "thread_kudos" table.
 	ThreadKudosColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeInt, Increment: true},
 		{Name: "user_id", Type: field.TypeUUID},
 		{Name: "thread_id", Type: field.TypeInt},
 	}
@@ -123,26 +139,19 @@ var (
 	ThreadKudosTable = &schema.Table{
 		Name:       "thread_kudos",
 		Columns:    ThreadKudosColumns,
-		PrimaryKey: []*schema.Column{ThreadKudosColumns[0]},
+		PrimaryKey: []*schema.Column{ThreadKudosColumns[0], ThreadKudosColumns[1]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "thread_kudos_users_user",
-				Columns:    []*schema.Column{ThreadKudosColumns[1]},
+				Columns:    []*schema.Column{ThreadKudosColumns[0]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
 				Symbol:     "thread_kudos_threads_thread",
-				Columns:    []*schema.Column{ThreadKudosColumns[2]},
+				Columns:    []*schema.Column{ThreadKudosColumns[1]},
 				RefColumns: []*schema.Column{ThreadsColumns[0]},
 				OnDelete:   schema.NoAction,
-			},
-		},
-		Indexes: []*schema.Index{
-			{
-				Name:    "threadkudo_user_id_thread_id",
-				Unique:  true,
-				Columns: []*schema.Column{ThreadKudosColumns[1], ThreadKudosColumns[2]},
 			},
 		},
 	}
@@ -152,8 +161,7 @@ var (
 		{Name: "title", Type: field.TypeString, Size: 255},
 		{Name: "short_title", Type: field.TypeString, Size: 255},
 		{Name: "description", Type: field.TypeString, Nullable: true, Size: 4096},
-		{Name: "moderators", Type: field.TypeJSON},
-		{Name: "created_by", Type: field.TypeString, Size: 255},
+		{Name: "profile_pic_url", Type: field.TypeString, Nullable: true},
 		{Name: "created_at", Type: field.TypeTime},
 	}
 	// TopicsTable holds the schema information for the "topics" table.
@@ -171,7 +179,6 @@ var (
 		{Name: "last_name", Type: field.TypeString, Nullable: true, Size: 255},
 		{Name: "hash", Type: field.TypeString, Unique: true, Nullable: true},
 		{Name: "salt", Type: field.TypeString, Nullable: true, Size: 255},
-		{Name: "is_moderator", Type: field.TypeBool, Default: false},
 		{Name: "created_at", Type: field.TypeTime},
 	}
 	// UsersTable holds the schema information for the "users" table.
@@ -209,6 +216,7 @@ var (
 	Tables = []*schema.Table{
 		CommentsTable,
 		CommentKudosTable,
+		ModeratorsTable,
 		TagsTable,
 		ThreadsTable,
 		ThreadKudosTable,
@@ -223,6 +231,8 @@ func init() {
 	CommentsTable.ForeignKeys[1].RefTable = UsersTable
 	CommentKudosTable.ForeignKeys[0].RefTable = UsersTable
 	CommentKudosTable.ForeignKeys[1].RefTable = CommentsTable
+	ModeratorsTable.ForeignKeys[0].RefTable = UsersTable
+	ModeratorsTable.ForeignKeys[1].RefTable = TopicsTable
 	ThreadsTable.ForeignKeys[0].RefTable = TopicsTable
 	ThreadsTable.ForeignKeys[1].RefTable = UsersTable
 	ThreadKudosTable.ForeignKeys[0].RefTable = UsersTable

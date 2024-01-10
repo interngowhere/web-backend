@@ -70,9 +70,9 @@ func Description(v string) predicate.Topic {
 	return predicate.Topic(sql.FieldEQ(FieldDescription, v))
 }
 
-// CreatedBy applies equality check predicate on the "created_by" field. It's identical to CreatedByEQ.
-func CreatedBy(v string) predicate.Topic {
-	return predicate.Topic(sql.FieldEQ(FieldCreatedBy, v))
+// ProfilePicURL applies equality check predicate on the "profile_pic_url" field. It's identical to ProfilePicURLEQ.
+func ProfilePicURL(v string) predicate.Topic {
+	return predicate.Topic(sql.FieldEQ(FieldProfilePicURL, v))
 }
 
 // CreatedAt applies equality check predicate on the "created_at" field. It's identical to CreatedAtEQ.
@@ -285,69 +285,79 @@ func DescriptionContainsFold(v string) predicate.Topic {
 	return predicate.Topic(sql.FieldContainsFold(FieldDescription, v))
 }
 
-// CreatedByEQ applies the EQ predicate on the "created_by" field.
-func CreatedByEQ(v string) predicate.Topic {
-	return predicate.Topic(sql.FieldEQ(FieldCreatedBy, v))
+// ProfilePicURLEQ applies the EQ predicate on the "profile_pic_url" field.
+func ProfilePicURLEQ(v string) predicate.Topic {
+	return predicate.Topic(sql.FieldEQ(FieldProfilePicURL, v))
 }
 
-// CreatedByNEQ applies the NEQ predicate on the "created_by" field.
-func CreatedByNEQ(v string) predicate.Topic {
-	return predicate.Topic(sql.FieldNEQ(FieldCreatedBy, v))
+// ProfilePicURLNEQ applies the NEQ predicate on the "profile_pic_url" field.
+func ProfilePicURLNEQ(v string) predicate.Topic {
+	return predicate.Topic(sql.FieldNEQ(FieldProfilePicURL, v))
 }
 
-// CreatedByIn applies the In predicate on the "created_by" field.
-func CreatedByIn(vs ...string) predicate.Topic {
-	return predicate.Topic(sql.FieldIn(FieldCreatedBy, vs...))
+// ProfilePicURLIn applies the In predicate on the "profile_pic_url" field.
+func ProfilePicURLIn(vs ...string) predicate.Topic {
+	return predicate.Topic(sql.FieldIn(FieldProfilePicURL, vs...))
 }
 
-// CreatedByNotIn applies the NotIn predicate on the "created_by" field.
-func CreatedByNotIn(vs ...string) predicate.Topic {
-	return predicate.Topic(sql.FieldNotIn(FieldCreatedBy, vs...))
+// ProfilePicURLNotIn applies the NotIn predicate on the "profile_pic_url" field.
+func ProfilePicURLNotIn(vs ...string) predicate.Topic {
+	return predicate.Topic(sql.FieldNotIn(FieldProfilePicURL, vs...))
 }
 
-// CreatedByGT applies the GT predicate on the "created_by" field.
-func CreatedByGT(v string) predicate.Topic {
-	return predicate.Topic(sql.FieldGT(FieldCreatedBy, v))
+// ProfilePicURLGT applies the GT predicate on the "profile_pic_url" field.
+func ProfilePicURLGT(v string) predicate.Topic {
+	return predicate.Topic(sql.FieldGT(FieldProfilePicURL, v))
 }
 
-// CreatedByGTE applies the GTE predicate on the "created_by" field.
-func CreatedByGTE(v string) predicate.Topic {
-	return predicate.Topic(sql.FieldGTE(FieldCreatedBy, v))
+// ProfilePicURLGTE applies the GTE predicate on the "profile_pic_url" field.
+func ProfilePicURLGTE(v string) predicate.Topic {
+	return predicate.Topic(sql.FieldGTE(FieldProfilePicURL, v))
 }
 
-// CreatedByLT applies the LT predicate on the "created_by" field.
-func CreatedByLT(v string) predicate.Topic {
-	return predicate.Topic(sql.FieldLT(FieldCreatedBy, v))
+// ProfilePicURLLT applies the LT predicate on the "profile_pic_url" field.
+func ProfilePicURLLT(v string) predicate.Topic {
+	return predicate.Topic(sql.FieldLT(FieldProfilePicURL, v))
 }
 
-// CreatedByLTE applies the LTE predicate on the "created_by" field.
-func CreatedByLTE(v string) predicate.Topic {
-	return predicate.Topic(sql.FieldLTE(FieldCreatedBy, v))
+// ProfilePicURLLTE applies the LTE predicate on the "profile_pic_url" field.
+func ProfilePicURLLTE(v string) predicate.Topic {
+	return predicate.Topic(sql.FieldLTE(FieldProfilePicURL, v))
 }
 
-// CreatedByContains applies the Contains predicate on the "created_by" field.
-func CreatedByContains(v string) predicate.Topic {
-	return predicate.Topic(sql.FieldContains(FieldCreatedBy, v))
+// ProfilePicURLContains applies the Contains predicate on the "profile_pic_url" field.
+func ProfilePicURLContains(v string) predicate.Topic {
+	return predicate.Topic(sql.FieldContains(FieldProfilePicURL, v))
 }
 
-// CreatedByHasPrefix applies the HasPrefix predicate on the "created_by" field.
-func CreatedByHasPrefix(v string) predicate.Topic {
-	return predicate.Topic(sql.FieldHasPrefix(FieldCreatedBy, v))
+// ProfilePicURLHasPrefix applies the HasPrefix predicate on the "profile_pic_url" field.
+func ProfilePicURLHasPrefix(v string) predicate.Topic {
+	return predicate.Topic(sql.FieldHasPrefix(FieldProfilePicURL, v))
 }
 
-// CreatedByHasSuffix applies the HasSuffix predicate on the "created_by" field.
-func CreatedByHasSuffix(v string) predicate.Topic {
-	return predicate.Topic(sql.FieldHasSuffix(FieldCreatedBy, v))
+// ProfilePicURLHasSuffix applies the HasSuffix predicate on the "profile_pic_url" field.
+func ProfilePicURLHasSuffix(v string) predicate.Topic {
+	return predicate.Topic(sql.FieldHasSuffix(FieldProfilePicURL, v))
 }
 
-// CreatedByEqualFold applies the EqualFold predicate on the "created_by" field.
-func CreatedByEqualFold(v string) predicate.Topic {
-	return predicate.Topic(sql.FieldEqualFold(FieldCreatedBy, v))
+// ProfilePicURLIsNil applies the IsNil predicate on the "profile_pic_url" field.
+func ProfilePicURLIsNil() predicate.Topic {
+	return predicate.Topic(sql.FieldIsNull(FieldProfilePicURL))
 }
 
-// CreatedByContainsFold applies the ContainsFold predicate on the "created_by" field.
-func CreatedByContainsFold(v string) predicate.Topic {
-	return predicate.Topic(sql.FieldContainsFold(FieldCreatedBy, v))
+// ProfilePicURLNotNil applies the NotNil predicate on the "profile_pic_url" field.
+func ProfilePicURLNotNil() predicate.Topic {
+	return predicate.Topic(sql.FieldNotNull(FieldProfilePicURL))
+}
+
+// ProfilePicURLEqualFold applies the EqualFold predicate on the "profile_pic_url" field.
+func ProfilePicURLEqualFold(v string) predicate.Topic {
+	return predicate.Topic(sql.FieldEqualFold(FieldProfilePicURL, v))
+}
+
+// ProfilePicURLContainsFold applies the ContainsFold predicate on the "profile_pic_url" field.
+func ProfilePicURLContainsFold(v string) predicate.Topic {
+	return predicate.Topic(sql.FieldContainsFold(FieldProfilePicURL, v))
 }
 
 // CreatedAtEQ applies the EQ predicate on the "created_at" field.
@@ -405,6 +415,52 @@ func HasTopicThreads() predicate.Topic {
 func HasTopicThreadsWith(preds ...predicate.Thread) predicate.Topic {
 	return predicate.Topic(func(s *sql.Selector) {
 		step := newTopicThreadsStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasTopicModerators applies the HasEdge predicate on the "topic_moderators" edge.
+func HasTopicModerators() predicate.Topic {
+	return predicate.Topic(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, TopicModeratorsTable, TopicModeratorsPrimaryKey...),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasTopicModeratorsWith applies the HasEdge predicate on the "topic_moderators" edge with a given conditions (other predicates).
+func HasTopicModeratorsWith(preds ...predicate.User) predicate.Topic {
+	return predicate.Topic(func(s *sql.Selector) {
+		step := newTopicModeratorsStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasModerators applies the HasEdge predicate on the "moderators" edge.
+func HasModerators() predicate.Topic {
+	return predicate.Topic(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, ModeratorsTable, ModeratorsColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasModeratorsWith applies the HasEdge predicate on the "moderators" edge with a given conditions (other predicates).
+func HasModeratorsWith(preds ...predicate.Moderator) predicate.Topic {
+	return predicate.Topic(func(s *sql.Selector) {
+		step := newModeratorsStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

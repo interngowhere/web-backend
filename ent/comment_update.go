@@ -13,7 +13,6 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/interngowhere/web-backend/ent/comment"
-	"github.com/interngowhere/web-backend/ent/commentkudo"
 	"github.com/interngowhere/web-backend/ent/predicate"
 	"github.com/interngowhere/web-backend/ent/thread"
 	"github.com/interngowhere/web-backend/ent/user"
@@ -106,21 +105,6 @@ func (cu *CommentUpdate) AddKudoedUsers(u ...*User) *CommentUpdate {
 	return cu.AddKudoedUserIDs(ids...)
 }
 
-// AddCommentKudoIDs adds the "comment_kudoes" edge to the CommentKudo entity by IDs.
-func (cu *CommentUpdate) AddCommentKudoIDs(ids ...int) *CommentUpdate {
-	cu.mutation.AddCommentKudoIDs(ids...)
-	return cu
-}
-
-// AddCommentKudoes adds the "comment_kudoes" edges to the CommentKudo entity.
-func (cu *CommentUpdate) AddCommentKudoes(c ...*CommentKudo) *CommentUpdate {
-	ids := make([]int, len(c))
-	for i := range c {
-		ids[i] = c[i].ID
-	}
-	return cu.AddCommentKudoIDs(ids...)
-}
-
 // Mutation returns the CommentMutation object of the builder.
 func (cu *CommentUpdate) Mutation() *CommentMutation {
 	return cu.mutation
@@ -151,27 +135,6 @@ func (cu *CommentUpdate) RemoveKudoedUsers(u ...*User) *CommentUpdate {
 		ids[i] = u[i].ID
 	}
 	return cu.RemoveKudoedUserIDs(ids...)
-}
-
-// ClearCommentKudoes clears all "comment_kudoes" edges to the CommentKudo entity.
-func (cu *CommentUpdate) ClearCommentKudoes() *CommentUpdate {
-	cu.mutation.ClearCommentKudoes()
-	return cu
-}
-
-// RemoveCommentKudoIDs removes the "comment_kudoes" edge to CommentKudo entities by IDs.
-func (cu *CommentUpdate) RemoveCommentKudoIDs(ids ...int) *CommentUpdate {
-	cu.mutation.RemoveCommentKudoIDs(ids...)
-	return cu
-}
-
-// RemoveCommentKudoes removes "comment_kudoes" edges to CommentKudo entities.
-func (cu *CommentUpdate) RemoveCommentKudoes(c ...*CommentKudo) *CommentUpdate {
-	ids := make([]int, len(c))
-	for i := range c {
-		ids[i] = c[i].ID
-	}
-	return cu.RemoveCommentKudoIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -320,51 +283,6 @@ func (cu *CommentUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if cu.mutation.CommentKudoesCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   comment.CommentKudoesTable,
-			Columns: []string{comment.CommentKudoesColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(commentkudo.FieldID, field.TypeInt),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := cu.mutation.RemovedCommentKudoesIDs(); len(nodes) > 0 && !cu.mutation.CommentKudoesCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   comment.CommentKudoesTable,
-			Columns: []string{comment.CommentKudoesColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(commentkudo.FieldID, field.TypeInt),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := cu.mutation.CommentKudoesIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   comment.CommentKudoesTable,
-			Columns: []string{comment.CommentKudoesColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(commentkudo.FieldID, field.TypeInt),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
 	if n, err = sqlgraph.UpdateNodes(ctx, cu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{comment.Label}
@@ -459,21 +377,6 @@ func (cuo *CommentUpdateOne) AddKudoedUsers(u ...*User) *CommentUpdateOne {
 	return cuo.AddKudoedUserIDs(ids...)
 }
 
-// AddCommentKudoIDs adds the "comment_kudoes" edge to the CommentKudo entity by IDs.
-func (cuo *CommentUpdateOne) AddCommentKudoIDs(ids ...int) *CommentUpdateOne {
-	cuo.mutation.AddCommentKudoIDs(ids...)
-	return cuo
-}
-
-// AddCommentKudoes adds the "comment_kudoes" edges to the CommentKudo entity.
-func (cuo *CommentUpdateOne) AddCommentKudoes(c ...*CommentKudo) *CommentUpdateOne {
-	ids := make([]int, len(c))
-	for i := range c {
-		ids[i] = c[i].ID
-	}
-	return cuo.AddCommentKudoIDs(ids...)
-}
-
 // Mutation returns the CommentMutation object of the builder.
 func (cuo *CommentUpdateOne) Mutation() *CommentMutation {
 	return cuo.mutation
@@ -504,27 +407,6 @@ func (cuo *CommentUpdateOne) RemoveKudoedUsers(u ...*User) *CommentUpdateOne {
 		ids[i] = u[i].ID
 	}
 	return cuo.RemoveKudoedUserIDs(ids...)
-}
-
-// ClearCommentKudoes clears all "comment_kudoes" edges to the CommentKudo entity.
-func (cuo *CommentUpdateOne) ClearCommentKudoes() *CommentUpdateOne {
-	cuo.mutation.ClearCommentKudoes()
-	return cuo
-}
-
-// RemoveCommentKudoIDs removes the "comment_kudoes" edge to CommentKudo entities by IDs.
-func (cuo *CommentUpdateOne) RemoveCommentKudoIDs(ids ...int) *CommentUpdateOne {
-	cuo.mutation.RemoveCommentKudoIDs(ids...)
-	return cuo
-}
-
-// RemoveCommentKudoes removes "comment_kudoes" edges to CommentKudo entities.
-func (cuo *CommentUpdateOne) RemoveCommentKudoes(c ...*CommentKudo) *CommentUpdateOne {
-	ids := make([]int, len(c))
-	for i := range c {
-		ids[i] = c[i].ID
-	}
-	return cuo.RemoveCommentKudoIDs(ids...)
 }
 
 // Where appends a list predicates to the CommentUpdate builder.
@@ -696,51 +578,6 @@ func (cuo *CommentUpdateOne) sqlSave(ctx context.Context) (_node *Comment, err e
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if cuo.mutation.CommentKudoesCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   comment.CommentKudoesTable,
-			Columns: []string{comment.CommentKudoesColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(commentkudo.FieldID, field.TypeInt),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := cuo.mutation.RemovedCommentKudoesIDs(); len(nodes) > 0 && !cuo.mutation.CommentKudoesCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   comment.CommentKudoesTable,
-			Columns: []string{comment.CommentKudoesColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(commentkudo.FieldID, field.TypeInt),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := cuo.mutation.CommentKudoesIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   comment.CommentKudoesTable,
-			Columns: []string{comment.CommentKudoesColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(commentkudo.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {

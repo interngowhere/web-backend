@@ -16,6 +16,8 @@ type Tx struct {
 	Comment *CommentClient
 	// CommentKudo is the client for interacting with the CommentKudo builders.
 	CommentKudo *CommentKudoClient
+	// Moderator is the client for interacting with the Moderator builders.
+	Moderator *ModeratorClient
 	// Tag is the client for interacting with the Tag builders.
 	Tag *TagClient
 	// Thread is the client for interacting with the Thread builders.
@@ -159,6 +161,7 @@ func (tx *Tx) Client() *Client {
 func (tx *Tx) init() {
 	tx.Comment = NewCommentClient(tx.config)
 	tx.CommentKudo = NewCommentKudoClient(tx.config)
+	tx.Moderator = NewModeratorClient(tx.config)
 	tx.Tag = NewTagClient(tx.config)
 	tx.Thread = NewThreadClient(tx.config)
 	tx.ThreadKudo = NewThreadKudoClient(tx.config)

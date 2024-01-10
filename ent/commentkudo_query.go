@@ -9,7 +9,6 @@ import (
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
-	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/interngowhere/web-backend/ent/comment"
 	"github.com/interngowhere/web-backend/ent/commentkudo"
@@ -74,7 +73,7 @@ func (ckq *CommentKudoQuery) QueryUser() *UserQuery {
 			return nil, err
 		}
 		step := sqlgraph.NewStep(
-			sqlgraph.From(commentkudo.Table, commentkudo.FieldID, selector),
+			sqlgraph.From(commentkudo.Table, commentkudo.UserColumn, selector),
 			sqlgraph.To(user.Table, user.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, commentkudo.UserTable, commentkudo.UserColumn),
 		)
@@ -96,7 +95,7 @@ func (ckq *CommentKudoQuery) QueryComment() *CommentQuery {
 			return nil, err
 		}
 		step := sqlgraph.NewStep(
-			sqlgraph.From(commentkudo.Table, commentkudo.FieldID, selector),
+			sqlgraph.From(commentkudo.Table, commentkudo.CommentColumn, selector),
 			sqlgraph.To(comment.Table, comment.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, commentkudo.CommentTable, commentkudo.CommentColumn),
 		)
@@ -128,29 +127,6 @@ func (ckq *CommentKudoQuery) FirstX(ctx context.Context) *CommentKudo {
 	return node
 }
 
-// FirstID returns the first CommentKudo ID from the query.
-// Returns a *NotFoundError when no CommentKudo ID was found.
-func (ckq *CommentKudoQuery) FirstID(ctx context.Context) (id int, err error) {
-	var ids []int
-	if ids, err = ckq.Limit(1).IDs(setContextOp(ctx, ckq.ctx, "FirstID")); err != nil {
-		return
-	}
-	if len(ids) == 0 {
-		err = &NotFoundError{commentkudo.Label}
-		return
-	}
-	return ids[0], nil
-}
-
-// FirstIDX is like FirstID, but panics if an error occurs.
-func (ckq *CommentKudoQuery) FirstIDX(ctx context.Context) int {
-	id, err := ckq.FirstID(ctx)
-	if err != nil && !IsNotFound(err) {
-		panic(err)
-	}
-	return id
-}
-
 // Only returns a single CommentKudo entity found by the query, ensuring it only returns one.
 // Returns a *NotSingularError when more than one CommentKudo entity is found.
 // Returns a *NotFoundError when no CommentKudo entities are found.
@@ -178,34 +154,6 @@ func (ckq *CommentKudoQuery) OnlyX(ctx context.Context) *CommentKudo {
 	return node
 }
 
-// OnlyID is like Only, but returns the only CommentKudo ID in the query.
-// Returns a *NotSingularError when more than one CommentKudo ID is found.
-// Returns a *NotFoundError when no entities are found.
-func (ckq *CommentKudoQuery) OnlyID(ctx context.Context) (id int, err error) {
-	var ids []int
-	if ids, err = ckq.Limit(2).IDs(setContextOp(ctx, ckq.ctx, "OnlyID")); err != nil {
-		return
-	}
-	switch len(ids) {
-	case 1:
-		id = ids[0]
-	case 0:
-		err = &NotFoundError{commentkudo.Label}
-	default:
-		err = &NotSingularError{commentkudo.Label}
-	}
-	return
-}
-
-// OnlyIDX is like OnlyID, but panics if an error occurs.
-func (ckq *CommentKudoQuery) OnlyIDX(ctx context.Context) int {
-	id, err := ckq.OnlyID(ctx)
-	if err != nil {
-		panic(err)
-	}
-	return id
-}
-
 // All executes the query and returns a list of CommentKudos.
 func (ckq *CommentKudoQuery) All(ctx context.Context) ([]*CommentKudo, error) {
 	ctx = setContextOp(ctx, ckq.ctx, "All")
@@ -223,27 +171,6 @@ func (ckq *CommentKudoQuery) AllX(ctx context.Context) []*CommentKudo {
 		panic(err)
 	}
 	return nodes
-}
-
-// IDs executes the query and returns a list of CommentKudo IDs.
-func (ckq *CommentKudoQuery) IDs(ctx context.Context) (ids []int, err error) {
-	if ckq.ctx.Unique == nil && ckq.path != nil {
-		ckq.Unique(true)
-	}
-	ctx = setContextOp(ctx, ckq.ctx, "IDs")
-	if err = ckq.Select(commentkudo.FieldID).Scan(ctx, &ids); err != nil {
-		return nil, err
-	}
-	return ids, nil
-}
-
-// IDsX is like IDs, but panics if an error occurs.
-func (ckq *CommentKudoQuery) IDsX(ctx context.Context) []int {
-	ids, err := ckq.IDs(ctx)
-	if err != nil {
-		panic(err)
-	}
-	return ids
 }
 
 // Count returns the count of the given query.
@@ -267,7 +194,7 @@ func (ckq *CommentKudoQuery) CountX(ctx context.Context) int {
 // Exist returns true if the query has elements in the graph.
 func (ckq *CommentKudoQuery) Exist(ctx context.Context) (bool, error) {
 	ctx = setContextOp(ctx, ckq.ctx, "Exist")
-	switch _, err := ckq.FirstID(ctx); {
+	switch _, err := ckq.First(ctx); {
 	case IsNotFound(err):
 		return false, nil
 	case err != nil:
@@ -505,15 +432,13 @@ func (ckq *CommentKudoQuery) loadComment(ctx context.Context, query *CommentQuer
 
 func (ckq *CommentKudoQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := ckq.querySpec()
-	_spec.Node.Columns = ckq.ctx.Fields
-	if len(ckq.ctx.Fields) > 0 {
-		_spec.Unique = ckq.ctx.Unique != nil && *ckq.ctx.Unique
-	}
+	_spec.Unique = false
+	_spec.Node.Columns = nil
 	return sqlgraph.CountNodes(ctx, ckq.driver, _spec)
 }
 
 func (ckq *CommentKudoQuery) querySpec() *sqlgraph.QuerySpec {
-	_spec := sqlgraph.NewQuerySpec(commentkudo.Table, commentkudo.Columns, sqlgraph.NewFieldSpec(commentkudo.FieldID, field.TypeInt))
+	_spec := sqlgraph.NewQuerySpec(commentkudo.Table, commentkudo.Columns, nil)
 	_spec.From = ckq.sql
 	if unique := ckq.ctx.Unique; unique != nil {
 		_spec.Unique = *unique
@@ -522,11 +447,8 @@ func (ckq *CommentKudoQuery) querySpec() *sqlgraph.QuerySpec {
 	}
 	if fields := ckq.ctx.Fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
-		_spec.Node.Columns = append(_spec.Node.Columns, commentkudo.FieldID)
 		for i := range fields {
-			if fields[i] != commentkudo.FieldID {
-				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
-			}
+			_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 		}
 		if ckq.withUser != nil {
 			_spec.Node.AddColumnOnce(commentkudo.FieldUserID)

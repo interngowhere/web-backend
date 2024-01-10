@@ -20,14 +20,16 @@ const (
 	FieldShortTitle = "short_title"
 	// FieldDescription holds the string denoting the description field in the database.
 	FieldDescription = "description"
-	// FieldModerators holds the string denoting the moderators field in the database.
-	FieldModerators = "moderators"
-	// FieldCreatedBy holds the string denoting the created_by field in the database.
-	FieldCreatedBy = "created_by"
+	// FieldProfilePicURL holds the string denoting the profile_pic_url field in the database.
+	FieldProfilePicURL = "profile_pic_url"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
 	FieldCreatedAt = "created_at"
 	// EdgeTopicThreads holds the string denoting the topic_threads edge name in mutations.
 	EdgeTopicThreads = "topic_threads"
+	// EdgeTopicModerators holds the string denoting the topic_moderators edge name in mutations.
+	EdgeTopicModerators = "topic_moderators"
+	// EdgeModerators holds the string denoting the moderators edge name in mutations.
+	EdgeModerators = "moderators"
 	// Table holds the table name of the topic in the database.
 	Table = "topics"
 	// TopicThreadsTable is the table that holds the topic_threads relation/edge.
@@ -37,6 +39,18 @@ const (
 	TopicThreadsInverseTable = "threads"
 	// TopicThreadsColumn is the table column denoting the topic_threads relation/edge.
 	TopicThreadsColumn = "topic_topic_threads"
+	// TopicModeratorsTable is the table that holds the topic_moderators relation/edge. The primary key declared below.
+	TopicModeratorsTable = "moderators"
+	// TopicModeratorsInverseTable is the table name for the User entity.
+	// It exists in this package in order to avoid circular dependency with the "user" package.
+	TopicModeratorsInverseTable = "users"
+	// ModeratorsTable is the table that holds the moderators relation/edge.
+	ModeratorsTable = "moderators"
+	// ModeratorsInverseTable is the table name for the Moderator entity.
+	// It exists in this package in order to avoid circular dependency with the "moderator" package.
+	ModeratorsInverseTable = "moderators"
+	// ModeratorsColumn is the table column denoting the moderators relation/edge.
+	ModeratorsColumn = "topic_id"
 )
 
 // Columns holds all SQL columns for topic fields.
@@ -45,10 +59,15 @@ var Columns = []string{
 	FieldTitle,
 	FieldShortTitle,
 	FieldDescription,
-	FieldModerators,
-	FieldCreatedBy,
+	FieldProfilePicURL,
 	FieldCreatedAt,
 }
+
+var (
+	// TopicModeratorsPrimaryKey and TopicModeratorsColumn2 are the table columns denoting the
+	// primary key for the topic_moderators relation (M2M).
+	TopicModeratorsPrimaryKey = []string{"moderator_id", "topic_id"}
+)
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
@@ -67,8 +86,6 @@ var (
 	ShortTitleValidator func(string) error
 	// DescriptionValidator is a validator for the "description" field. It is called by the builders before save.
 	DescriptionValidator func(string) error
-	// CreatedByValidator is a validator for the "created_by" field. It is called by the builders before save.
-	CreatedByValidator func(string) error
 	// DefaultCreatedAt holds the default value on creation for the "created_at" field.
 	DefaultCreatedAt time.Time
 )
@@ -96,9 +113,9 @@ func ByDescription(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldDescription, opts...).ToFunc()
 }
 
-// ByCreatedBy orders the results by the created_by field.
-func ByCreatedBy(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldCreatedBy, opts...).ToFunc()
+// ByProfilePicURL orders the results by the profile_pic_url field.
+func ByProfilePicURL(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldProfilePicURL, opts...).ToFunc()
 }
 
 // ByCreatedAt orders the results by the created_at field.
@@ -119,10 +136,52 @@ func ByTopicThreads(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newTopicThreadsStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
+
+// ByTopicModeratorsCount orders the results by topic_moderators count.
+func ByTopicModeratorsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newTopicModeratorsStep(), opts...)
+	}
+}
+
+// ByTopicModerators orders the results by topic_moderators terms.
+func ByTopicModerators(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newTopicModeratorsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
+// ByModeratorsCount orders the results by moderators count.
+func ByModeratorsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newModeratorsStep(), opts...)
+	}
+}
+
+// ByModerators orders the results by moderators terms.
+func ByModerators(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newModeratorsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newTopicThreadsStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(TopicThreadsInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, false, TopicThreadsTable, TopicThreadsColumn),
+	)
+}
+func newTopicModeratorsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(TopicModeratorsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2M, true, TopicModeratorsTable, TopicModeratorsPrimaryKey...),
+	)
+}
+func newModeratorsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(ModeratorsInverseTable, ModeratorsColumn),
+		sqlgraph.Edge(sqlgraph.O2M, true, ModeratorsTable, ModeratorsColumn),
 	)
 }

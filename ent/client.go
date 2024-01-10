@@ -18,6 +18,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/interngowhere/web-backend/ent/comment"
 	"github.com/interngowhere/web-backend/ent/commentkudo"
+	"github.com/interngowhere/web-backend/ent/moderator"
 	"github.com/interngowhere/web-backend/ent/tag"
 	"github.com/interngowhere/web-backend/ent/thread"
 	"github.com/interngowhere/web-backend/ent/threadkudo"
@@ -34,6 +35,8 @@ type Client struct {
 	Comment *CommentClient
 	// CommentKudo is the client for interacting with the CommentKudo builders.
 	CommentKudo *CommentKudoClient
+	// Moderator is the client for interacting with the Moderator builders.
+	Moderator *ModeratorClient
 	// Tag is the client for interacting with the Tag builders.
 	Tag *TagClient
 	// Thread is the client for interacting with the Thread builders.
@@ -57,6 +60,7 @@ func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
 	c.Comment = NewCommentClient(c.config)
 	c.CommentKudo = NewCommentKudoClient(c.config)
+	c.Moderator = NewModeratorClient(c.config)
 	c.Tag = NewTagClient(c.config)
 	c.Thread = NewThreadClient(c.config)
 	c.ThreadKudo = NewThreadKudoClient(c.config)
@@ -156,6 +160,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		config:      cfg,
 		Comment:     NewCommentClient(cfg),
 		CommentKudo: NewCommentKudoClient(cfg),
+		Moderator:   NewModeratorClient(cfg),
 		Tag:         NewTagClient(cfg),
 		Thread:      NewThreadClient(cfg),
 		ThreadKudo:  NewThreadKudoClient(cfg),
@@ -182,6 +187,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		config:      cfg,
 		Comment:     NewCommentClient(cfg),
 		CommentKudo: NewCommentKudoClient(cfg),
+		Moderator:   NewModeratorClient(cfg),
 		Tag:         NewTagClient(cfg),
 		Thread:      NewThreadClient(cfg),
 		ThreadKudo:  NewThreadKudoClient(cfg),
@@ -216,7 +222,8 @@ func (c *Client) Close() error {
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
-		c.Comment, c.CommentKudo, c.Tag, c.Thread, c.ThreadKudo, c.Topic, c.User,
+		c.Comment, c.CommentKudo, c.Moderator, c.Tag, c.Thread, c.ThreadKudo, c.Topic,
+		c.User,
 	} {
 		n.Use(hooks...)
 	}
@@ -226,7 +233,8 @@ func (c *Client) Use(hooks ...Hook) {
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
-		c.Comment, c.CommentKudo, c.Tag, c.Thread, c.ThreadKudo, c.Topic, c.User,
+		c.Comment, c.CommentKudo, c.Moderator, c.Tag, c.Thread, c.ThreadKudo, c.Topic,
+		c.User,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -239,6 +247,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.Comment.mutate(ctx, m)
 	case *CommentKudoMutation:
 		return c.CommentKudo.mutate(ctx, m)
+	case *ModeratorMutation:
+		return c.Moderator.mutate(ctx, m)
 	case *TagMutation:
 		return c.Tag.mutate(ctx, m)
 	case *ThreadMutation:
@@ -417,7 +427,7 @@ func (c *CommentClient) QueryCommentKudoes(co *Comment) *CommentKudoQuery {
 		id := co.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(comment.Table, comment.FieldID, id),
-			sqlgraph.To(commentkudo.Table, commentkudo.FieldID),
+			sqlgraph.To(commentkudo.Table, commentkudo.CommentColumn),
 			sqlgraph.Edge(sqlgraph.O2M, true, comment.CommentKudoesTable, comment.CommentKudoesColumn),
 		)
 		fromV = sqlgraph.Neighbors(co.driver.Dialect(), step)
@@ -507,13 +517,9 @@ func (c *CommentKudoClient) Update() *CommentKudoUpdate {
 
 // UpdateOne returns an update builder for the given entity.
 func (c *CommentKudoClient) UpdateOne(ck *CommentKudo) *CommentKudoUpdateOne {
-	mutation := newCommentKudoMutation(c.config, OpUpdateOne, withCommentKudo(ck))
-	return &CommentKudoUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOneID returns an update builder for the given id.
-func (c *CommentKudoClient) UpdateOneID(id int) *CommentKudoUpdateOne {
-	mutation := newCommentKudoMutation(c.config, OpUpdateOne, withCommentKudoID(id))
+	mutation := newCommentKudoMutation(c.config, OpUpdateOne)
+	mutation.user = &ck.UserID
+	mutation.comment = &ck.CommentID
 	return &CommentKudoUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
@@ -521,19 +527,6 @@ func (c *CommentKudoClient) UpdateOneID(id int) *CommentKudoUpdateOne {
 func (c *CommentKudoClient) Delete() *CommentKudoDelete {
 	mutation := newCommentKudoMutation(c.config, OpDelete)
 	return &CommentKudoDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// DeleteOne returns a builder for deleting the given entity.
-func (c *CommentKudoClient) DeleteOne(ck *CommentKudo) *CommentKudoDeleteOne {
-	return c.DeleteOneID(ck.ID)
-}
-
-// DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *CommentKudoClient) DeleteOneID(id int) *CommentKudoDeleteOne {
-	builder := c.Delete().Where(commentkudo.ID(id))
-	builder.mutation.id = &id
-	builder.mutation.op = OpDeleteOne
-	return &CommentKudoDeleteOne{builder}
 }
 
 // Query returns a query builder for CommentKudo.
@@ -545,50 +538,18 @@ func (c *CommentKudoClient) Query() *CommentKudoQuery {
 	}
 }
 
-// Get returns a CommentKudo entity by its id.
-func (c *CommentKudoClient) Get(ctx context.Context, id int) (*CommentKudo, error) {
-	return c.Query().Where(commentkudo.ID(id)).Only(ctx)
-}
-
-// GetX is like Get, but panics if an error occurs.
-func (c *CommentKudoClient) GetX(ctx context.Context, id int) *CommentKudo {
-	obj, err := c.Get(ctx, id)
-	if err != nil {
-		panic(err)
-	}
-	return obj
-}
-
 // QueryUser queries the user edge of a CommentKudo.
 func (c *CommentKudoClient) QueryUser(ck *CommentKudo) *UserQuery {
-	query := (&UserClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := ck.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(commentkudo.Table, commentkudo.FieldID, id),
-			sqlgraph.To(user.Table, user.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, commentkudo.UserTable, commentkudo.UserColumn),
-		)
-		fromV = sqlgraph.Neighbors(ck.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
+	return c.Query().
+		Where(commentkudo.UserID(ck.UserID), commentkudo.CommentID(ck.CommentID)).
+		QueryUser()
 }
 
 // QueryComment queries the comment edge of a CommentKudo.
 func (c *CommentKudoClient) QueryComment(ck *CommentKudo) *CommentQuery {
-	query := (&CommentClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := ck.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(commentkudo.Table, commentkudo.FieldID, id),
-			sqlgraph.To(comment.Table, comment.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, commentkudo.CommentTable, commentkudo.CommentColumn),
-		)
-		fromV = sqlgraph.Neighbors(ck.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
+	return c.Query().
+		Where(commentkudo.UserID(ck.UserID), commentkudo.CommentID(ck.CommentID)).
+		QueryComment()
 }
 
 // Hooks returns the client hooks.
@@ -613,6 +574,122 @@ func (c *CommentKudoClient) mutate(ctx context.Context, m *CommentKudoMutation) 
 		return (&CommentKudoDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown CommentKudo mutation op: %q", m.Op())
+	}
+}
+
+// ModeratorClient is a client for the Moderator schema.
+type ModeratorClient struct {
+	config
+}
+
+// NewModeratorClient returns a client for the Moderator from the given config.
+func NewModeratorClient(c config) *ModeratorClient {
+	return &ModeratorClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `moderator.Hooks(f(g(h())))`.
+func (c *ModeratorClient) Use(hooks ...Hook) {
+	c.hooks.Moderator = append(c.hooks.Moderator, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `moderator.Intercept(f(g(h())))`.
+func (c *ModeratorClient) Intercept(interceptors ...Interceptor) {
+	c.inters.Moderator = append(c.inters.Moderator, interceptors...)
+}
+
+// Create returns a builder for creating a Moderator entity.
+func (c *ModeratorClient) Create() *ModeratorCreate {
+	mutation := newModeratorMutation(c.config, OpCreate)
+	return &ModeratorCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of Moderator entities.
+func (c *ModeratorClient) CreateBulk(builders ...*ModeratorCreate) *ModeratorCreateBulk {
+	return &ModeratorCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *ModeratorClient) MapCreateBulk(slice any, setFunc func(*ModeratorCreate, int)) *ModeratorCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &ModeratorCreateBulk{err: fmt.Errorf("calling to ModeratorClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*ModeratorCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &ModeratorCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for Moderator.
+func (c *ModeratorClient) Update() *ModeratorUpdate {
+	mutation := newModeratorMutation(c.config, OpUpdate)
+	return &ModeratorUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *ModeratorClient) UpdateOne(m *Moderator) *ModeratorUpdateOne {
+	mutation := newModeratorMutation(c.config, OpUpdateOne)
+	mutation.moderator = &m.ModeratorID
+	mutation.topic = &m.TopicID
+	return &ModeratorUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for Moderator.
+func (c *ModeratorClient) Delete() *ModeratorDelete {
+	mutation := newModeratorMutation(c.config, OpDelete)
+	return &ModeratorDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Query returns a query builder for Moderator.
+func (c *ModeratorClient) Query() *ModeratorQuery {
+	return &ModeratorQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeModerator},
+		inters: c.Interceptors(),
+	}
+}
+
+// QueryModerator queries the moderator edge of a Moderator.
+func (c *ModeratorClient) QueryModerator(m *Moderator) *UserQuery {
+	return c.Query().
+		Where(moderator.ModeratorID(m.ModeratorID), moderator.TopicID(m.TopicID)).
+		QueryModerator()
+}
+
+// QueryTopic queries the topic edge of a Moderator.
+func (c *ModeratorClient) QueryTopic(m *Moderator) *TopicQuery {
+	return c.Query().
+		Where(moderator.ModeratorID(m.ModeratorID), moderator.TopicID(m.TopicID)).
+		QueryTopic()
+}
+
+// Hooks returns the client hooks.
+func (c *ModeratorClient) Hooks() []Hook {
+	return c.hooks.Moderator
+}
+
+// Interceptors returns the client interceptors.
+func (c *ModeratorClient) Interceptors() []Interceptor {
+	return c.inters.Moderator
+}
+
+func (c *ModeratorClient) mutate(ctx context.Context, m *ModeratorMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&ModeratorCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&ModeratorUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&ModeratorUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&ModeratorDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown Moderator mutation op: %q", m.Op())
 	}
 }
 
@@ -960,7 +1037,7 @@ func (c *ThreadClient) QueryThreadKudoes(t *Thread) *ThreadKudoQuery {
 		id := t.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(thread.Table, thread.FieldID, id),
-			sqlgraph.To(threadkudo.Table, threadkudo.FieldID),
+			sqlgraph.To(threadkudo.Table, threadkudo.ThreadColumn),
 			sqlgraph.Edge(sqlgraph.O2M, true, thread.ThreadKudoesTable, thread.ThreadKudoesColumn),
 		)
 		fromV = sqlgraph.Neighbors(t.driver.Dialect(), step)
@@ -1050,13 +1127,9 @@ func (c *ThreadKudoClient) Update() *ThreadKudoUpdate {
 
 // UpdateOne returns an update builder for the given entity.
 func (c *ThreadKudoClient) UpdateOne(tk *ThreadKudo) *ThreadKudoUpdateOne {
-	mutation := newThreadKudoMutation(c.config, OpUpdateOne, withThreadKudo(tk))
-	return &ThreadKudoUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOneID returns an update builder for the given id.
-func (c *ThreadKudoClient) UpdateOneID(id int) *ThreadKudoUpdateOne {
-	mutation := newThreadKudoMutation(c.config, OpUpdateOne, withThreadKudoID(id))
+	mutation := newThreadKudoMutation(c.config, OpUpdateOne)
+	mutation.user = &tk.UserID
+	mutation.thread = &tk.ThreadID
 	return &ThreadKudoUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
@@ -1064,19 +1137,6 @@ func (c *ThreadKudoClient) UpdateOneID(id int) *ThreadKudoUpdateOne {
 func (c *ThreadKudoClient) Delete() *ThreadKudoDelete {
 	mutation := newThreadKudoMutation(c.config, OpDelete)
 	return &ThreadKudoDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// DeleteOne returns a builder for deleting the given entity.
-func (c *ThreadKudoClient) DeleteOne(tk *ThreadKudo) *ThreadKudoDeleteOne {
-	return c.DeleteOneID(tk.ID)
-}
-
-// DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *ThreadKudoClient) DeleteOneID(id int) *ThreadKudoDeleteOne {
-	builder := c.Delete().Where(threadkudo.ID(id))
-	builder.mutation.id = &id
-	builder.mutation.op = OpDeleteOne
-	return &ThreadKudoDeleteOne{builder}
 }
 
 // Query returns a query builder for ThreadKudo.
@@ -1088,50 +1148,18 @@ func (c *ThreadKudoClient) Query() *ThreadKudoQuery {
 	}
 }
 
-// Get returns a ThreadKudo entity by its id.
-func (c *ThreadKudoClient) Get(ctx context.Context, id int) (*ThreadKudo, error) {
-	return c.Query().Where(threadkudo.ID(id)).Only(ctx)
-}
-
-// GetX is like Get, but panics if an error occurs.
-func (c *ThreadKudoClient) GetX(ctx context.Context, id int) *ThreadKudo {
-	obj, err := c.Get(ctx, id)
-	if err != nil {
-		panic(err)
-	}
-	return obj
-}
-
 // QueryUser queries the user edge of a ThreadKudo.
 func (c *ThreadKudoClient) QueryUser(tk *ThreadKudo) *UserQuery {
-	query := (&UserClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := tk.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(threadkudo.Table, threadkudo.FieldID, id),
-			sqlgraph.To(user.Table, user.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, threadkudo.UserTable, threadkudo.UserColumn),
-		)
-		fromV = sqlgraph.Neighbors(tk.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
+	return c.Query().
+		Where(threadkudo.UserID(tk.UserID), threadkudo.ThreadID(tk.ThreadID)).
+		QueryUser()
 }
 
 // QueryThread queries the thread edge of a ThreadKudo.
 func (c *ThreadKudoClient) QueryThread(tk *ThreadKudo) *ThreadQuery {
-	query := (&ThreadClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := tk.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(threadkudo.Table, threadkudo.FieldID, id),
-			sqlgraph.To(thread.Table, thread.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, threadkudo.ThreadTable, threadkudo.ThreadColumn),
-		)
-		fromV = sqlgraph.Neighbors(tk.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
+	return c.Query().
+		Where(threadkudo.UserID(tk.UserID), threadkudo.ThreadID(tk.ThreadID)).
+		QueryThread()
 }
 
 // Hooks returns the client hooks.
@@ -1276,6 +1304,38 @@ func (c *TopicClient) QueryTopicThreads(t *Topic) *ThreadQuery {
 			sqlgraph.From(topic.Table, topic.FieldID, id),
 			sqlgraph.To(thread.Table, thread.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, topic.TopicThreadsTable, topic.TopicThreadsColumn),
+		)
+		fromV = sqlgraph.Neighbors(t.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryTopicModerators queries the topic_moderators edge of a Topic.
+func (c *TopicClient) QueryTopicModerators(t *Topic) *UserQuery {
+	query := (&UserClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := t.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(topic.Table, topic.FieldID, id),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, topic.TopicModeratorsTable, topic.TopicModeratorsPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(t.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryModerators queries the moderators edge of a Topic.
+func (c *TopicClient) QueryModerators(t *Topic) *ModeratorQuery {
+	query := (&ModeratorClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := t.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(topic.Table, topic.FieldID, id),
+			sqlgraph.To(moderator.Table, moderator.TopicColumn),
+			sqlgraph.Edge(sqlgraph.O2M, true, topic.ModeratorsTable, topic.ModeratorsColumn),
 		)
 		fromV = sqlgraph.Neighbors(t.driver.Dialect(), step)
 		return fromV, nil
@@ -1480,6 +1540,22 @@ func (c *UserClient) QueryKudoedComments(u *User) *CommentQuery {
 	return query
 }
 
+// QueryModeratedTopics queries the moderated_topics edge of a User.
+func (c *UserClient) QueryModeratedTopics(u *User) *TopicQuery {
+	query := (&TopicClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := u.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, id),
+			sqlgraph.To(topic.Table, topic.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, user.ModeratedTopicsTable, user.ModeratedTopicsPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(u.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // QueryThreadKudoes queries the thread_kudoes edge of a User.
 func (c *UserClient) QueryThreadKudoes(u *User) *ThreadKudoQuery {
 	query := (&ThreadKudoClient{config: c.config}).Query()
@@ -1487,7 +1563,7 @@ func (c *UserClient) QueryThreadKudoes(u *User) *ThreadKudoQuery {
 		id := u.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(user.Table, user.FieldID, id),
-			sqlgraph.To(threadkudo.Table, threadkudo.FieldID),
+			sqlgraph.To(threadkudo.Table, threadkudo.UserColumn),
 			sqlgraph.Edge(sqlgraph.O2M, true, user.ThreadKudoesTable, user.ThreadKudoesColumn),
 		)
 		fromV = sqlgraph.Neighbors(u.driver.Dialect(), step)
@@ -1503,8 +1579,24 @@ func (c *UserClient) QueryCommentKudoes(u *User) *CommentKudoQuery {
 		id := u.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(user.Table, user.FieldID, id),
-			sqlgraph.To(commentkudo.Table, commentkudo.FieldID),
+			sqlgraph.To(commentkudo.Table, commentkudo.UserColumn),
 			sqlgraph.Edge(sqlgraph.O2M, true, user.CommentKudoesTable, user.CommentKudoesColumn),
+		)
+		fromV = sqlgraph.Neighbors(u.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryModerators queries the moderators edge of a User.
+func (c *UserClient) QueryModerators(u *User) *ModeratorQuery {
+	query := (&ModeratorClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := u.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, id),
+			sqlgraph.To(moderator.Table, moderator.ModeratorColumn),
+			sqlgraph.Edge(sqlgraph.O2M, true, user.ModeratorsTable, user.ModeratorsColumn),
 		)
 		fromV = sqlgraph.Neighbors(u.driver.Dialect(), step)
 		return fromV, nil
@@ -1540,9 +1632,10 @@ func (c *UserClient) mutate(ctx context.Context, m *UserMutation) (Value, error)
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		Comment, CommentKudo, Tag, Thread, ThreadKudo, Topic, User []ent.Hook
+		Comment, CommentKudo, Moderator, Tag, Thread, ThreadKudo, Topic, User []ent.Hook
 	}
 	inters struct {
-		Comment, CommentKudo, Tag, Thread, ThreadKudo, Topic, User []ent.Interceptor
+		Comment, CommentKudo, Moderator, Tag, Thread, ThreadKudo, Topic,
+		User []ent.Interceptor
 	}
 )

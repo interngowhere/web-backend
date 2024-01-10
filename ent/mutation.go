@@ -14,6 +14,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/interngowhere/web-backend/ent/comment"
 	"github.com/interngowhere/web-backend/ent/commentkudo"
+	"github.com/interngowhere/web-backend/ent/moderator"
 	"github.com/interngowhere/web-backend/ent/predicate"
 	"github.com/interngowhere/web-backend/ent/tag"
 	"github.com/interngowhere/web-backend/ent/thread"
@@ -33,6 +34,7 @@ const (
 	// Node types.
 	TypeComment     = "Comment"
 	TypeCommentKudo = "CommentKudo"
+	TypeModerator   = "Moderator"
 	TypeTag         = "Tag"
 	TypeThread      = "Thread"
 	TypeThreadKudo  = "ThreadKudo"
@@ -58,9 +60,6 @@ type CommentMutation struct {
 	kudoed_users           map[uuid.UUID]struct{}
 	removedkudoed_users    map[uuid.UUID]struct{}
 	clearedkudoed_users    bool
-	comment_kudoes         map[int]struct{}
-	removedcomment_kudoes  map[int]struct{}
-	clearedcomment_kudoes  bool
 	done                   bool
 	oldValue               func(context.Context) (*Comment, error)
 	predicates             []predicate.Comment
@@ -490,60 +489,6 @@ func (m *CommentMutation) ResetKudoedUsers() {
 	m.removedkudoed_users = nil
 }
 
-// AddCommentKudoIDs adds the "comment_kudoes" edge to the CommentKudo entity by ids.
-func (m *CommentMutation) AddCommentKudoIDs(ids ...int) {
-	if m.comment_kudoes == nil {
-		m.comment_kudoes = make(map[int]struct{})
-	}
-	for i := range ids {
-		m.comment_kudoes[ids[i]] = struct{}{}
-	}
-}
-
-// ClearCommentKudoes clears the "comment_kudoes" edge to the CommentKudo entity.
-func (m *CommentMutation) ClearCommentKudoes() {
-	m.clearedcomment_kudoes = true
-}
-
-// CommentKudoesCleared reports if the "comment_kudoes" edge to the CommentKudo entity was cleared.
-func (m *CommentMutation) CommentKudoesCleared() bool {
-	return m.clearedcomment_kudoes
-}
-
-// RemoveCommentKudoIDs removes the "comment_kudoes" edge to the CommentKudo entity by IDs.
-func (m *CommentMutation) RemoveCommentKudoIDs(ids ...int) {
-	if m.removedcomment_kudoes == nil {
-		m.removedcomment_kudoes = make(map[int]struct{})
-	}
-	for i := range ids {
-		delete(m.comment_kudoes, ids[i])
-		m.removedcomment_kudoes[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedCommentKudoes returns the removed IDs of the "comment_kudoes" edge to the CommentKudo entity.
-func (m *CommentMutation) RemovedCommentKudoesIDs() (ids []int) {
-	for id := range m.removedcomment_kudoes {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// CommentKudoesIDs returns the "comment_kudoes" edge IDs in the mutation.
-func (m *CommentMutation) CommentKudoesIDs() (ids []int) {
-	for id := range m.comment_kudoes {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetCommentKudoes resets all changes to the "comment_kudoes" edge.
-func (m *CommentMutation) ResetCommentKudoes() {
-	m.comment_kudoes = nil
-	m.clearedcomment_kudoes = false
-	m.removedcomment_kudoes = nil
-}
-
 // Where appends a list predicates to the CommentMutation builder.
 func (m *CommentMutation) Where(ps ...predicate.Comment) {
 	m.predicates = append(m.predicates, ps...)
@@ -754,7 +699,7 @@ func (m *CommentMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *CommentMutation) AddedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 3)
 	if m.threads != nil {
 		edges = append(edges, comment.EdgeThreads)
 	}
@@ -763,9 +708,6 @@ func (m *CommentMutation) AddedEdges() []string {
 	}
 	if m.kudoed_users != nil {
 		edges = append(edges, comment.EdgeKudoedUsers)
-	}
-	if m.comment_kudoes != nil {
-		edges = append(edges, comment.EdgeCommentKudoes)
 	}
 	return edges
 }
@@ -788,24 +730,15 @@ func (m *CommentMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
-	case comment.EdgeCommentKudoes:
-		ids := make([]ent.Value, 0, len(m.comment_kudoes))
-		for id := range m.comment_kudoes {
-			ids = append(ids, id)
-		}
-		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *CommentMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 3)
 	if m.removedkudoed_users != nil {
 		edges = append(edges, comment.EdgeKudoedUsers)
-	}
-	if m.removedcomment_kudoes != nil {
-		edges = append(edges, comment.EdgeCommentKudoes)
 	}
 	return edges
 }
@@ -820,19 +753,13 @@ func (m *CommentMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
-	case comment.EdgeCommentKudoes:
-		ids := make([]ent.Value, 0, len(m.removedcomment_kudoes))
-		for id := range m.removedcomment_kudoes {
-			ids = append(ids, id)
-		}
-		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *CommentMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 3)
 	if m.clearedthreads {
 		edges = append(edges, comment.EdgeThreads)
 	}
@@ -841,9 +768,6 @@ func (m *CommentMutation) ClearedEdges() []string {
 	}
 	if m.clearedkudoed_users {
 		edges = append(edges, comment.EdgeKudoedUsers)
-	}
-	if m.clearedcomment_kudoes {
-		edges = append(edges, comment.EdgeCommentKudoes)
 	}
 	return edges
 }
@@ -858,8 +782,6 @@ func (m *CommentMutation) EdgeCleared(name string) bool {
 		return m.clearedcomment_authors
 	case comment.EdgeKudoedUsers:
 		return m.clearedkudoed_users
-	case comment.EdgeCommentKudoes:
-		return m.clearedcomment_kudoes
 	}
 	return false
 }
@@ -891,9 +813,6 @@ func (m *CommentMutation) ResetEdge(name string) error {
 	case comment.EdgeKudoedUsers:
 		m.ResetKudoedUsers()
 		return nil
-	case comment.EdgeCommentKudoes:
-		m.ResetCommentKudoes()
-		return nil
 	}
 	return fmt.Errorf("unknown Comment edge %s", name)
 }
@@ -903,7 +822,6 @@ type CommentKudoMutation struct {
 	config
 	op             Op
 	typ            string
-	id             *int
 	clearedFields  map[string]struct{}
 	user           *uuid.UUID
 	cleareduser    bool
@@ -933,38 +851,6 @@ func newCommentKudoMutation(c config, op Op, opts ...commentkudoOption) *Comment
 	return m
 }
 
-// withCommentKudoID sets the ID field of the mutation.
-func withCommentKudoID(id int) commentkudoOption {
-	return func(m *CommentKudoMutation) {
-		var (
-			err   error
-			once  sync.Once
-			value *CommentKudo
-		)
-		m.oldValue = func(ctx context.Context) (*CommentKudo, error) {
-			once.Do(func() {
-				if m.done {
-					err = errors.New("querying old values post mutation is not allowed")
-				} else {
-					value, err = m.Client().CommentKudo.Get(ctx, id)
-				}
-			})
-			return value, err
-		}
-		m.id = &id
-	}
-}
-
-// withCommentKudo sets the old CommentKudo of the mutation.
-func withCommentKudo(node *CommentKudo) commentkudoOption {
-	return func(m *CommentKudoMutation) {
-		m.oldValue = func(context.Context) (*CommentKudo, error) {
-			return node, nil
-		}
-		m.id = &node.ID
-	}
-}
-
 // Client returns a new `ent.Client` from the mutation. If the mutation was
 // executed in a transaction (ent.Tx), a transactional client is returned.
 func (m CommentKudoMutation) Client() *Client {
@@ -984,34 +870,6 @@ func (m CommentKudoMutation) Tx() (*Tx, error) {
 	return tx, nil
 }
 
-// ID returns the ID value in the mutation. Note that the ID is only available
-// if it was provided to the builder or after it was returned from the database.
-func (m *CommentKudoMutation) ID() (id int, exists bool) {
-	if m.id == nil {
-		return
-	}
-	return *m.id, true
-}
-
-// IDs queries the database and returns the entity ids that match the mutation's predicate.
-// That means, if the mutation is applied within a transaction with an isolation level such
-// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
-// or updated by the mutation.
-func (m *CommentKudoMutation) IDs(ctx context.Context) ([]int, error) {
-	switch {
-	case m.op.Is(OpUpdateOne | OpDeleteOne):
-		id, exists := m.ID()
-		if exists {
-			return []int{id}, nil
-		}
-		fallthrough
-	case m.op.Is(OpUpdate | OpDelete):
-		return m.Client().CommentKudo.Query().Where(m.predicates...).IDs(ctx)
-	default:
-		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
-	}
-}
-
 // SetUserID sets the "user_id" field.
 func (m *CommentKudoMutation) SetUserID(u uuid.UUID) {
 	m.user = &u
@@ -1024,23 +882,6 @@ func (m *CommentKudoMutation) UserID() (r uuid.UUID, exists bool) {
 		return
 	}
 	return *v, true
-}
-
-// OldUserID returns the old "user_id" field's value of the CommentKudo entity.
-// If the CommentKudo object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *CommentKudoMutation) OldUserID(ctx context.Context) (v uuid.UUID, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldUserID is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldUserID requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldUserID: %w", err)
-	}
-	return oldValue.UserID, nil
 }
 
 // ResetUserID resets all changes to the "user_id" field.
@@ -1060,23 +901,6 @@ func (m *CommentKudoMutation) CommentID() (r int, exists bool) {
 		return
 	}
 	return *v, true
-}
-
-// OldCommentID returns the old "comment_id" field's value of the CommentKudo entity.
-// If the CommentKudo object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *CommentKudoMutation) OldCommentID(ctx context.Context) (v int, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldCommentID is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldCommentID requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldCommentID: %w", err)
-	}
-	return oldValue.CommentID, nil
 }
 
 // ResetCommentID resets all changes to the "comment_id" field.
@@ -1199,13 +1023,7 @@ func (m *CommentKudoMutation) Field(name string) (ent.Value, bool) {
 // returned if the mutation operation is not UpdateOne, or the query to the
 // database failed.
 func (m *CommentKudoMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
-	switch name {
-	case commentkudo.FieldUserID:
-		return m.OldUserID(ctx)
-	case commentkudo.FieldCommentID:
-		return m.OldCommentID(ctx)
-	}
-	return nil, fmt.Errorf("unknown CommentKudo field %s", name)
+	return nil, errors.New("edge schema CommentKudo does not support getting old values")
 }
 
 // SetField sets the value of a field with the given name. It returns an error if
@@ -1379,6 +1197,388 @@ func (m *CommentKudoMutation) ResetEdge(name string) error {
 		return nil
 	}
 	return fmt.Errorf("unknown CommentKudo edge %s", name)
+}
+
+// ModeratorMutation represents an operation that mutates the Moderator nodes in the graph.
+type ModeratorMutation struct {
+	config
+	op               Op
+	typ              string
+	clearedFields    map[string]struct{}
+	moderator        *uuid.UUID
+	clearedmoderator bool
+	topic            *int
+	clearedtopic     bool
+	done             bool
+	oldValue         func(context.Context) (*Moderator, error)
+	predicates       []predicate.Moderator
+}
+
+var _ ent.Mutation = (*ModeratorMutation)(nil)
+
+// moderatorOption allows management of the mutation configuration using functional options.
+type moderatorOption func(*ModeratorMutation)
+
+// newModeratorMutation creates new mutation for the Moderator entity.
+func newModeratorMutation(c config, op Op, opts ...moderatorOption) *ModeratorMutation {
+	m := &ModeratorMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeModerator,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m ModeratorMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m ModeratorMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetModeratorID sets the "moderator_id" field.
+func (m *ModeratorMutation) SetModeratorID(u uuid.UUID) {
+	m.moderator = &u
+}
+
+// ModeratorID returns the value of the "moderator_id" field in the mutation.
+func (m *ModeratorMutation) ModeratorID() (r uuid.UUID, exists bool) {
+	v := m.moderator
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetModeratorID resets all changes to the "moderator_id" field.
+func (m *ModeratorMutation) ResetModeratorID() {
+	m.moderator = nil
+}
+
+// SetTopicID sets the "topic_id" field.
+func (m *ModeratorMutation) SetTopicID(i int) {
+	m.topic = &i
+}
+
+// TopicID returns the value of the "topic_id" field in the mutation.
+func (m *ModeratorMutation) TopicID() (r int, exists bool) {
+	v := m.topic
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetTopicID resets all changes to the "topic_id" field.
+func (m *ModeratorMutation) ResetTopicID() {
+	m.topic = nil
+}
+
+// ClearModerator clears the "moderator" edge to the User entity.
+func (m *ModeratorMutation) ClearModerator() {
+	m.clearedmoderator = true
+	m.clearedFields[moderator.FieldModeratorID] = struct{}{}
+}
+
+// ModeratorCleared reports if the "moderator" edge to the User entity was cleared.
+func (m *ModeratorMutation) ModeratorCleared() bool {
+	return m.clearedmoderator
+}
+
+// ModeratorIDs returns the "moderator" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// ModeratorID instead. It exists only for internal usage by the builders.
+func (m *ModeratorMutation) ModeratorIDs() (ids []uuid.UUID) {
+	if id := m.moderator; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetModerator resets all changes to the "moderator" edge.
+func (m *ModeratorMutation) ResetModerator() {
+	m.moderator = nil
+	m.clearedmoderator = false
+}
+
+// ClearTopic clears the "topic" edge to the Topic entity.
+func (m *ModeratorMutation) ClearTopic() {
+	m.clearedtopic = true
+	m.clearedFields[moderator.FieldTopicID] = struct{}{}
+}
+
+// TopicCleared reports if the "topic" edge to the Topic entity was cleared.
+func (m *ModeratorMutation) TopicCleared() bool {
+	return m.clearedtopic
+}
+
+// TopicIDs returns the "topic" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// TopicID instead. It exists only for internal usage by the builders.
+func (m *ModeratorMutation) TopicIDs() (ids []int) {
+	if id := m.topic; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetTopic resets all changes to the "topic" edge.
+func (m *ModeratorMutation) ResetTopic() {
+	m.topic = nil
+	m.clearedtopic = false
+}
+
+// Where appends a list predicates to the ModeratorMutation builder.
+func (m *ModeratorMutation) Where(ps ...predicate.Moderator) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the ModeratorMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *ModeratorMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.Moderator, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *ModeratorMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *ModeratorMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (Moderator).
+func (m *ModeratorMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *ModeratorMutation) Fields() []string {
+	fields := make([]string, 0, 2)
+	if m.moderator != nil {
+		fields = append(fields, moderator.FieldModeratorID)
+	}
+	if m.topic != nil {
+		fields = append(fields, moderator.FieldTopicID)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *ModeratorMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case moderator.FieldModeratorID:
+		return m.ModeratorID()
+	case moderator.FieldTopicID:
+		return m.TopicID()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *ModeratorMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	return nil, errors.New("edge schema Moderator does not support getting old values")
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *ModeratorMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case moderator.FieldModeratorID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetModeratorID(v)
+		return nil
+	case moderator.FieldTopicID:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTopicID(v)
+		return nil
+	}
+	return fmt.Errorf("unknown Moderator field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *ModeratorMutation) AddedFields() []string {
+	var fields []string
+	return fields
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *ModeratorMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	}
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *ModeratorMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown Moderator numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *ModeratorMutation) ClearedFields() []string {
+	return nil
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *ModeratorMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *ModeratorMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown Moderator nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *ModeratorMutation) ResetField(name string) error {
+	switch name {
+	case moderator.FieldModeratorID:
+		m.ResetModeratorID()
+		return nil
+	case moderator.FieldTopicID:
+		m.ResetTopicID()
+		return nil
+	}
+	return fmt.Errorf("unknown Moderator field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *ModeratorMutation) AddedEdges() []string {
+	edges := make([]string, 0, 2)
+	if m.moderator != nil {
+		edges = append(edges, moderator.EdgeModerator)
+	}
+	if m.topic != nil {
+		edges = append(edges, moderator.EdgeTopic)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *ModeratorMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case moderator.EdgeModerator:
+		if id := m.moderator; id != nil {
+			return []ent.Value{*id}
+		}
+	case moderator.EdgeTopic:
+		if id := m.topic; id != nil {
+			return []ent.Value{*id}
+		}
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *ModeratorMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 2)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *ModeratorMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *ModeratorMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 2)
+	if m.clearedmoderator {
+		edges = append(edges, moderator.EdgeModerator)
+	}
+	if m.clearedtopic {
+		edges = append(edges, moderator.EdgeTopic)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *ModeratorMutation) EdgeCleared(name string) bool {
+	switch name {
+	case moderator.EdgeModerator:
+		return m.clearedmoderator
+	case moderator.EdgeTopic:
+		return m.clearedtopic
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *ModeratorMutation) ClearEdge(name string) error {
+	switch name {
+	case moderator.EdgeModerator:
+		m.ClearModerator()
+		return nil
+	case moderator.EdgeTopic:
+		m.ClearTopic()
+		return nil
+	}
+	return fmt.Errorf("unknown Moderator unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *ModeratorMutation) ResetEdge(name string) error {
+	switch name {
+	case moderator.EdgeModerator:
+		m.ResetModerator()
+		return nil
+	case moderator.EdgeTopic:
+		m.ResetTopic()
+		return nil
+	}
+	return fmt.Errorf("unknown Moderator edge %s", name)
 }
 
 // TagMutation represents an operation that mutates the Tag nodes in the graph.
@@ -1878,9 +2078,6 @@ type ThreadMutation struct {
 	kudoed_users           map[uuid.UUID]struct{}
 	removedkudoed_users    map[uuid.UUID]struct{}
 	clearedkudoed_users    bool
-	thread_kudoes          map[int]struct{}
-	removedthread_kudoes   map[int]struct{}
-	clearedthread_kudoes   bool
 	done                   bool
 	oldValue               func(context.Context) (*Thread, error)
 	predicates             []predicate.Thread
@@ -2431,60 +2628,6 @@ func (m *ThreadMutation) ResetKudoedUsers() {
 	m.removedkudoed_users = nil
 }
 
-// AddThreadKudoIDs adds the "thread_kudoes" edge to the ThreadKudo entity by ids.
-func (m *ThreadMutation) AddThreadKudoIDs(ids ...int) {
-	if m.thread_kudoes == nil {
-		m.thread_kudoes = make(map[int]struct{})
-	}
-	for i := range ids {
-		m.thread_kudoes[ids[i]] = struct{}{}
-	}
-}
-
-// ClearThreadKudoes clears the "thread_kudoes" edge to the ThreadKudo entity.
-func (m *ThreadMutation) ClearThreadKudoes() {
-	m.clearedthread_kudoes = true
-}
-
-// ThreadKudoesCleared reports if the "thread_kudoes" edge to the ThreadKudo entity was cleared.
-func (m *ThreadMutation) ThreadKudoesCleared() bool {
-	return m.clearedthread_kudoes
-}
-
-// RemoveThreadKudoIDs removes the "thread_kudoes" edge to the ThreadKudo entity by IDs.
-func (m *ThreadMutation) RemoveThreadKudoIDs(ids ...int) {
-	if m.removedthread_kudoes == nil {
-		m.removedthread_kudoes = make(map[int]struct{})
-	}
-	for i := range ids {
-		delete(m.thread_kudoes, ids[i])
-		m.removedthread_kudoes[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedThreadKudoes returns the removed IDs of the "thread_kudoes" edge to the ThreadKudo entity.
-func (m *ThreadMutation) RemovedThreadKudoesIDs() (ids []int) {
-	for id := range m.removedthread_kudoes {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ThreadKudoesIDs returns the "thread_kudoes" edge IDs in the mutation.
-func (m *ThreadMutation) ThreadKudoesIDs() (ids []int) {
-	for id := range m.thread_kudoes {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetThreadKudoes resets all changes to the "thread_kudoes" edge.
-func (m *ThreadMutation) ResetThreadKudoes() {
-	m.thread_kudoes = nil
-	m.clearedthread_kudoes = false
-	m.removedthread_kudoes = nil
-}
-
 // Where appends a list predicates to the ThreadMutation builder.
 func (m *ThreadMutation) Where(ps ...predicate.Thread) {
 	m.predicates = append(m.predicates, ps...)
@@ -2701,7 +2844,7 @@ func (m *ThreadMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *ThreadMutation) AddedEdges() []string {
-	edges := make([]string, 0, 6)
+	edges := make([]string, 0, 5)
 	if m.thread_comments != nil {
 		edges = append(edges, thread.EdgeThreadComments)
 	}
@@ -2716,9 +2859,6 @@ func (m *ThreadMutation) AddedEdges() []string {
 	}
 	if m.kudoed_users != nil {
 		edges = append(edges, thread.EdgeKudoedUsers)
-	}
-	if m.thread_kudoes != nil {
-		edges = append(edges, thread.EdgeThreadKudoes)
 	}
 	return edges
 }
@@ -2753,19 +2893,13 @@ func (m *ThreadMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
-	case thread.EdgeThreadKudoes:
-		ids := make([]ent.Value, 0, len(m.thread_kudoes))
-		for id := range m.thread_kudoes {
-			ids = append(ids, id)
-		}
-		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *ThreadMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 6)
+	edges := make([]string, 0, 5)
 	if m.removedthread_comments != nil {
 		edges = append(edges, thread.EdgeThreadComments)
 	}
@@ -2774,9 +2908,6 @@ func (m *ThreadMutation) RemovedEdges() []string {
 	}
 	if m.removedkudoed_users != nil {
 		edges = append(edges, thread.EdgeKudoedUsers)
-	}
-	if m.removedthread_kudoes != nil {
-		edges = append(edges, thread.EdgeThreadKudoes)
 	}
 	return edges
 }
@@ -2803,19 +2934,13 @@ func (m *ThreadMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
-	case thread.EdgeThreadKudoes:
-		ids := make([]ent.Value, 0, len(m.removedthread_kudoes))
-		for id := range m.removedthread_kudoes {
-			ids = append(ids, id)
-		}
-		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *ThreadMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 6)
+	edges := make([]string, 0, 5)
 	if m.clearedthread_comments {
 		edges = append(edges, thread.EdgeThreadComments)
 	}
@@ -2830,9 +2955,6 @@ func (m *ThreadMutation) ClearedEdges() []string {
 	}
 	if m.clearedkudoed_users {
 		edges = append(edges, thread.EdgeKudoedUsers)
-	}
-	if m.clearedthread_kudoes {
-		edges = append(edges, thread.EdgeThreadKudoes)
 	}
 	return edges
 }
@@ -2851,8 +2973,6 @@ func (m *ThreadMutation) EdgeCleared(name string) bool {
 		return m.clearedusers
 	case thread.EdgeKudoedUsers:
 		return m.clearedkudoed_users
-	case thread.EdgeThreadKudoes:
-		return m.clearedthread_kudoes
 	}
 	return false
 }
@@ -2890,9 +3010,6 @@ func (m *ThreadMutation) ResetEdge(name string) error {
 	case thread.EdgeKudoedUsers:
 		m.ResetKudoedUsers()
 		return nil
-	case thread.EdgeThreadKudoes:
-		m.ResetThreadKudoes()
-		return nil
 	}
 	return fmt.Errorf("unknown Thread edge %s", name)
 }
@@ -2902,7 +3019,6 @@ type ThreadKudoMutation struct {
 	config
 	op            Op
 	typ           string
-	id            *int
 	clearedFields map[string]struct{}
 	user          *uuid.UUID
 	cleareduser   bool
@@ -2932,38 +3048,6 @@ func newThreadKudoMutation(c config, op Op, opts ...threadkudoOption) *ThreadKud
 	return m
 }
 
-// withThreadKudoID sets the ID field of the mutation.
-func withThreadKudoID(id int) threadkudoOption {
-	return func(m *ThreadKudoMutation) {
-		var (
-			err   error
-			once  sync.Once
-			value *ThreadKudo
-		)
-		m.oldValue = func(ctx context.Context) (*ThreadKudo, error) {
-			once.Do(func() {
-				if m.done {
-					err = errors.New("querying old values post mutation is not allowed")
-				} else {
-					value, err = m.Client().ThreadKudo.Get(ctx, id)
-				}
-			})
-			return value, err
-		}
-		m.id = &id
-	}
-}
-
-// withThreadKudo sets the old ThreadKudo of the mutation.
-func withThreadKudo(node *ThreadKudo) threadkudoOption {
-	return func(m *ThreadKudoMutation) {
-		m.oldValue = func(context.Context) (*ThreadKudo, error) {
-			return node, nil
-		}
-		m.id = &node.ID
-	}
-}
-
 // Client returns a new `ent.Client` from the mutation. If the mutation was
 // executed in a transaction (ent.Tx), a transactional client is returned.
 func (m ThreadKudoMutation) Client() *Client {
@@ -2983,34 +3067,6 @@ func (m ThreadKudoMutation) Tx() (*Tx, error) {
 	return tx, nil
 }
 
-// ID returns the ID value in the mutation. Note that the ID is only available
-// if it was provided to the builder or after it was returned from the database.
-func (m *ThreadKudoMutation) ID() (id int, exists bool) {
-	if m.id == nil {
-		return
-	}
-	return *m.id, true
-}
-
-// IDs queries the database and returns the entity ids that match the mutation's predicate.
-// That means, if the mutation is applied within a transaction with an isolation level such
-// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
-// or updated by the mutation.
-func (m *ThreadKudoMutation) IDs(ctx context.Context) ([]int, error) {
-	switch {
-	case m.op.Is(OpUpdateOne | OpDeleteOne):
-		id, exists := m.ID()
-		if exists {
-			return []int{id}, nil
-		}
-		fallthrough
-	case m.op.Is(OpUpdate | OpDelete):
-		return m.Client().ThreadKudo.Query().Where(m.predicates...).IDs(ctx)
-	default:
-		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
-	}
-}
-
 // SetUserID sets the "user_id" field.
 func (m *ThreadKudoMutation) SetUserID(u uuid.UUID) {
 	m.user = &u
@@ -3023,23 +3079,6 @@ func (m *ThreadKudoMutation) UserID() (r uuid.UUID, exists bool) {
 		return
 	}
 	return *v, true
-}
-
-// OldUserID returns the old "user_id" field's value of the ThreadKudo entity.
-// If the ThreadKudo object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ThreadKudoMutation) OldUserID(ctx context.Context) (v uuid.UUID, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldUserID is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldUserID requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldUserID: %w", err)
-	}
-	return oldValue.UserID, nil
 }
 
 // ResetUserID resets all changes to the "user_id" field.
@@ -3059,23 +3098,6 @@ func (m *ThreadKudoMutation) ThreadID() (r int, exists bool) {
 		return
 	}
 	return *v, true
-}
-
-// OldThreadID returns the old "thread_id" field's value of the ThreadKudo entity.
-// If the ThreadKudo object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ThreadKudoMutation) OldThreadID(ctx context.Context) (v int, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldThreadID is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldThreadID requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldThreadID: %w", err)
-	}
-	return oldValue.ThreadID, nil
 }
 
 // ResetThreadID resets all changes to the "thread_id" field.
@@ -3198,13 +3220,7 @@ func (m *ThreadKudoMutation) Field(name string) (ent.Value, bool) {
 // returned if the mutation operation is not UpdateOne, or the query to the
 // database failed.
 func (m *ThreadKudoMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
-	switch name {
-	case threadkudo.FieldUserID:
-		return m.OldUserID(ctx)
-	case threadkudo.FieldThreadID:
-		return m.OldThreadID(ctx)
-	}
-	return nil, fmt.Errorf("unknown ThreadKudo field %s", name)
+	return nil, errors.New("edge schema ThreadKudo does not support getting old values")
 }
 
 // SetField sets the value of a field with the given name. It returns an error if
@@ -3383,23 +3399,24 @@ func (m *ThreadKudoMutation) ResetEdge(name string) error {
 // TopicMutation represents an operation that mutates the Topic nodes in the graph.
 type TopicMutation struct {
 	config
-	op                   Op
-	typ                  string
-	id                   *int
-	title                *string
-	short_title          *string
-	description          *string
-	moderators           *[]string
-	appendmoderators     []string
-	created_by           *string
-	created_at           *time.Time
-	clearedFields        map[string]struct{}
-	topic_threads        map[int]struct{}
-	removedtopic_threads map[int]struct{}
-	clearedtopic_threads bool
-	done                 bool
-	oldValue             func(context.Context) (*Topic, error)
-	predicates           []predicate.Topic
+	op                      Op
+	typ                     string
+	id                      *int
+	title                   *string
+	short_title             *string
+	description             *string
+	profile_pic_url         *string
+	created_at              *time.Time
+	clearedFields           map[string]struct{}
+	topic_threads           map[int]struct{}
+	removedtopic_threads    map[int]struct{}
+	clearedtopic_threads    bool
+	topic_moderators        map[uuid.UUID]struct{}
+	removedtopic_moderators map[uuid.UUID]struct{}
+	clearedtopic_moderators bool
+	done                    bool
+	oldValue                func(context.Context) (*Topic, error)
+	predicates              []predicate.Topic
 }
 
 var _ ent.Mutation = (*TopicMutation)(nil)
@@ -3621,91 +3638,53 @@ func (m *TopicMutation) ResetDescription() {
 	delete(m.clearedFields, topic.FieldDescription)
 }
 
-// SetModerators sets the "moderators" field.
-func (m *TopicMutation) SetModerators(s []string) {
-	m.moderators = &s
-	m.appendmoderators = nil
+// SetProfilePicURL sets the "profile_pic_url" field.
+func (m *TopicMutation) SetProfilePicURL(s string) {
+	m.profile_pic_url = &s
 }
 
-// Moderators returns the value of the "moderators" field in the mutation.
-func (m *TopicMutation) Moderators() (r []string, exists bool) {
-	v := m.moderators
+// ProfilePicURL returns the value of the "profile_pic_url" field in the mutation.
+func (m *TopicMutation) ProfilePicURL() (r string, exists bool) {
+	v := m.profile_pic_url
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldModerators returns the old "moderators" field's value of the Topic entity.
+// OldProfilePicURL returns the old "profile_pic_url" field's value of the Topic entity.
 // If the Topic object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *TopicMutation) OldModerators(ctx context.Context) (v []string, err error) {
+func (m *TopicMutation) OldProfilePicURL(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldModerators is only allowed on UpdateOne operations")
+		return v, errors.New("OldProfilePicURL is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldModerators requires an ID field in the mutation")
+		return v, errors.New("OldProfilePicURL requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldModerators: %w", err)
+		return v, fmt.Errorf("querying old value for OldProfilePicURL: %w", err)
 	}
-	return oldValue.Moderators, nil
+	return oldValue.ProfilePicURL, nil
 }
 
-// AppendModerators adds s to the "moderators" field.
-func (m *TopicMutation) AppendModerators(s []string) {
-	m.appendmoderators = append(m.appendmoderators, s...)
+// ClearProfilePicURL clears the value of the "profile_pic_url" field.
+func (m *TopicMutation) ClearProfilePicURL() {
+	m.profile_pic_url = nil
+	m.clearedFields[topic.FieldProfilePicURL] = struct{}{}
 }
 
-// AppendedModerators returns the list of values that were appended to the "moderators" field in this mutation.
-func (m *TopicMutation) AppendedModerators() ([]string, bool) {
-	if len(m.appendmoderators) == 0 {
-		return nil, false
-	}
-	return m.appendmoderators, true
+// ProfilePicURLCleared returns if the "profile_pic_url" field was cleared in this mutation.
+func (m *TopicMutation) ProfilePicURLCleared() bool {
+	_, ok := m.clearedFields[topic.FieldProfilePicURL]
+	return ok
 }
 
-// ResetModerators resets all changes to the "moderators" field.
-func (m *TopicMutation) ResetModerators() {
-	m.moderators = nil
-	m.appendmoderators = nil
-}
-
-// SetCreatedBy sets the "created_by" field.
-func (m *TopicMutation) SetCreatedBy(s string) {
-	m.created_by = &s
-}
-
-// CreatedBy returns the value of the "created_by" field in the mutation.
-func (m *TopicMutation) CreatedBy() (r string, exists bool) {
-	v := m.created_by
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldCreatedBy returns the old "created_by" field's value of the Topic entity.
-// If the Topic object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *TopicMutation) OldCreatedBy(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldCreatedBy is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldCreatedBy requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldCreatedBy: %w", err)
-	}
-	return oldValue.CreatedBy, nil
-}
-
-// ResetCreatedBy resets all changes to the "created_by" field.
-func (m *TopicMutation) ResetCreatedBy() {
-	m.created_by = nil
+// ResetProfilePicURL resets all changes to the "profile_pic_url" field.
+func (m *TopicMutation) ResetProfilePicURL() {
+	m.profile_pic_url = nil
+	delete(m.clearedFields, topic.FieldProfilePicURL)
 }
 
 // SetCreatedAt sets the "created_at" field.
@@ -3798,6 +3777,60 @@ func (m *TopicMutation) ResetTopicThreads() {
 	m.removedtopic_threads = nil
 }
 
+// AddTopicModeratorIDs adds the "topic_moderators" edge to the User entity by ids.
+func (m *TopicMutation) AddTopicModeratorIDs(ids ...uuid.UUID) {
+	if m.topic_moderators == nil {
+		m.topic_moderators = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.topic_moderators[ids[i]] = struct{}{}
+	}
+}
+
+// ClearTopicModerators clears the "topic_moderators" edge to the User entity.
+func (m *TopicMutation) ClearTopicModerators() {
+	m.clearedtopic_moderators = true
+}
+
+// TopicModeratorsCleared reports if the "topic_moderators" edge to the User entity was cleared.
+func (m *TopicMutation) TopicModeratorsCleared() bool {
+	return m.clearedtopic_moderators
+}
+
+// RemoveTopicModeratorIDs removes the "topic_moderators" edge to the User entity by IDs.
+func (m *TopicMutation) RemoveTopicModeratorIDs(ids ...uuid.UUID) {
+	if m.removedtopic_moderators == nil {
+		m.removedtopic_moderators = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.topic_moderators, ids[i])
+		m.removedtopic_moderators[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedTopicModerators returns the removed IDs of the "topic_moderators" edge to the User entity.
+func (m *TopicMutation) RemovedTopicModeratorsIDs() (ids []uuid.UUID) {
+	for id := range m.removedtopic_moderators {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// TopicModeratorsIDs returns the "topic_moderators" edge IDs in the mutation.
+func (m *TopicMutation) TopicModeratorsIDs() (ids []uuid.UUID) {
+	for id := range m.topic_moderators {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetTopicModerators resets all changes to the "topic_moderators" edge.
+func (m *TopicMutation) ResetTopicModerators() {
+	m.topic_moderators = nil
+	m.clearedtopic_moderators = false
+	m.removedtopic_moderators = nil
+}
+
 // Where appends a list predicates to the TopicMutation builder.
 func (m *TopicMutation) Where(ps ...predicate.Topic) {
 	m.predicates = append(m.predicates, ps...)
@@ -3832,7 +3865,7 @@ func (m *TopicMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *TopicMutation) Fields() []string {
-	fields := make([]string, 0, 6)
+	fields := make([]string, 0, 5)
 	if m.title != nil {
 		fields = append(fields, topic.FieldTitle)
 	}
@@ -3842,11 +3875,8 @@ func (m *TopicMutation) Fields() []string {
 	if m.description != nil {
 		fields = append(fields, topic.FieldDescription)
 	}
-	if m.moderators != nil {
-		fields = append(fields, topic.FieldModerators)
-	}
-	if m.created_by != nil {
-		fields = append(fields, topic.FieldCreatedBy)
+	if m.profile_pic_url != nil {
+		fields = append(fields, topic.FieldProfilePicURL)
 	}
 	if m.created_at != nil {
 		fields = append(fields, topic.FieldCreatedAt)
@@ -3865,10 +3895,8 @@ func (m *TopicMutation) Field(name string) (ent.Value, bool) {
 		return m.ShortTitle()
 	case topic.FieldDescription:
 		return m.Description()
-	case topic.FieldModerators:
-		return m.Moderators()
-	case topic.FieldCreatedBy:
-		return m.CreatedBy()
+	case topic.FieldProfilePicURL:
+		return m.ProfilePicURL()
 	case topic.FieldCreatedAt:
 		return m.CreatedAt()
 	}
@@ -3886,10 +3914,8 @@ func (m *TopicMutation) OldField(ctx context.Context, name string) (ent.Value, e
 		return m.OldShortTitle(ctx)
 	case topic.FieldDescription:
 		return m.OldDescription(ctx)
-	case topic.FieldModerators:
-		return m.OldModerators(ctx)
-	case topic.FieldCreatedBy:
-		return m.OldCreatedBy(ctx)
+	case topic.FieldProfilePicURL:
+		return m.OldProfilePicURL(ctx)
 	case topic.FieldCreatedAt:
 		return m.OldCreatedAt(ctx)
 	}
@@ -3922,19 +3948,12 @@ func (m *TopicMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetDescription(v)
 		return nil
-	case topic.FieldModerators:
-		v, ok := value.([]string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetModerators(v)
-		return nil
-	case topic.FieldCreatedBy:
+	case topic.FieldProfilePicURL:
 		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetCreatedBy(v)
+		m.SetProfilePicURL(v)
 		return nil
 	case topic.FieldCreatedAt:
 		v, ok := value.(time.Time)
@@ -3976,6 +3995,9 @@ func (m *TopicMutation) ClearedFields() []string {
 	if m.FieldCleared(topic.FieldDescription) {
 		fields = append(fields, topic.FieldDescription)
 	}
+	if m.FieldCleared(topic.FieldProfilePicURL) {
+		fields = append(fields, topic.FieldProfilePicURL)
+	}
 	return fields
 }
 
@@ -3992,6 +4014,9 @@ func (m *TopicMutation) ClearField(name string) error {
 	switch name {
 	case topic.FieldDescription:
 		m.ClearDescription()
+		return nil
+	case topic.FieldProfilePicURL:
+		m.ClearProfilePicURL()
 		return nil
 	}
 	return fmt.Errorf("unknown Topic nullable field %s", name)
@@ -4010,11 +4035,8 @@ func (m *TopicMutation) ResetField(name string) error {
 	case topic.FieldDescription:
 		m.ResetDescription()
 		return nil
-	case topic.FieldModerators:
-		m.ResetModerators()
-		return nil
-	case topic.FieldCreatedBy:
-		m.ResetCreatedBy()
+	case topic.FieldProfilePicURL:
+		m.ResetProfilePicURL()
 		return nil
 	case topic.FieldCreatedAt:
 		m.ResetCreatedAt()
@@ -4025,9 +4047,12 @@ func (m *TopicMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *TopicMutation) AddedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 2)
 	if m.topic_threads != nil {
 		edges = append(edges, topic.EdgeTopicThreads)
+	}
+	if m.topic_moderators != nil {
+		edges = append(edges, topic.EdgeTopicModerators)
 	}
 	return edges
 }
@@ -4042,15 +4067,24 @@ func (m *TopicMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case topic.EdgeTopicModerators:
+		ids := make([]ent.Value, 0, len(m.topic_moderators))
+		for id := range m.topic_moderators {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *TopicMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 2)
 	if m.removedtopic_threads != nil {
 		edges = append(edges, topic.EdgeTopicThreads)
+	}
+	if m.removedtopic_moderators != nil {
+		edges = append(edges, topic.EdgeTopicModerators)
 	}
 	return edges
 }
@@ -4065,15 +4099,24 @@ func (m *TopicMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case topic.EdgeTopicModerators:
+		ids := make([]ent.Value, 0, len(m.removedtopic_moderators))
+		for id := range m.removedtopic_moderators {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *TopicMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 2)
 	if m.clearedtopic_threads {
 		edges = append(edges, topic.EdgeTopicThreads)
+	}
+	if m.clearedtopic_moderators {
+		edges = append(edges, topic.EdgeTopicModerators)
 	}
 	return edges
 }
@@ -4084,6 +4127,8 @@ func (m *TopicMutation) EdgeCleared(name string) bool {
 	switch name {
 	case topic.EdgeTopicThreads:
 		return m.clearedtopic_threads
+	case topic.EdgeTopicModerators:
+		return m.clearedtopic_moderators
 	}
 	return false
 }
@@ -4103,6 +4148,9 @@ func (m *TopicMutation) ResetEdge(name string) error {
 	case topic.EdgeTopicThreads:
 		m.ResetTopicThreads()
 		return nil
+	case topic.EdgeTopicModerators:
+		m.ResetTopicModerators()
+		return nil
 	}
 	return fmt.Errorf("unknown Topic edge %s", name)
 }
@@ -4110,39 +4158,35 @@ func (m *TopicMutation) ResetEdge(name string) error {
 // UserMutation represents an operation that mutates the User nodes in the graph.
 type UserMutation struct {
 	config
-	op                     Op
-	typ                    string
-	id                     *uuid.UUID
-	email                  *string
-	username               *string
-	first_name             *string
-	last_name              *string
-	hash                   *string
-	salt                   *string
-	is_moderator           *bool
-	created_at             *time.Time
-	clearedFields          map[string]struct{}
-	user_threads           map[int]struct{}
-	removeduser_threads    map[int]struct{}
-	cleareduser_threads    bool
-	kudoed_threads         map[int]struct{}
-	removedkudoed_threads  map[int]struct{}
-	clearedkudoed_threads  bool
-	user_comments          map[int]struct{}
-	removeduser_comments   map[int]struct{}
-	cleareduser_comments   bool
-	kudoed_comments        map[int]struct{}
-	removedkudoed_comments map[int]struct{}
-	clearedkudoed_comments bool
-	thread_kudoes          map[int]struct{}
-	removedthread_kudoes   map[int]struct{}
-	clearedthread_kudoes   bool
-	comment_kudoes         map[int]struct{}
-	removedcomment_kudoes  map[int]struct{}
-	clearedcomment_kudoes  bool
-	done                   bool
-	oldValue               func(context.Context) (*User, error)
-	predicates             []predicate.User
+	op                      Op
+	typ                     string
+	id                      *uuid.UUID
+	email                   *string
+	username                *string
+	first_name              *string
+	last_name               *string
+	hash                    *string
+	salt                    *string
+	created_at              *time.Time
+	clearedFields           map[string]struct{}
+	user_threads            map[int]struct{}
+	removeduser_threads     map[int]struct{}
+	cleareduser_threads     bool
+	kudoed_threads          map[int]struct{}
+	removedkudoed_threads   map[int]struct{}
+	clearedkudoed_threads   bool
+	user_comments           map[int]struct{}
+	removeduser_comments    map[int]struct{}
+	cleareduser_comments    bool
+	kudoed_comments         map[int]struct{}
+	removedkudoed_comments  map[int]struct{}
+	clearedkudoed_comments  bool
+	moderated_topics        map[int]struct{}
+	removedmoderated_topics map[int]struct{}
+	clearedmoderated_topics bool
+	done                    bool
+	oldValue                func(context.Context) (*User, error)
+	predicates              []predicate.User
 }
 
 var _ ent.Mutation = (*UserMutation)(nil)
@@ -4517,42 +4561,6 @@ func (m *UserMutation) ResetSalt() {
 	delete(m.clearedFields, user.FieldSalt)
 }
 
-// SetIsModerator sets the "is_moderator" field.
-func (m *UserMutation) SetIsModerator(b bool) {
-	m.is_moderator = &b
-}
-
-// IsModerator returns the value of the "is_moderator" field in the mutation.
-func (m *UserMutation) IsModerator() (r bool, exists bool) {
-	v := m.is_moderator
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldIsModerator returns the old "is_moderator" field's value of the User entity.
-// If the User object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *UserMutation) OldIsModerator(ctx context.Context) (v bool, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldIsModerator is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldIsModerator requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldIsModerator: %w", err)
-	}
-	return oldValue.IsModerator, nil
-}
-
-// ResetIsModerator resets all changes to the "is_moderator" field.
-func (m *UserMutation) ResetIsModerator() {
-	m.is_moderator = nil
-}
-
 // SetCreatedAt sets the "created_at" field.
 func (m *UserMutation) SetCreatedAt(t time.Time) {
 	m.created_at = &t
@@ -4805,112 +4813,58 @@ func (m *UserMutation) ResetKudoedComments() {
 	m.removedkudoed_comments = nil
 }
 
-// AddThreadKudoIDs adds the "thread_kudoes" edge to the ThreadKudo entity by ids.
-func (m *UserMutation) AddThreadKudoIDs(ids ...int) {
-	if m.thread_kudoes == nil {
-		m.thread_kudoes = make(map[int]struct{})
+// AddModeratedTopicIDs adds the "moderated_topics" edge to the Topic entity by ids.
+func (m *UserMutation) AddModeratedTopicIDs(ids ...int) {
+	if m.moderated_topics == nil {
+		m.moderated_topics = make(map[int]struct{})
 	}
 	for i := range ids {
-		m.thread_kudoes[ids[i]] = struct{}{}
+		m.moderated_topics[ids[i]] = struct{}{}
 	}
 }
 
-// ClearThreadKudoes clears the "thread_kudoes" edge to the ThreadKudo entity.
-func (m *UserMutation) ClearThreadKudoes() {
-	m.clearedthread_kudoes = true
+// ClearModeratedTopics clears the "moderated_topics" edge to the Topic entity.
+func (m *UserMutation) ClearModeratedTopics() {
+	m.clearedmoderated_topics = true
 }
 
-// ThreadKudoesCleared reports if the "thread_kudoes" edge to the ThreadKudo entity was cleared.
-func (m *UserMutation) ThreadKudoesCleared() bool {
-	return m.clearedthread_kudoes
+// ModeratedTopicsCleared reports if the "moderated_topics" edge to the Topic entity was cleared.
+func (m *UserMutation) ModeratedTopicsCleared() bool {
+	return m.clearedmoderated_topics
 }
 
-// RemoveThreadKudoIDs removes the "thread_kudoes" edge to the ThreadKudo entity by IDs.
-func (m *UserMutation) RemoveThreadKudoIDs(ids ...int) {
-	if m.removedthread_kudoes == nil {
-		m.removedthread_kudoes = make(map[int]struct{})
+// RemoveModeratedTopicIDs removes the "moderated_topics" edge to the Topic entity by IDs.
+func (m *UserMutation) RemoveModeratedTopicIDs(ids ...int) {
+	if m.removedmoderated_topics == nil {
+		m.removedmoderated_topics = make(map[int]struct{})
 	}
 	for i := range ids {
-		delete(m.thread_kudoes, ids[i])
-		m.removedthread_kudoes[ids[i]] = struct{}{}
+		delete(m.moderated_topics, ids[i])
+		m.removedmoderated_topics[ids[i]] = struct{}{}
 	}
 }
 
-// RemovedThreadKudoes returns the removed IDs of the "thread_kudoes" edge to the ThreadKudo entity.
-func (m *UserMutation) RemovedThreadKudoesIDs() (ids []int) {
-	for id := range m.removedthread_kudoes {
+// RemovedModeratedTopics returns the removed IDs of the "moderated_topics" edge to the Topic entity.
+func (m *UserMutation) RemovedModeratedTopicsIDs() (ids []int) {
+	for id := range m.removedmoderated_topics {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// ThreadKudoesIDs returns the "thread_kudoes" edge IDs in the mutation.
-func (m *UserMutation) ThreadKudoesIDs() (ids []int) {
-	for id := range m.thread_kudoes {
+// ModeratedTopicsIDs returns the "moderated_topics" edge IDs in the mutation.
+func (m *UserMutation) ModeratedTopicsIDs() (ids []int) {
+	for id := range m.moderated_topics {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// ResetThreadKudoes resets all changes to the "thread_kudoes" edge.
-func (m *UserMutation) ResetThreadKudoes() {
-	m.thread_kudoes = nil
-	m.clearedthread_kudoes = false
-	m.removedthread_kudoes = nil
-}
-
-// AddCommentKudoIDs adds the "comment_kudoes" edge to the CommentKudo entity by ids.
-func (m *UserMutation) AddCommentKudoIDs(ids ...int) {
-	if m.comment_kudoes == nil {
-		m.comment_kudoes = make(map[int]struct{})
-	}
-	for i := range ids {
-		m.comment_kudoes[ids[i]] = struct{}{}
-	}
-}
-
-// ClearCommentKudoes clears the "comment_kudoes" edge to the CommentKudo entity.
-func (m *UserMutation) ClearCommentKudoes() {
-	m.clearedcomment_kudoes = true
-}
-
-// CommentKudoesCleared reports if the "comment_kudoes" edge to the CommentKudo entity was cleared.
-func (m *UserMutation) CommentKudoesCleared() bool {
-	return m.clearedcomment_kudoes
-}
-
-// RemoveCommentKudoIDs removes the "comment_kudoes" edge to the CommentKudo entity by IDs.
-func (m *UserMutation) RemoveCommentKudoIDs(ids ...int) {
-	if m.removedcomment_kudoes == nil {
-		m.removedcomment_kudoes = make(map[int]struct{})
-	}
-	for i := range ids {
-		delete(m.comment_kudoes, ids[i])
-		m.removedcomment_kudoes[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedCommentKudoes returns the removed IDs of the "comment_kudoes" edge to the CommentKudo entity.
-func (m *UserMutation) RemovedCommentKudoesIDs() (ids []int) {
-	for id := range m.removedcomment_kudoes {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// CommentKudoesIDs returns the "comment_kudoes" edge IDs in the mutation.
-func (m *UserMutation) CommentKudoesIDs() (ids []int) {
-	for id := range m.comment_kudoes {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetCommentKudoes resets all changes to the "comment_kudoes" edge.
-func (m *UserMutation) ResetCommentKudoes() {
-	m.comment_kudoes = nil
-	m.clearedcomment_kudoes = false
-	m.removedcomment_kudoes = nil
+// ResetModeratedTopics resets all changes to the "moderated_topics" edge.
+func (m *UserMutation) ResetModeratedTopics() {
+	m.moderated_topics = nil
+	m.clearedmoderated_topics = false
+	m.removedmoderated_topics = nil
 }
 
 // Where appends a list predicates to the UserMutation builder.
@@ -4947,7 +4901,7 @@ func (m *UserMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *UserMutation) Fields() []string {
-	fields := make([]string, 0, 8)
+	fields := make([]string, 0, 7)
 	if m.email != nil {
 		fields = append(fields, user.FieldEmail)
 	}
@@ -4965,9 +4919,6 @@ func (m *UserMutation) Fields() []string {
 	}
 	if m.salt != nil {
 		fields = append(fields, user.FieldSalt)
-	}
-	if m.is_moderator != nil {
-		fields = append(fields, user.FieldIsModerator)
 	}
 	if m.created_at != nil {
 		fields = append(fields, user.FieldCreatedAt)
@@ -4992,8 +4943,6 @@ func (m *UserMutation) Field(name string) (ent.Value, bool) {
 		return m.Hash()
 	case user.FieldSalt:
 		return m.Salt()
-	case user.FieldIsModerator:
-		return m.IsModerator()
 	case user.FieldCreatedAt:
 		return m.CreatedAt()
 	}
@@ -5017,8 +4966,6 @@ func (m *UserMutation) OldField(ctx context.Context, name string) (ent.Value, er
 		return m.OldHash(ctx)
 	case user.FieldSalt:
 		return m.OldSalt(ctx)
-	case user.FieldIsModerator:
-		return m.OldIsModerator(ctx)
 	case user.FieldCreatedAt:
 		return m.OldCreatedAt(ctx)
 	}
@@ -5071,13 +5018,6 @@ func (m *UserMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetSalt(v)
-		return nil
-	case user.FieldIsModerator:
-		v, ok := value.(bool)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetIsModerator(v)
 		return nil
 	case user.FieldCreatedAt:
 		v, ok := value.(time.Time)
@@ -5180,9 +5120,6 @@ func (m *UserMutation) ResetField(name string) error {
 	case user.FieldSalt:
 		m.ResetSalt()
 		return nil
-	case user.FieldIsModerator:
-		m.ResetIsModerator()
-		return nil
 	case user.FieldCreatedAt:
 		m.ResetCreatedAt()
 		return nil
@@ -5192,7 +5129,7 @@ func (m *UserMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *UserMutation) AddedEdges() []string {
-	edges := make([]string, 0, 6)
+	edges := make([]string, 0, 5)
 	if m.user_threads != nil {
 		edges = append(edges, user.EdgeUserThreads)
 	}
@@ -5205,11 +5142,8 @@ func (m *UserMutation) AddedEdges() []string {
 	if m.kudoed_comments != nil {
 		edges = append(edges, user.EdgeKudoedComments)
 	}
-	if m.thread_kudoes != nil {
-		edges = append(edges, user.EdgeThreadKudoes)
-	}
-	if m.comment_kudoes != nil {
-		edges = append(edges, user.EdgeCommentKudoes)
+	if m.moderated_topics != nil {
+		edges = append(edges, user.EdgeModeratedTopics)
 	}
 	return edges
 }
@@ -5242,15 +5176,9 @@ func (m *UserMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
-	case user.EdgeThreadKudoes:
-		ids := make([]ent.Value, 0, len(m.thread_kudoes))
-		for id := range m.thread_kudoes {
-			ids = append(ids, id)
-		}
-		return ids
-	case user.EdgeCommentKudoes:
-		ids := make([]ent.Value, 0, len(m.comment_kudoes))
-		for id := range m.comment_kudoes {
+	case user.EdgeModeratedTopics:
+		ids := make([]ent.Value, 0, len(m.moderated_topics))
+		for id := range m.moderated_topics {
 			ids = append(ids, id)
 		}
 		return ids
@@ -5260,7 +5188,7 @@ func (m *UserMutation) AddedIDs(name string) []ent.Value {
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *UserMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 6)
+	edges := make([]string, 0, 5)
 	if m.removeduser_threads != nil {
 		edges = append(edges, user.EdgeUserThreads)
 	}
@@ -5273,11 +5201,8 @@ func (m *UserMutation) RemovedEdges() []string {
 	if m.removedkudoed_comments != nil {
 		edges = append(edges, user.EdgeKudoedComments)
 	}
-	if m.removedthread_kudoes != nil {
-		edges = append(edges, user.EdgeThreadKudoes)
-	}
-	if m.removedcomment_kudoes != nil {
-		edges = append(edges, user.EdgeCommentKudoes)
+	if m.removedmoderated_topics != nil {
+		edges = append(edges, user.EdgeModeratedTopics)
 	}
 	return edges
 }
@@ -5310,15 +5235,9 @@ func (m *UserMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
-	case user.EdgeThreadKudoes:
-		ids := make([]ent.Value, 0, len(m.removedthread_kudoes))
-		for id := range m.removedthread_kudoes {
-			ids = append(ids, id)
-		}
-		return ids
-	case user.EdgeCommentKudoes:
-		ids := make([]ent.Value, 0, len(m.removedcomment_kudoes))
-		for id := range m.removedcomment_kudoes {
+	case user.EdgeModeratedTopics:
+		ids := make([]ent.Value, 0, len(m.removedmoderated_topics))
+		for id := range m.removedmoderated_topics {
 			ids = append(ids, id)
 		}
 		return ids
@@ -5328,7 +5247,7 @@ func (m *UserMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *UserMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 6)
+	edges := make([]string, 0, 5)
 	if m.cleareduser_threads {
 		edges = append(edges, user.EdgeUserThreads)
 	}
@@ -5341,11 +5260,8 @@ func (m *UserMutation) ClearedEdges() []string {
 	if m.clearedkudoed_comments {
 		edges = append(edges, user.EdgeKudoedComments)
 	}
-	if m.clearedthread_kudoes {
-		edges = append(edges, user.EdgeThreadKudoes)
-	}
-	if m.clearedcomment_kudoes {
-		edges = append(edges, user.EdgeCommentKudoes)
+	if m.clearedmoderated_topics {
+		edges = append(edges, user.EdgeModeratedTopics)
 	}
 	return edges
 }
@@ -5362,10 +5278,8 @@ func (m *UserMutation) EdgeCleared(name string) bool {
 		return m.cleareduser_comments
 	case user.EdgeKudoedComments:
 		return m.clearedkudoed_comments
-	case user.EdgeThreadKudoes:
-		return m.clearedthread_kudoes
-	case user.EdgeCommentKudoes:
-		return m.clearedcomment_kudoes
+	case user.EdgeModeratedTopics:
+		return m.clearedmoderated_topics
 	}
 	return false
 }
@@ -5394,11 +5308,8 @@ func (m *UserMutation) ResetEdge(name string) error {
 	case user.EdgeKudoedComments:
 		m.ResetKudoedComments()
 		return nil
-	case user.EdgeThreadKudoes:
-		m.ResetThreadKudoes()
-		return nil
-	case user.EdgeCommentKudoes:
-		m.ResetCommentKudoes()
+	case user.EdgeModeratedTopics:
+		m.ResetModeratedTopics()
 		return nil
 	}
 	return fmt.Errorf("unknown User edge %s", name)

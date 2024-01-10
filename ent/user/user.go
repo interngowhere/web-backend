@@ -27,8 +27,6 @@ const (
 	FieldHash = "hash"
 	// FieldSalt holds the string denoting the salt field in the database.
 	FieldSalt = "salt"
-	// FieldIsModerator holds the string denoting the is_moderator field in the database.
-	FieldIsModerator = "is_moderator"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
 	FieldCreatedAt = "created_at"
 	// EdgeUserThreads holds the string denoting the user_threads edge name in mutations.
@@ -39,10 +37,14 @@ const (
 	EdgeUserComments = "user_comments"
 	// EdgeKudoedComments holds the string denoting the kudoed_comments edge name in mutations.
 	EdgeKudoedComments = "kudoed_comments"
+	// EdgeModeratedTopics holds the string denoting the moderated_topics edge name in mutations.
+	EdgeModeratedTopics = "moderated_topics"
 	// EdgeThreadKudoes holds the string denoting the thread_kudoes edge name in mutations.
 	EdgeThreadKudoes = "thread_kudoes"
 	// EdgeCommentKudoes holds the string denoting the comment_kudoes edge name in mutations.
 	EdgeCommentKudoes = "comment_kudoes"
+	// EdgeModerators holds the string denoting the moderators edge name in mutations.
+	EdgeModerators = "moderators"
 	// Table holds the table name of the user in the database.
 	Table = "users"
 	// UserThreadsTable is the table that holds the user_threads relation/edge.
@@ -69,6 +71,11 @@ const (
 	// KudoedCommentsInverseTable is the table name for the Comment entity.
 	// It exists in this package in order to avoid circular dependency with the "comment" package.
 	KudoedCommentsInverseTable = "comments"
+	// ModeratedTopicsTable is the table that holds the moderated_topics relation/edge. The primary key declared below.
+	ModeratedTopicsTable = "moderators"
+	// ModeratedTopicsInverseTable is the table name for the Topic entity.
+	// It exists in this package in order to avoid circular dependency with the "topic" package.
+	ModeratedTopicsInverseTable = "topics"
 	// ThreadKudoesTable is the table that holds the thread_kudoes relation/edge.
 	ThreadKudoesTable = "thread_kudos"
 	// ThreadKudoesInverseTable is the table name for the ThreadKudo entity.
@@ -83,6 +90,13 @@ const (
 	CommentKudoesInverseTable = "comment_kudos"
 	// CommentKudoesColumn is the table column denoting the comment_kudoes relation/edge.
 	CommentKudoesColumn = "user_id"
+	// ModeratorsTable is the table that holds the moderators relation/edge.
+	ModeratorsTable = "moderators"
+	// ModeratorsInverseTable is the table name for the Moderator entity.
+	// It exists in this package in order to avoid circular dependency with the "moderator" package.
+	ModeratorsInverseTable = "moderators"
+	// ModeratorsColumn is the table column denoting the moderators relation/edge.
+	ModeratorsColumn = "moderator_id"
 )
 
 // Columns holds all SQL columns for user fields.
@@ -94,7 +108,6 @@ var Columns = []string{
 	FieldLastName,
 	FieldHash,
 	FieldSalt,
-	FieldIsModerator,
 	FieldCreatedAt,
 }
 
@@ -105,6 +118,9 @@ var (
 	// KudoedCommentsPrimaryKey and KudoedCommentsColumn2 are the table columns denoting the
 	// primary key for the kudoed_comments relation (M2M).
 	KudoedCommentsPrimaryKey = []string{"user_id", "comment_id"}
+	// ModeratedTopicsPrimaryKey and ModeratedTopicsColumn2 are the table columns denoting the
+	// primary key for the moderated_topics relation (M2M).
+	ModeratedTopicsPrimaryKey = []string{"moderator_id", "topic_id"}
 )
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -128,8 +144,6 @@ var (
 	LastNameValidator func(string) error
 	// SaltValidator is a validator for the "salt" field. It is called by the builders before save.
 	SaltValidator func(string) error
-	// DefaultIsModerator holds the default value on creation for the "is_moderator" field.
-	DefaultIsModerator bool
 	// DefaultCreatedAt holds the default value on creation for the "created_at" field.
 	DefaultCreatedAt time.Time
 	// DefaultID holds the default value on creation for the "id" field.
@@ -172,11 +186,6 @@ func ByHash(opts ...sql.OrderTermOption) OrderOption {
 // BySalt orders the results by the salt field.
 func BySalt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldSalt, opts...).ToFunc()
-}
-
-// ByIsModerator orders the results by the is_moderator field.
-func ByIsModerator(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldIsModerator, opts...).ToFunc()
 }
 
 // ByCreatedAt orders the results by the created_at field.
@@ -240,6 +249,20 @@ func ByKudoedComments(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	}
 }
 
+// ByModeratedTopicsCount orders the results by moderated_topics count.
+func ByModeratedTopicsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newModeratedTopicsStep(), opts...)
+	}
+}
+
+// ByModeratedTopics orders the results by moderated_topics terms.
+func ByModeratedTopics(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newModeratedTopicsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
 // ByThreadKudoesCount orders the results by thread_kudoes count.
 func ByThreadKudoesCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -265,6 +288,20 @@ func ByCommentKudoesCount(opts ...sql.OrderTermOption) OrderOption {
 func ByCommentKudoes(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	return func(s *sql.Selector) {
 		sqlgraph.OrderByNeighborTerms(s, newCommentKudoesStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
+// ByModeratorsCount orders the results by moderators count.
+func ByModeratorsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newModeratorsStep(), opts...)
+	}
+}
+
+// ByModerators orders the results by moderators terms.
+func ByModerators(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newModeratorsStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
 func newUserThreadsStep() *sqlgraph.Step {
@@ -295,17 +332,31 @@ func newKudoedCommentsStep() *sqlgraph.Step {
 		sqlgraph.Edge(sqlgraph.M2M, false, KudoedCommentsTable, KudoedCommentsPrimaryKey...),
 	)
 }
+func newModeratedTopicsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(ModeratedTopicsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2M, false, ModeratedTopicsTable, ModeratedTopicsPrimaryKey...),
+	)
+}
 func newThreadKudoesStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(ThreadKudoesInverseTable, FieldID),
+		sqlgraph.To(ThreadKudoesInverseTable, ThreadKudoesColumn),
 		sqlgraph.Edge(sqlgraph.O2M, true, ThreadKudoesTable, ThreadKudoesColumn),
 	)
 }
 func newCommentKudoesStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(CommentKudoesInverseTable, FieldID),
+		sqlgraph.To(CommentKudoesInverseTable, CommentKudoesColumn),
 		sqlgraph.Edge(sqlgraph.O2M, true, CommentKudoesTable, CommentKudoesColumn),
+	)
+}
+func newModeratorsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(ModeratorsInverseTable, ModeratorsColumn),
+		sqlgraph.Edge(sqlgraph.O2M, true, ModeratorsTable, ModeratorsColumn),
 	)
 }

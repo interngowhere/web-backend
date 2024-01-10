@@ -17,8 +17,6 @@ import (
 // CommentKudo is the model entity for the CommentKudo schema.
 type CommentKudo struct {
 	config `json:"-"`
-	// ID of the ent.
-	ID int `json:"id,omitempty"`
 	// UserID holds the value of the "user_id" field.
 	UserID uuid.UUID `json:"user_id,omitempty"`
 	// CommentID holds the value of the "comment_id" field.
@@ -71,7 +69,7 @@ func (*CommentKudo) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case commentkudo.FieldID, commentkudo.FieldCommentID:
+		case commentkudo.FieldCommentID:
 			values[i] = new(sql.NullInt64)
 		case commentkudo.FieldUserID:
 			values[i] = new(uuid.UUID)
@@ -90,12 +88,6 @@ func (ck *CommentKudo) assignValues(columns []string, values []any) error {
 	}
 	for i := range columns {
 		switch columns[i] {
-		case commentkudo.FieldID:
-			value, ok := values[i].(*sql.NullInt64)
-			if !ok {
-				return fmt.Errorf("unexpected type %T for field id", value)
-			}
-			ck.ID = int(value.Int64)
 		case commentkudo.FieldUserID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field user_id", values[i])
@@ -153,7 +145,6 @@ func (ck *CommentKudo) Unwrap() *CommentKudo {
 func (ck *CommentKudo) String() string {
 	var builder strings.Builder
 	builder.WriteString("CommentKudo(")
-	builder.WriteString(fmt.Sprintf("id=%v, ", ck.ID))
 	builder.WriteString("user_id=")
 	builder.WriteString(fmt.Sprintf("%v", ck.UserID))
 	builder.WriteString(", ")

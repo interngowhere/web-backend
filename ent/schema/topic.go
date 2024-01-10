@@ -23,8 +23,8 @@ func (Topic) Fields() []ent.Field {
 		field.String("description").
 			MaxLen(4096).
 			Optional(),
-		field.String("created_by").
-			MaxLen(255),
+		field.String("profile_pic_url").
+			Optional(),
 		field.Time("created_at").
 			Default(time.Now()).
 			Immutable(),

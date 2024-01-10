@@ -12,9 +12,8 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/interngowhere/web-backend/ent/comment"
-	"github.com/interngowhere/web-backend/ent/commentkudo"
 	"github.com/interngowhere/web-backend/ent/thread"
-	"github.com/interngowhere/web-backend/ent/threadkudo"
+	"github.com/interngowhere/web-backend/ent/topic"
 	"github.com/interngowhere/web-backend/ent/user"
 )
 
@@ -89,20 +88,6 @@ func (uc *UserCreate) SetSalt(s string) *UserCreate {
 func (uc *UserCreate) SetNillableSalt(s *string) *UserCreate {
 	if s != nil {
 		uc.SetSalt(*s)
-	}
-	return uc
-}
-
-// SetIsModerator sets the "is_moderator" field.
-func (uc *UserCreate) SetIsModerator(b bool) *UserCreate {
-	uc.mutation.SetIsModerator(b)
-	return uc
-}
-
-// SetNillableIsModerator sets the "is_moderator" field if the given value is not nil.
-func (uc *UserCreate) SetNillableIsModerator(b *bool) *UserCreate {
-	if b != nil {
-		uc.SetIsModerator(*b)
 	}
 	return uc
 }
@@ -195,34 +180,19 @@ func (uc *UserCreate) AddKudoedComments(c ...*Comment) *UserCreate {
 	return uc.AddKudoedCommentIDs(ids...)
 }
 
-// AddThreadKudoIDs adds the "thread_kudoes" edge to the ThreadKudo entity by IDs.
-func (uc *UserCreate) AddThreadKudoIDs(ids ...int) *UserCreate {
-	uc.mutation.AddThreadKudoIDs(ids...)
+// AddModeratedTopicIDs adds the "moderated_topics" edge to the Topic entity by IDs.
+func (uc *UserCreate) AddModeratedTopicIDs(ids ...int) *UserCreate {
+	uc.mutation.AddModeratedTopicIDs(ids...)
 	return uc
 }
 
-// AddThreadKudoes adds the "thread_kudoes" edges to the ThreadKudo entity.
-func (uc *UserCreate) AddThreadKudoes(t ...*ThreadKudo) *UserCreate {
+// AddModeratedTopics adds the "moderated_topics" edges to the Topic entity.
+func (uc *UserCreate) AddModeratedTopics(t ...*Topic) *UserCreate {
 	ids := make([]int, len(t))
 	for i := range t {
 		ids[i] = t[i].ID
 	}
-	return uc.AddThreadKudoIDs(ids...)
-}
-
-// AddCommentKudoIDs adds the "comment_kudoes" edge to the CommentKudo entity by IDs.
-func (uc *UserCreate) AddCommentKudoIDs(ids ...int) *UserCreate {
-	uc.mutation.AddCommentKudoIDs(ids...)
-	return uc
-}
-
-// AddCommentKudoes adds the "comment_kudoes" edges to the CommentKudo entity.
-func (uc *UserCreate) AddCommentKudoes(c ...*CommentKudo) *UserCreate {
-	ids := make([]int, len(c))
-	for i := range c {
-		ids[i] = c[i].ID
-	}
-	return uc.AddCommentKudoIDs(ids...)
+	return uc.AddModeratedTopicIDs(ids...)
 }
 
 // Mutation returns the UserMutation object of the builder.
@@ -260,10 +230,6 @@ func (uc *UserCreate) ExecX(ctx context.Context) {
 
 // defaults sets the default values of the builder before save.
 func (uc *UserCreate) defaults() {
-	if _, ok := uc.mutation.IsModerator(); !ok {
-		v := user.DefaultIsModerator
-		uc.mutation.SetIsModerator(v)
-	}
 	if _, ok := uc.mutation.CreatedAt(); !ok {
 		v := user.DefaultCreatedAt
 		uc.mutation.SetCreatedAt(v)
@@ -306,9 +272,6 @@ func (uc *UserCreate) check() error {
 		if err := user.SaltValidator(v); err != nil {
 			return &ValidationError{Name: "salt", err: fmt.Errorf(`ent: validator failed for field "User.salt": %w`, err)}
 		}
-	}
-	if _, ok := uc.mutation.IsModerator(); !ok {
-		return &ValidationError{Name: "is_moderator", err: errors.New(`ent: missing required field "User.is_moderator"`)}
 	}
 	if _, ok := uc.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "User.created_at"`)}
@@ -371,10 +334,6 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 	if value, ok := uc.mutation.Salt(); ok {
 		_spec.SetField(user.FieldSalt, field.TypeString, value)
 		_node.Salt = value
-	}
-	if value, ok := uc.mutation.IsModerator(); ok {
-		_spec.SetField(user.FieldIsModerator, field.TypeBool, value)
-		_node.IsModerator = value
 	}
 	if value, ok := uc.mutation.CreatedAt(); ok {
 		_spec.SetField(user.FieldCreatedAt, field.TypeTime, value)
@@ -444,31 +403,15 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := uc.mutation.ThreadKudoesIDs(); len(nodes) > 0 {
+	if nodes := uc.mutation.ModeratedTopicsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   user.ThreadKudoesTable,
-			Columns: []string{user.ThreadKudoesColumn},
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   user.ModeratedTopicsTable,
+			Columns: user.ModeratedTopicsPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(threadkudo.FieldID, field.TypeInt),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := uc.mutation.CommentKudoesIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   user.CommentKudoesTable,
-			Columns: []string{user.CommentKudoesColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(commentkudo.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(topic.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {

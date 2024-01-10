@@ -10,8 +10,6 @@ import (
 const (
 	// Label holds the string label denoting the threadkudo type in the database.
 	Label = "thread_kudo"
-	// FieldID holds the string denoting the id field in the database.
-	FieldID = "id"
 	// FieldUserID holds the string denoting the user_id field in the database.
 	FieldUserID = "user_id"
 	// FieldThreadID holds the string denoting the thread_id field in the database.
@@ -20,6 +18,10 @@ const (
 	EdgeUser = "user"
 	// EdgeThread holds the string denoting the thread edge name in mutations.
 	EdgeThread = "thread"
+	// UserFieldID holds the string denoting the ID field of the User.
+	UserFieldID = "id"
+	// ThreadFieldID holds the string denoting the ID field of the Thread.
+	ThreadFieldID = "id"
 	// Table holds the table name of the threadkudo in the database.
 	Table = "thread_kudos"
 	// UserTable is the table that holds the user relation/edge.
@@ -40,7 +42,6 @@ const (
 
 // Columns holds all SQL columns for threadkudo fields.
 var Columns = []string{
-	FieldID,
 	FieldUserID,
 	FieldThreadID,
 }
@@ -57,11 +58,6 @@ func ValidColumn(column string) bool {
 
 // OrderOption defines the ordering options for the ThreadKudo queries.
 type OrderOption func(*sql.Selector)
-
-// ByID orders the results by the id field.
-func ByID(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldID, opts...).ToFunc()
-}
 
 // ByUserID orders the results by the user_id field.
 func ByUserID(opts ...sql.OrderTermOption) OrderOption {
@@ -88,15 +84,15 @@ func ByThreadField(field string, opts ...sql.OrderTermOption) OrderOption {
 }
 func newUserStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(UserInverseTable, FieldID),
+		sqlgraph.From(Table, UserColumn),
+		sqlgraph.To(UserInverseTable, UserFieldID),
 		sqlgraph.Edge(sqlgraph.M2O, false, UserTable, UserColumn),
 	)
 }
 func newThreadStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(ThreadInverseTable, FieldID),
+		sqlgraph.From(Table, ThreadColumn),
+		sqlgraph.To(ThreadInverseTable, ThreadFieldID),
 		sqlgraph.Edge(sqlgraph.M2O, false, ThreadTable, ThreadColumn),
 	)
 }

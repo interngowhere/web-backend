@@ -9,51 +9,6 @@ import (
 	"github.com/interngowhere/web-backend/ent/predicate"
 )
 
-// ID filters vertices based on their ID field.
-func ID(id int) predicate.CommentKudo {
-	return predicate.CommentKudo(sql.FieldEQ(FieldID, id))
-}
-
-// IDEQ applies the EQ predicate on the ID field.
-func IDEQ(id int) predicate.CommentKudo {
-	return predicate.CommentKudo(sql.FieldEQ(FieldID, id))
-}
-
-// IDNEQ applies the NEQ predicate on the ID field.
-func IDNEQ(id int) predicate.CommentKudo {
-	return predicate.CommentKudo(sql.FieldNEQ(FieldID, id))
-}
-
-// IDIn applies the In predicate on the ID field.
-func IDIn(ids ...int) predicate.CommentKudo {
-	return predicate.CommentKudo(sql.FieldIn(FieldID, ids...))
-}
-
-// IDNotIn applies the NotIn predicate on the ID field.
-func IDNotIn(ids ...int) predicate.CommentKudo {
-	return predicate.CommentKudo(sql.FieldNotIn(FieldID, ids...))
-}
-
-// IDGT applies the GT predicate on the ID field.
-func IDGT(id int) predicate.CommentKudo {
-	return predicate.CommentKudo(sql.FieldGT(FieldID, id))
-}
-
-// IDGTE applies the GTE predicate on the ID field.
-func IDGTE(id int) predicate.CommentKudo {
-	return predicate.CommentKudo(sql.FieldGTE(FieldID, id))
-}
-
-// IDLT applies the LT predicate on the ID field.
-func IDLT(id int) predicate.CommentKudo {
-	return predicate.CommentKudo(sql.FieldLT(FieldID, id))
-}
-
-// IDLTE applies the LTE predicate on the ID field.
-func IDLTE(id int) predicate.CommentKudo {
-	return predicate.CommentKudo(sql.FieldLTE(FieldID, id))
-}
-
 // UserID applies equality check predicate on the "user_id" field. It's identical to UserIDEQ.
 func UserID(v uuid.UUID) predicate.CommentKudo {
 	return predicate.CommentKudo(sql.FieldEQ(FieldUserID, v))
@@ -108,7 +63,7 @@ func CommentIDNotIn(vs ...int) predicate.CommentKudo {
 func HasUser() predicate.CommentKudo {
 	return predicate.CommentKudo(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
+			sqlgraph.From(Table, UserColumn),
 			sqlgraph.Edge(sqlgraph.M2O, false, UserTable, UserColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
@@ -131,7 +86,7 @@ func HasUserWith(preds ...predicate.User) predicate.CommentKudo {
 func HasComment() predicate.CommentKudo {
 	return predicate.CommentKudo(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
+			sqlgraph.From(Table, CommentColumn),
 			sqlgraph.Edge(sqlgraph.M2O, false, CommentTable, CommentColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)

@@ -104,17 +104,13 @@ func (tkc *ThreadKudoCreate) sqlSave(ctx context.Context) (*ThreadKudo, error) {
 		}
 		return nil, err
 	}
-	id := _spec.ID.Value.(int64)
-	_node.ID = int(id)
-	tkc.mutation.id = &_node.ID
-	tkc.mutation.done = true
 	return _node, nil
 }
 
 func (tkc *ThreadKudoCreate) createSpec() (*ThreadKudo, *sqlgraph.CreateSpec) {
 	var (
 		_node = &ThreadKudo{config: tkc.config}
-		_spec = sqlgraph.NewCreateSpec(threadkudo.Table, sqlgraph.NewFieldSpec(threadkudo.FieldID, field.TypeInt))
+		_spec = sqlgraph.NewCreateSpec(threadkudo.Table, nil)
 	)
 	if nodes := tkc.mutation.UserIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -195,11 +191,6 @@ func (tkcb *ThreadKudoCreateBulk) Save(ctx context.Context) ([]*ThreadKudo, erro
 				}
 				if err != nil {
 					return nil, err
-				}
-				mutation.id = &nodes[i].ID
-				if specs[i].ID.Value != nil {
-					id := specs[i].ID.Value.(int64)
-					nodes[i].ID = int(id)
 				}
 				mutation.done = true
 				return nodes[i], nil

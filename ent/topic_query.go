@@ -11,19 +11,24 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/google/uuid"
+	"github.com/interngowhere/web-backend/ent/moderator"
 	"github.com/interngowhere/web-backend/ent/predicate"
 	"github.com/interngowhere/web-backend/ent/thread"
 	"github.com/interngowhere/web-backend/ent/topic"
+	"github.com/interngowhere/web-backend/ent/user"
 )
 
 // TopicQuery is the builder for querying Topic entities.
 type TopicQuery struct {
 	config
-	ctx              *QueryContext
-	order            []topic.OrderOption
-	inters           []Interceptor
-	predicates       []predicate.Topic
-	withTopicThreads *ThreadQuery
+	ctx                 *QueryContext
+	order               []topic.OrderOption
+	inters              []Interceptor
+	predicates          []predicate.Topic
+	withTopicThreads    *ThreadQuery
+	withTopicModerators *UserQuery
+	withModerators      *ModeratorQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -75,6 +80,50 @@ func (tq *TopicQuery) QueryTopicThreads() *ThreadQuery {
 			sqlgraph.From(topic.Table, topic.FieldID, selector),
 			sqlgraph.To(thread.Table, thread.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, topic.TopicThreadsTable, topic.TopicThreadsColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(tq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryTopicModerators chains the current query on the "topic_moderators" edge.
+func (tq *TopicQuery) QueryTopicModerators() *UserQuery {
+	query := (&UserClient{config: tq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := tq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := tq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(topic.Table, topic.FieldID, selector),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, topic.TopicModeratorsTable, topic.TopicModeratorsPrimaryKey...),
+		)
+		fromU = sqlgraph.SetNeighbors(tq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryModerators chains the current query on the "moderators" edge.
+func (tq *TopicQuery) QueryModerators() *ModeratorQuery {
+	query := (&ModeratorClient{config: tq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := tq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := tq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(topic.Table, topic.FieldID, selector),
+			sqlgraph.To(moderator.Table, moderator.TopicColumn),
+			sqlgraph.Edge(sqlgraph.O2M, true, topic.ModeratorsTable, topic.ModeratorsColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(tq.driver.Dialect(), step)
 		return fromU, nil
@@ -269,12 +318,14 @@ func (tq *TopicQuery) Clone() *TopicQuery {
 		return nil
 	}
 	return &TopicQuery{
-		config:           tq.config,
-		ctx:              tq.ctx.Clone(),
-		order:            append([]topic.OrderOption{}, tq.order...),
-		inters:           append([]Interceptor{}, tq.inters...),
-		predicates:       append([]predicate.Topic{}, tq.predicates...),
-		withTopicThreads: tq.withTopicThreads.Clone(),
+		config:              tq.config,
+		ctx:                 tq.ctx.Clone(),
+		order:               append([]topic.OrderOption{}, tq.order...),
+		inters:              append([]Interceptor{}, tq.inters...),
+		predicates:          append([]predicate.Topic{}, tq.predicates...),
+		withTopicThreads:    tq.withTopicThreads.Clone(),
+		withTopicModerators: tq.withTopicModerators.Clone(),
+		withModerators:      tq.withModerators.Clone(),
 		// clone intermediate query.
 		sql:  tq.sql.Clone(),
 		path: tq.path,
@@ -289,6 +340,28 @@ func (tq *TopicQuery) WithTopicThreads(opts ...func(*ThreadQuery)) *TopicQuery {
 		opt(query)
 	}
 	tq.withTopicThreads = query
+	return tq
+}
+
+// WithTopicModerators tells the query-builder to eager-load the nodes that are connected to
+// the "topic_moderators" edge. The optional arguments are used to configure the query builder of the edge.
+func (tq *TopicQuery) WithTopicModerators(opts ...func(*UserQuery)) *TopicQuery {
+	query := (&UserClient{config: tq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	tq.withTopicModerators = query
+	return tq
+}
+
+// WithModerators tells the query-builder to eager-load the nodes that are connected to
+// the "moderators" edge. The optional arguments are used to configure the query builder of the edge.
+func (tq *TopicQuery) WithModerators(opts ...func(*ModeratorQuery)) *TopicQuery {
+	query := (&ModeratorClient{config: tq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	tq.withModerators = query
 	return tq
 }
 
@@ -370,8 +443,10 @@ func (tq *TopicQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Topic,
 	var (
 		nodes       = []*Topic{}
 		_spec       = tq.querySpec()
-		loadedTypes = [1]bool{
+		loadedTypes = [3]bool{
 			tq.withTopicThreads != nil,
+			tq.withTopicModerators != nil,
+			tq.withModerators != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -396,6 +471,20 @@ func (tq *TopicQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Topic,
 		if err := tq.loadTopicThreads(ctx, query, nodes,
 			func(n *Topic) { n.Edges.TopicThreads = []*Thread{} },
 			func(n *Topic, e *Thread) { n.Edges.TopicThreads = append(n.Edges.TopicThreads, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := tq.withTopicModerators; query != nil {
+		if err := tq.loadTopicModerators(ctx, query, nodes,
+			func(n *Topic) { n.Edges.TopicModerators = []*User{} },
+			func(n *Topic, e *User) { n.Edges.TopicModerators = append(n.Edges.TopicModerators, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := tq.withModerators; query != nil {
+		if err := tq.loadModerators(ctx, query, nodes,
+			func(n *Topic) { n.Edges.Moderators = []*Moderator{} },
+			func(n *Topic, e *Moderator) { n.Edges.Moderators = append(n.Edges.Moderators, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -428,6 +517,97 @@ func (tq *TopicQuery) loadTopicThreads(ctx context.Context, query *ThreadQuery, 
 		node, ok := nodeids[*fk]
 		if !ok {
 			return fmt.Errorf(`unexpected referenced foreign-key "topic_topic_threads" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (tq *TopicQuery) loadTopicModerators(ctx context.Context, query *UserQuery, nodes []*Topic, init func(*Topic), assign func(*Topic, *User)) error {
+	edgeIDs := make([]driver.Value, len(nodes))
+	byID := make(map[int]*Topic)
+	nids := make(map[uuid.UUID]map[*Topic]struct{})
+	for i, node := range nodes {
+		edgeIDs[i] = node.ID
+		byID[node.ID] = node
+		if init != nil {
+			init(node)
+		}
+	}
+	query.Where(func(s *sql.Selector) {
+		joinT := sql.Table(topic.TopicModeratorsTable)
+		s.Join(joinT).On(s.C(user.FieldID), joinT.C(topic.TopicModeratorsPrimaryKey[0]))
+		s.Where(sql.InValues(joinT.C(topic.TopicModeratorsPrimaryKey[1]), edgeIDs...))
+		columns := s.SelectedColumns()
+		s.Select(joinT.C(topic.TopicModeratorsPrimaryKey[1]))
+		s.AppendSelect(columns...)
+		s.SetDistinct(false)
+	})
+	if err := query.prepareQuery(ctx); err != nil {
+		return err
+	}
+	qr := QuerierFunc(func(ctx context.Context, q Query) (Value, error) {
+		return query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
+			assign := spec.Assign
+			values := spec.ScanValues
+			spec.ScanValues = func(columns []string) ([]any, error) {
+				values, err := values(columns[1:])
+				if err != nil {
+					return nil, err
+				}
+				return append([]any{new(sql.NullInt64)}, values...), nil
+			}
+			spec.Assign = func(columns []string, values []any) error {
+				outValue := int(values[0].(*sql.NullInt64).Int64)
+				inValue := *values[1].(*uuid.UUID)
+				if nids[inValue] == nil {
+					nids[inValue] = map[*Topic]struct{}{byID[outValue]: {}}
+					return assign(columns[1:], values[1:])
+				}
+				nids[inValue][byID[outValue]] = struct{}{}
+				return nil
+			}
+		})
+	})
+	neighbors, err := withInterceptors[[]*User](ctx, query, qr, query.inters)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected "topic_moderators" node returned %v`, n.ID)
+		}
+		for kn := range nodes {
+			assign(kn, n)
+		}
+	}
+	return nil
+}
+func (tq *TopicQuery) loadModerators(ctx context.Context, query *ModeratorQuery, nodes []*Topic, init func(*Topic), assign func(*Topic, *Moderator)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[int]*Topic)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(moderator.FieldTopicID)
+	}
+	query.Where(predicate.Moderator(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(topic.ModeratorsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.TopicID
+		node, ok := nodeids[fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "topic_id" returned %v for node %v`, fk, n)
 		}
 		assign(node, n)
 	}

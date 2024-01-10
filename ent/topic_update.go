@@ -9,11 +9,12 @@ import (
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
-	"entgo.io/ent/dialect/sql/sqljson"
 	"entgo.io/ent/schema/field"
+	"github.com/google/uuid"
 	"github.com/interngowhere/web-backend/ent/predicate"
 	"github.com/interngowhere/web-backend/ent/thread"
 	"github.com/interngowhere/web-backend/ent/topic"
+	"github.com/interngowhere/web-backend/ent/user"
 )
 
 // TopicUpdate is the builder for updating Topic entities.
@@ -77,29 +78,23 @@ func (tu *TopicUpdate) ClearDescription() *TopicUpdate {
 	return tu
 }
 
-// SetModerators sets the "moderators" field.
-func (tu *TopicUpdate) SetModerators(s []string) *TopicUpdate {
-	tu.mutation.SetModerators(s)
+// SetProfilePicURL sets the "profile_pic_url" field.
+func (tu *TopicUpdate) SetProfilePicURL(s string) *TopicUpdate {
+	tu.mutation.SetProfilePicURL(s)
 	return tu
 }
 
-// AppendModerators appends s to the "moderators" field.
-func (tu *TopicUpdate) AppendModerators(s []string) *TopicUpdate {
-	tu.mutation.AppendModerators(s)
-	return tu
-}
-
-// SetCreatedBy sets the "created_by" field.
-func (tu *TopicUpdate) SetCreatedBy(s string) *TopicUpdate {
-	tu.mutation.SetCreatedBy(s)
-	return tu
-}
-
-// SetNillableCreatedBy sets the "created_by" field if the given value is not nil.
-func (tu *TopicUpdate) SetNillableCreatedBy(s *string) *TopicUpdate {
+// SetNillableProfilePicURL sets the "profile_pic_url" field if the given value is not nil.
+func (tu *TopicUpdate) SetNillableProfilePicURL(s *string) *TopicUpdate {
 	if s != nil {
-		tu.SetCreatedBy(*s)
+		tu.SetProfilePicURL(*s)
 	}
+	return tu
+}
+
+// ClearProfilePicURL clears the value of the "profile_pic_url" field.
+func (tu *TopicUpdate) ClearProfilePicURL() *TopicUpdate {
+	tu.mutation.ClearProfilePicURL()
 	return tu
 }
 
@@ -116,6 +111,21 @@ func (tu *TopicUpdate) AddTopicThreads(t ...*Thread) *TopicUpdate {
 		ids[i] = t[i].ID
 	}
 	return tu.AddTopicThreadIDs(ids...)
+}
+
+// AddTopicModeratorIDs adds the "topic_moderators" edge to the User entity by IDs.
+func (tu *TopicUpdate) AddTopicModeratorIDs(ids ...uuid.UUID) *TopicUpdate {
+	tu.mutation.AddTopicModeratorIDs(ids...)
+	return tu
+}
+
+// AddTopicModerators adds the "topic_moderators" edges to the User entity.
+func (tu *TopicUpdate) AddTopicModerators(u ...*User) *TopicUpdate {
+	ids := make([]uuid.UUID, len(u))
+	for i := range u {
+		ids[i] = u[i].ID
+	}
+	return tu.AddTopicModeratorIDs(ids...)
 }
 
 // Mutation returns the TopicMutation object of the builder.
@@ -142,6 +152,27 @@ func (tu *TopicUpdate) RemoveTopicThreads(t ...*Thread) *TopicUpdate {
 		ids[i] = t[i].ID
 	}
 	return tu.RemoveTopicThreadIDs(ids...)
+}
+
+// ClearTopicModerators clears all "topic_moderators" edges to the User entity.
+func (tu *TopicUpdate) ClearTopicModerators() *TopicUpdate {
+	tu.mutation.ClearTopicModerators()
+	return tu
+}
+
+// RemoveTopicModeratorIDs removes the "topic_moderators" edge to User entities by IDs.
+func (tu *TopicUpdate) RemoveTopicModeratorIDs(ids ...uuid.UUID) *TopicUpdate {
+	tu.mutation.RemoveTopicModeratorIDs(ids...)
+	return tu
+}
+
+// RemoveTopicModerators removes "topic_moderators" edges to User entities.
+func (tu *TopicUpdate) RemoveTopicModerators(u ...*User) *TopicUpdate {
+	ids := make([]uuid.UUID, len(u))
+	for i := range u {
+		ids[i] = u[i].ID
+	}
+	return tu.RemoveTopicModeratorIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -188,11 +219,6 @@ func (tu *TopicUpdate) check() error {
 			return &ValidationError{Name: "description", err: fmt.Errorf(`ent: validator failed for field "Topic.description": %w`, err)}
 		}
 	}
-	if v, ok := tu.mutation.CreatedBy(); ok {
-		if err := topic.CreatedByValidator(v); err != nil {
-			return &ValidationError{Name: "created_by", err: fmt.Errorf(`ent: validator failed for field "Topic.created_by": %w`, err)}
-		}
-	}
 	return nil
 }
 
@@ -220,16 +246,11 @@ func (tu *TopicUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if tu.mutation.DescriptionCleared() {
 		_spec.ClearField(topic.FieldDescription, field.TypeString)
 	}
-	if value, ok := tu.mutation.Moderators(); ok {
-		_spec.SetField(topic.FieldModerators, field.TypeJSON, value)
+	if value, ok := tu.mutation.ProfilePicURL(); ok {
+		_spec.SetField(topic.FieldProfilePicURL, field.TypeString, value)
 	}
-	if value, ok := tu.mutation.AppendedModerators(); ok {
-		_spec.AddModifier(func(u *sql.UpdateBuilder) {
-			sqljson.Append(u, topic.FieldModerators, value)
-		})
-	}
-	if value, ok := tu.mutation.CreatedBy(); ok {
-		_spec.SetField(topic.FieldCreatedBy, field.TypeString, value)
+	if tu.mutation.ProfilePicURLCleared() {
+		_spec.ClearField(topic.FieldProfilePicURL, field.TypeString)
 	}
 	if tu.mutation.TopicThreadsCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -269,6 +290,51 @@ func (tu *TopicUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(thread.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if tu.mutation.TopicModeratorsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   topic.TopicModeratorsTable,
+			Columns: topic.TopicModeratorsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := tu.mutation.RemovedTopicModeratorsIDs(); len(nodes) > 0 && !tu.mutation.TopicModeratorsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   topic.TopicModeratorsTable,
+			Columns: topic.TopicModeratorsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := tu.mutation.TopicModeratorsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   topic.TopicModeratorsTable,
+			Columns: topic.TopicModeratorsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -344,29 +410,23 @@ func (tuo *TopicUpdateOne) ClearDescription() *TopicUpdateOne {
 	return tuo
 }
 
-// SetModerators sets the "moderators" field.
-func (tuo *TopicUpdateOne) SetModerators(s []string) *TopicUpdateOne {
-	tuo.mutation.SetModerators(s)
+// SetProfilePicURL sets the "profile_pic_url" field.
+func (tuo *TopicUpdateOne) SetProfilePicURL(s string) *TopicUpdateOne {
+	tuo.mutation.SetProfilePicURL(s)
 	return tuo
 }
 
-// AppendModerators appends s to the "moderators" field.
-func (tuo *TopicUpdateOne) AppendModerators(s []string) *TopicUpdateOne {
-	tuo.mutation.AppendModerators(s)
-	return tuo
-}
-
-// SetCreatedBy sets the "created_by" field.
-func (tuo *TopicUpdateOne) SetCreatedBy(s string) *TopicUpdateOne {
-	tuo.mutation.SetCreatedBy(s)
-	return tuo
-}
-
-// SetNillableCreatedBy sets the "created_by" field if the given value is not nil.
-func (tuo *TopicUpdateOne) SetNillableCreatedBy(s *string) *TopicUpdateOne {
+// SetNillableProfilePicURL sets the "profile_pic_url" field if the given value is not nil.
+func (tuo *TopicUpdateOne) SetNillableProfilePicURL(s *string) *TopicUpdateOne {
 	if s != nil {
-		tuo.SetCreatedBy(*s)
+		tuo.SetProfilePicURL(*s)
 	}
+	return tuo
+}
+
+// ClearProfilePicURL clears the value of the "profile_pic_url" field.
+func (tuo *TopicUpdateOne) ClearProfilePicURL() *TopicUpdateOne {
+	tuo.mutation.ClearProfilePicURL()
 	return tuo
 }
 
@@ -383,6 +443,21 @@ func (tuo *TopicUpdateOne) AddTopicThreads(t ...*Thread) *TopicUpdateOne {
 		ids[i] = t[i].ID
 	}
 	return tuo.AddTopicThreadIDs(ids...)
+}
+
+// AddTopicModeratorIDs adds the "topic_moderators" edge to the User entity by IDs.
+func (tuo *TopicUpdateOne) AddTopicModeratorIDs(ids ...uuid.UUID) *TopicUpdateOne {
+	tuo.mutation.AddTopicModeratorIDs(ids...)
+	return tuo
+}
+
+// AddTopicModerators adds the "topic_moderators" edges to the User entity.
+func (tuo *TopicUpdateOne) AddTopicModerators(u ...*User) *TopicUpdateOne {
+	ids := make([]uuid.UUID, len(u))
+	for i := range u {
+		ids[i] = u[i].ID
+	}
+	return tuo.AddTopicModeratorIDs(ids...)
 }
 
 // Mutation returns the TopicMutation object of the builder.
@@ -409,6 +484,27 @@ func (tuo *TopicUpdateOne) RemoveTopicThreads(t ...*Thread) *TopicUpdateOne {
 		ids[i] = t[i].ID
 	}
 	return tuo.RemoveTopicThreadIDs(ids...)
+}
+
+// ClearTopicModerators clears all "topic_moderators" edges to the User entity.
+func (tuo *TopicUpdateOne) ClearTopicModerators() *TopicUpdateOne {
+	tuo.mutation.ClearTopicModerators()
+	return tuo
+}
+
+// RemoveTopicModeratorIDs removes the "topic_moderators" edge to User entities by IDs.
+func (tuo *TopicUpdateOne) RemoveTopicModeratorIDs(ids ...uuid.UUID) *TopicUpdateOne {
+	tuo.mutation.RemoveTopicModeratorIDs(ids...)
+	return tuo
+}
+
+// RemoveTopicModerators removes "topic_moderators" edges to User entities.
+func (tuo *TopicUpdateOne) RemoveTopicModerators(u ...*User) *TopicUpdateOne {
+	ids := make([]uuid.UUID, len(u))
+	for i := range u {
+		ids[i] = u[i].ID
+	}
+	return tuo.RemoveTopicModeratorIDs(ids...)
 }
 
 // Where appends a list predicates to the TopicUpdate builder.
@@ -468,11 +564,6 @@ func (tuo *TopicUpdateOne) check() error {
 			return &ValidationError{Name: "description", err: fmt.Errorf(`ent: validator failed for field "Topic.description": %w`, err)}
 		}
 	}
-	if v, ok := tuo.mutation.CreatedBy(); ok {
-		if err := topic.CreatedByValidator(v); err != nil {
-			return &ValidationError{Name: "created_by", err: fmt.Errorf(`ent: validator failed for field "Topic.created_by": %w`, err)}
-		}
-	}
 	return nil
 }
 
@@ -517,16 +608,11 @@ func (tuo *TopicUpdateOne) sqlSave(ctx context.Context) (_node *Topic, err error
 	if tuo.mutation.DescriptionCleared() {
 		_spec.ClearField(topic.FieldDescription, field.TypeString)
 	}
-	if value, ok := tuo.mutation.Moderators(); ok {
-		_spec.SetField(topic.FieldModerators, field.TypeJSON, value)
+	if value, ok := tuo.mutation.ProfilePicURL(); ok {
+		_spec.SetField(topic.FieldProfilePicURL, field.TypeString, value)
 	}
-	if value, ok := tuo.mutation.AppendedModerators(); ok {
-		_spec.AddModifier(func(u *sql.UpdateBuilder) {
-			sqljson.Append(u, topic.FieldModerators, value)
-		})
-	}
-	if value, ok := tuo.mutation.CreatedBy(); ok {
-		_spec.SetField(topic.FieldCreatedBy, field.TypeString, value)
+	if tuo.mutation.ProfilePicURLCleared() {
+		_spec.ClearField(topic.FieldProfilePicURL, field.TypeString)
 	}
 	if tuo.mutation.TopicThreadsCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -566,6 +652,51 @@ func (tuo *TopicUpdateOne) sqlSave(ctx context.Context) (_node *Topic, err error
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(thread.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if tuo.mutation.TopicModeratorsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   topic.TopicModeratorsTable,
+			Columns: topic.TopicModeratorsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := tuo.mutation.RemovedTopicModeratorsIDs(); len(nodes) > 0 && !tuo.mutation.TopicModeratorsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   topic.TopicModeratorsTable,
+			Columns: topic.TopicModeratorsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := tuo.mutation.TopicModeratorsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   topic.TopicModeratorsTable,
+			Columns: topic.TopicModeratorsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

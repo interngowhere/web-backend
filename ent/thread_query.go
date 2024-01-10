@@ -194,7 +194,7 @@ func (tq *ThreadQuery) QueryThreadKudoes() *ThreadKudoQuery {
 		}
 		step := sqlgraph.NewStep(
 			sqlgraph.From(thread.Table, thread.FieldID, selector),
-			sqlgraph.To(threadkudo.Table, threadkudo.FieldID),
+			sqlgraph.To(threadkudo.Table, threadkudo.ThreadColumn),
 			sqlgraph.Edge(sqlgraph.O2M, true, thread.ThreadKudoesTable, thread.ThreadKudoesColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(tq.driver.Dialect(), step)
@@ -866,7 +866,7 @@ func (tq *ThreadQuery) loadThreadKudoes(ctx context.Context, query *ThreadKudoQu
 		fk := n.ThreadID
 		node, ok := nodeids[fk]
 		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "thread_id" returned %v for node %v`, fk, n.ID)
+			return fmt.Errorf(`unexpected referenced foreign-key "thread_id" returned %v for node %v`, fk, n)
 		}
 		assign(node, n)
 	}

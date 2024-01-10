@@ -14,7 +14,6 @@ import (
 	"github.com/interngowhere/web-backend/ent/comment"
 	"github.com/interngowhere/web-backend/ent/tag"
 	"github.com/interngowhere/web-backend/ent/thread"
-	"github.com/interngowhere/web-backend/ent/threadkudo"
 	"github.com/interngowhere/web-backend/ent/topic"
 	"github.com/interngowhere/web-backend/ent/user"
 )
@@ -145,21 +144,6 @@ func (tc *ThreadCreate) AddKudoedUsers(u ...*User) *ThreadCreate {
 		ids[i] = u[i].ID
 	}
 	return tc.AddKudoedUserIDs(ids...)
-}
-
-// AddThreadKudoIDs adds the "thread_kudoes" edge to the ThreadKudo entity by IDs.
-func (tc *ThreadCreate) AddThreadKudoIDs(ids ...int) *ThreadCreate {
-	tc.mutation.AddThreadKudoIDs(ids...)
-	return tc
-}
-
-// AddThreadKudoes adds the "thread_kudoes" edges to the ThreadKudo entity.
-func (tc *ThreadCreate) AddThreadKudoes(t ...*ThreadKudo) *ThreadCreate {
-	ids := make([]int, len(t))
-	for i := range t {
-		ids[i] = t[i].ID
-	}
-	return tc.AddThreadKudoIDs(ids...)
 }
 
 // Mutation returns the ThreadMutation object of the builder.
@@ -347,22 +331,6 @@ func (tc *ThreadCreate) createSpec() (*Thread, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := tc.mutation.ThreadKudoesIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   thread.ThreadKudoesTable,
-			Columns: []string{thread.ThreadKudoesColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(threadkudo.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {

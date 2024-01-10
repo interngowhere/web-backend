@@ -9,7 +9,6 @@ import (
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
-	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/interngowhere/web-backend/ent/predicate"
 	"github.com/interngowhere/web-backend/ent/thread"
@@ -74,7 +73,7 @@ func (tkq *ThreadKudoQuery) QueryUser() *UserQuery {
 			return nil, err
 		}
 		step := sqlgraph.NewStep(
-			sqlgraph.From(threadkudo.Table, threadkudo.FieldID, selector),
+			sqlgraph.From(threadkudo.Table, threadkudo.UserColumn, selector),
 			sqlgraph.To(user.Table, user.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, threadkudo.UserTable, threadkudo.UserColumn),
 		)
@@ -96,7 +95,7 @@ func (tkq *ThreadKudoQuery) QueryThread() *ThreadQuery {
 			return nil, err
 		}
 		step := sqlgraph.NewStep(
-			sqlgraph.From(threadkudo.Table, threadkudo.FieldID, selector),
+			sqlgraph.From(threadkudo.Table, threadkudo.ThreadColumn, selector),
 			sqlgraph.To(thread.Table, thread.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, threadkudo.ThreadTable, threadkudo.ThreadColumn),
 		)
@@ -128,29 +127,6 @@ func (tkq *ThreadKudoQuery) FirstX(ctx context.Context) *ThreadKudo {
 	return node
 }
 
-// FirstID returns the first ThreadKudo ID from the query.
-// Returns a *NotFoundError when no ThreadKudo ID was found.
-func (tkq *ThreadKudoQuery) FirstID(ctx context.Context) (id int, err error) {
-	var ids []int
-	if ids, err = tkq.Limit(1).IDs(setContextOp(ctx, tkq.ctx, "FirstID")); err != nil {
-		return
-	}
-	if len(ids) == 0 {
-		err = &NotFoundError{threadkudo.Label}
-		return
-	}
-	return ids[0], nil
-}
-
-// FirstIDX is like FirstID, but panics if an error occurs.
-func (tkq *ThreadKudoQuery) FirstIDX(ctx context.Context) int {
-	id, err := tkq.FirstID(ctx)
-	if err != nil && !IsNotFound(err) {
-		panic(err)
-	}
-	return id
-}
-
 // Only returns a single ThreadKudo entity found by the query, ensuring it only returns one.
 // Returns a *NotSingularError when more than one ThreadKudo entity is found.
 // Returns a *NotFoundError when no ThreadKudo entities are found.
@@ -178,34 +154,6 @@ func (tkq *ThreadKudoQuery) OnlyX(ctx context.Context) *ThreadKudo {
 	return node
 }
 
-// OnlyID is like Only, but returns the only ThreadKudo ID in the query.
-// Returns a *NotSingularError when more than one ThreadKudo ID is found.
-// Returns a *NotFoundError when no entities are found.
-func (tkq *ThreadKudoQuery) OnlyID(ctx context.Context) (id int, err error) {
-	var ids []int
-	if ids, err = tkq.Limit(2).IDs(setContextOp(ctx, tkq.ctx, "OnlyID")); err != nil {
-		return
-	}
-	switch len(ids) {
-	case 1:
-		id = ids[0]
-	case 0:
-		err = &NotFoundError{threadkudo.Label}
-	default:
-		err = &NotSingularError{threadkudo.Label}
-	}
-	return
-}
-
-// OnlyIDX is like OnlyID, but panics if an error occurs.
-func (tkq *ThreadKudoQuery) OnlyIDX(ctx context.Context) int {
-	id, err := tkq.OnlyID(ctx)
-	if err != nil {
-		panic(err)
-	}
-	return id
-}
-
 // All executes the query and returns a list of ThreadKudos.
 func (tkq *ThreadKudoQuery) All(ctx context.Context) ([]*ThreadKudo, error) {
 	ctx = setContextOp(ctx, tkq.ctx, "All")
@@ -223,27 +171,6 @@ func (tkq *ThreadKudoQuery) AllX(ctx context.Context) []*ThreadKudo {
 		panic(err)
 	}
 	return nodes
-}
-
-// IDs executes the query and returns a list of ThreadKudo IDs.
-func (tkq *ThreadKudoQuery) IDs(ctx context.Context) (ids []int, err error) {
-	if tkq.ctx.Unique == nil && tkq.path != nil {
-		tkq.Unique(true)
-	}
-	ctx = setContextOp(ctx, tkq.ctx, "IDs")
-	if err = tkq.Select(threadkudo.FieldID).Scan(ctx, &ids); err != nil {
-		return nil, err
-	}
-	return ids, nil
-}
-
-// IDsX is like IDs, but panics if an error occurs.
-func (tkq *ThreadKudoQuery) IDsX(ctx context.Context) []int {
-	ids, err := tkq.IDs(ctx)
-	if err != nil {
-		panic(err)
-	}
-	return ids
 }
 
 // Count returns the count of the given query.
@@ -267,7 +194,7 @@ func (tkq *ThreadKudoQuery) CountX(ctx context.Context) int {
 // Exist returns true if the query has elements in the graph.
 func (tkq *ThreadKudoQuery) Exist(ctx context.Context) (bool, error) {
 	ctx = setContextOp(ctx, tkq.ctx, "Exist")
-	switch _, err := tkq.FirstID(ctx); {
+	switch _, err := tkq.First(ctx); {
 	case IsNotFound(err):
 		return false, nil
 	case err != nil:
@@ -505,15 +432,13 @@ func (tkq *ThreadKudoQuery) loadThread(ctx context.Context, query *ThreadQuery, 
 
 func (tkq *ThreadKudoQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := tkq.querySpec()
-	_spec.Node.Columns = tkq.ctx.Fields
-	if len(tkq.ctx.Fields) > 0 {
-		_spec.Unique = tkq.ctx.Unique != nil && *tkq.ctx.Unique
-	}
+	_spec.Unique = false
+	_spec.Node.Columns = nil
 	return sqlgraph.CountNodes(ctx, tkq.driver, _spec)
 }
 
 func (tkq *ThreadKudoQuery) querySpec() *sqlgraph.QuerySpec {
-	_spec := sqlgraph.NewQuerySpec(threadkudo.Table, threadkudo.Columns, sqlgraph.NewFieldSpec(threadkudo.FieldID, field.TypeInt))
+	_spec := sqlgraph.NewQuerySpec(threadkudo.Table, threadkudo.Columns, nil)
 	_spec.From = tkq.sql
 	if unique := tkq.ctx.Unique; unique != nil {
 		_spec.Unique = *unique
@@ -522,11 +447,8 @@ func (tkq *ThreadKudoQuery) querySpec() *sqlgraph.QuerySpec {
 	}
 	if fields := tkq.ctx.Fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
-		_spec.Node.Columns = append(_spec.Node.Columns, threadkudo.FieldID)
 		for i := range fields {
-			if fields[i] != threadkudo.FieldID {
-				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
-			}
+			_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 		}
 		if tkq.withUser != nil {
 			_spec.Node.AddColumnOnce(threadkudo.FieldUserID)

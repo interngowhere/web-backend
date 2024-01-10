@@ -104,17 +104,13 @@ func (ckc *CommentKudoCreate) sqlSave(ctx context.Context) (*CommentKudo, error)
 		}
 		return nil, err
 	}
-	id := _spec.ID.Value.(int64)
-	_node.ID = int(id)
-	ckc.mutation.id = &_node.ID
-	ckc.mutation.done = true
 	return _node, nil
 }
 
 func (ckc *CommentKudoCreate) createSpec() (*CommentKudo, *sqlgraph.CreateSpec) {
 	var (
 		_node = &CommentKudo{config: ckc.config}
-		_spec = sqlgraph.NewCreateSpec(commentkudo.Table, sqlgraph.NewFieldSpec(commentkudo.FieldID, field.TypeInt))
+		_spec = sqlgraph.NewCreateSpec(commentkudo.Table, nil)
 	)
 	if nodes := ckc.mutation.UserIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -195,11 +191,6 @@ func (ckcb *CommentKudoCreateBulk) Save(ctx context.Context) ([]*CommentKudo, er
 				}
 				if err != nil {
 					return nil, err
-				}
-				mutation.id = &nodes[i].ID
-				if specs[i].ID.Value != nil {
-					id := specs[i].ID.Value.(int64)
-					nodes[i].ID = int(id)
 				}
 				mutation.done = true
 				return nodes[i], nil

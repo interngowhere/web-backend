@@ -7,7 +7,6 @@ import (
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
-	"entgo.io/ent/schema/field"
 	"github.com/interngowhere/web-backend/ent/predicate"
 	"github.com/interngowhere/web-backend/ent/threadkudo"
 )
@@ -40,7 +39,7 @@ func (tkd *ThreadKudoDelete) ExecX(ctx context.Context) int {
 }
 
 func (tkd *ThreadKudoDelete) sqlExec(ctx context.Context) (int, error) {
-	_spec := sqlgraph.NewDeleteSpec(threadkudo.Table, sqlgraph.NewFieldSpec(threadkudo.FieldID, field.TypeInt))
+	_spec := sqlgraph.NewDeleteSpec(threadkudo.Table, nil)
 	if ps := tkd.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {

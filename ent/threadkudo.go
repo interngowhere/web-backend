@@ -17,8 +17,6 @@ import (
 // ThreadKudo is the model entity for the ThreadKudo schema.
 type ThreadKudo struct {
 	config `json:"-"`
-	// ID of the ent.
-	ID int `json:"id,omitempty"`
 	// UserID holds the value of the "user_id" field.
 	UserID uuid.UUID `json:"user_id,omitempty"`
 	// ThreadID holds the value of the "thread_id" field.
@@ -71,7 +69,7 @@ func (*ThreadKudo) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case threadkudo.FieldID, threadkudo.FieldThreadID:
+		case threadkudo.FieldThreadID:
 			values[i] = new(sql.NullInt64)
 		case threadkudo.FieldUserID:
 			values[i] = new(uuid.UUID)
@@ -90,12 +88,6 @@ func (tk *ThreadKudo) assignValues(columns []string, values []any) error {
 	}
 	for i := range columns {
 		switch columns[i] {
-		case threadkudo.FieldID:
-			value, ok := values[i].(*sql.NullInt64)
-			if !ok {
-				return fmt.Errorf("unexpected type %T for field id", value)
-			}
-			tk.ID = int(value.Int64)
 		case threadkudo.FieldUserID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field user_id", values[i])
@@ -153,7 +145,6 @@ func (tk *ThreadKudo) Unwrap() *ThreadKudo {
 func (tk *ThreadKudo) String() string {
 	var builder strings.Builder
 	builder.WriteString("ThreadKudo(")
-	builder.WriteString(fmt.Sprintf("id=%v, ", tk.ID))
 	builder.WriteString("user_id=")
 	builder.WriteString(fmt.Sprintf("%v", tk.UserID))
 	builder.WriteString(", ")

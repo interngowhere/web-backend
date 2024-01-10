@@ -14,6 +14,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/interngowhere/web-backend/ent/comment"
 	"github.com/interngowhere/web-backend/ent/commentkudo"
+	"github.com/interngowhere/web-backend/ent/moderator"
 	"github.com/interngowhere/web-backend/ent/tag"
 	"github.com/interngowhere/web-backend/ent/thread"
 	"github.com/interngowhere/web-backend/ent/threadkudo"
@@ -81,6 +82,7 @@ func checkColumn(table, column string) error {
 		columnCheck = sql.NewColumnCheck(map[string]func(string) bool{
 			comment.Table:     comment.ValidColumn,
 			commentkudo.Table: commentkudo.ValidColumn,
+			moderator.Table:   moderator.ValidColumn,
 			tag.Table:         tag.ValidColumn,
 			thread.Table:      thread.ValidColumn,
 			threadkudo.Table:  threadkudo.ValidColumn,

@@ -11,10 +11,9 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/interngowhere/web-backend/ent/comment"
-	"github.com/interngowhere/web-backend/ent/commentkudo"
 	"github.com/interngowhere/web-backend/ent/predicate"
 	"github.com/interngowhere/web-backend/ent/thread"
-	"github.com/interngowhere/web-backend/ent/threadkudo"
+	"github.com/interngowhere/web-backend/ent/topic"
 	"github.com/interngowhere/web-backend/ent/user"
 )
 
@@ -139,20 +138,6 @@ func (uu *UserUpdate) ClearSalt() *UserUpdate {
 	return uu
 }
 
-// SetIsModerator sets the "is_moderator" field.
-func (uu *UserUpdate) SetIsModerator(b bool) *UserUpdate {
-	uu.mutation.SetIsModerator(b)
-	return uu
-}
-
-// SetNillableIsModerator sets the "is_moderator" field if the given value is not nil.
-func (uu *UserUpdate) SetNillableIsModerator(b *bool) *UserUpdate {
-	if b != nil {
-		uu.SetIsModerator(*b)
-	}
-	return uu
-}
-
 // AddUserThreadIDs adds the "user_threads" edge to the Thread entity by IDs.
 func (uu *UserUpdate) AddUserThreadIDs(ids ...int) *UserUpdate {
 	uu.mutation.AddUserThreadIDs(ids...)
@@ -213,34 +198,19 @@ func (uu *UserUpdate) AddKudoedComments(c ...*Comment) *UserUpdate {
 	return uu.AddKudoedCommentIDs(ids...)
 }
 
-// AddThreadKudoIDs adds the "thread_kudoes" edge to the ThreadKudo entity by IDs.
-func (uu *UserUpdate) AddThreadKudoIDs(ids ...int) *UserUpdate {
-	uu.mutation.AddThreadKudoIDs(ids...)
+// AddModeratedTopicIDs adds the "moderated_topics" edge to the Topic entity by IDs.
+func (uu *UserUpdate) AddModeratedTopicIDs(ids ...int) *UserUpdate {
+	uu.mutation.AddModeratedTopicIDs(ids...)
 	return uu
 }
 
-// AddThreadKudoes adds the "thread_kudoes" edges to the ThreadKudo entity.
-func (uu *UserUpdate) AddThreadKudoes(t ...*ThreadKudo) *UserUpdate {
+// AddModeratedTopics adds the "moderated_topics" edges to the Topic entity.
+func (uu *UserUpdate) AddModeratedTopics(t ...*Topic) *UserUpdate {
 	ids := make([]int, len(t))
 	for i := range t {
 		ids[i] = t[i].ID
 	}
-	return uu.AddThreadKudoIDs(ids...)
-}
-
-// AddCommentKudoIDs adds the "comment_kudoes" edge to the CommentKudo entity by IDs.
-func (uu *UserUpdate) AddCommentKudoIDs(ids ...int) *UserUpdate {
-	uu.mutation.AddCommentKudoIDs(ids...)
-	return uu
-}
-
-// AddCommentKudoes adds the "comment_kudoes" edges to the CommentKudo entity.
-func (uu *UserUpdate) AddCommentKudoes(c ...*CommentKudo) *UserUpdate {
-	ids := make([]int, len(c))
-	for i := range c {
-		ids[i] = c[i].ID
-	}
-	return uu.AddCommentKudoIDs(ids...)
+	return uu.AddModeratedTopicIDs(ids...)
 }
 
 // Mutation returns the UserMutation object of the builder.
@@ -332,46 +302,25 @@ func (uu *UserUpdate) RemoveKudoedComments(c ...*Comment) *UserUpdate {
 	return uu.RemoveKudoedCommentIDs(ids...)
 }
 
-// ClearThreadKudoes clears all "thread_kudoes" edges to the ThreadKudo entity.
-func (uu *UserUpdate) ClearThreadKudoes() *UserUpdate {
-	uu.mutation.ClearThreadKudoes()
+// ClearModeratedTopics clears all "moderated_topics" edges to the Topic entity.
+func (uu *UserUpdate) ClearModeratedTopics() *UserUpdate {
+	uu.mutation.ClearModeratedTopics()
 	return uu
 }
 
-// RemoveThreadKudoIDs removes the "thread_kudoes" edge to ThreadKudo entities by IDs.
-func (uu *UserUpdate) RemoveThreadKudoIDs(ids ...int) *UserUpdate {
-	uu.mutation.RemoveThreadKudoIDs(ids...)
+// RemoveModeratedTopicIDs removes the "moderated_topics" edge to Topic entities by IDs.
+func (uu *UserUpdate) RemoveModeratedTopicIDs(ids ...int) *UserUpdate {
+	uu.mutation.RemoveModeratedTopicIDs(ids...)
 	return uu
 }
 
-// RemoveThreadKudoes removes "thread_kudoes" edges to ThreadKudo entities.
-func (uu *UserUpdate) RemoveThreadKudoes(t ...*ThreadKudo) *UserUpdate {
+// RemoveModeratedTopics removes "moderated_topics" edges to Topic entities.
+func (uu *UserUpdate) RemoveModeratedTopics(t ...*Topic) *UserUpdate {
 	ids := make([]int, len(t))
 	for i := range t {
 		ids[i] = t[i].ID
 	}
-	return uu.RemoveThreadKudoIDs(ids...)
-}
-
-// ClearCommentKudoes clears all "comment_kudoes" edges to the CommentKudo entity.
-func (uu *UserUpdate) ClearCommentKudoes() *UserUpdate {
-	uu.mutation.ClearCommentKudoes()
-	return uu
-}
-
-// RemoveCommentKudoIDs removes the "comment_kudoes" edge to CommentKudo entities by IDs.
-func (uu *UserUpdate) RemoveCommentKudoIDs(ids ...int) *UserUpdate {
-	uu.mutation.RemoveCommentKudoIDs(ids...)
-	return uu
-}
-
-// RemoveCommentKudoes removes "comment_kudoes" edges to CommentKudo entities.
-func (uu *UserUpdate) RemoveCommentKudoes(c ...*CommentKudo) *UserUpdate {
-	ids := make([]int, len(c))
-	for i := range c {
-		ids[i] = c[i].ID
-	}
-	return uu.RemoveCommentKudoIDs(ids...)
+	return uu.RemoveModeratedTopicIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -472,9 +421,6 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if uu.mutation.SaltCleared() {
 		_spec.ClearField(user.FieldSalt, field.TypeString)
-	}
-	if value, ok := uu.mutation.IsModerator(); ok {
-		_spec.SetField(user.FieldIsModerator, field.TypeBool, value)
 	}
 	if uu.mutation.UserThreadsCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -656,28 +602,28 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if uu.mutation.ThreadKudoesCleared() {
+	if uu.mutation.ModeratedTopicsCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   user.ThreadKudoesTable,
-			Columns: []string{user.ThreadKudoesColumn},
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   user.ModeratedTopicsTable,
+			Columns: user.ModeratedTopicsPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(threadkudo.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(topic.FieldID, field.TypeInt),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := uu.mutation.RemovedThreadKudoesIDs(); len(nodes) > 0 && !uu.mutation.ThreadKudoesCleared() {
+	if nodes := uu.mutation.RemovedModeratedTopicsIDs(); len(nodes) > 0 && !uu.mutation.ModeratedTopicsCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   user.ThreadKudoesTable,
-			Columns: []string{user.ThreadKudoesColumn},
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   user.ModeratedTopicsTable,
+			Columns: user.ModeratedTopicsPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(threadkudo.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(topic.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {
@@ -685,60 +631,15 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := uu.mutation.ThreadKudoesIDs(); len(nodes) > 0 {
+	if nodes := uu.mutation.ModeratedTopicsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   user.ThreadKudoesTable,
-			Columns: []string{user.ThreadKudoesColumn},
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   user.ModeratedTopicsTable,
+			Columns: user.ModeratedTopicsPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(threadkudo.FieldID, field.TypeInt),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if uu.mutation.CommentKudoesCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   user.CommentKudoesTable,
-			Columns: []string{user.CommentKudoesColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(commentkudo.FieldID, field.TypeInt),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := uu.mutation.RemovedCommentKudoesIDs(); len(nodes) > 0 && !uu.mutation.CommentKudoesCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   user.CommentKudoesTable,
-			Columns: []string{user.CommentKudoesColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(commentkudo.FieldID, field.TypeInt),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := uu.mutation.CommentKudoesIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   user.CommentKudoesTable,
-			Columns: []string{user.CommentKudoesColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(commentkudo.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(topic.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {
@@ -874,20 +775,6 @@ func (uuo *UserUpdateOne) ClearSalt() *UserUpdateOne {
 	return uuo
 }
 
-// SetIsModerator sets the "is_moderator" field.
-func (uuo *UserUpdateOne) SetIsModerator(b bool) *UserUpdateOne {
-	uuo.mutation.SetIsModerator(b)
-	return uuo
-}
-
-// SetNillableIsModerator sets the "is_moderator" field if the given value is not nil.
-func (uuo *UserUpdateOne) SetNillableIsModerator(b *bool) *UserUpdateOne {
-	if b != nil {
-		uuo.SetIsModerator(*b)
-	}
-	return uuo
-}
-
 // AddUserThreadIDs adds the "user_threads" edge to the Thread entity by IDs.
 func (uuo *UserUpdateOne) AddUserThreadIDs(ids ...int) *UserUpdateOne {
 	uuo.mutation.AddUserThreadIDs(ids...)
@@ -948,34 +835,19 @@ func (uuo *UserUpdateOne) AddKudoedComments(c ...*Comment) *UserUpdateOne {
 	return uuo.AddKudoedCommentIDs(ids...)
 }
 
-// AddThreadKudoIDs adds the "thread_kudoes" edge to the ThreadKudo entity by IDs.
-func (uuo *UserUpdateOne) AddThreadKudoIDs(ids ...int) *UserUpdateOne {
-	uuo.mutation.AddThreadKudoIDs(ids...)
+// AddModeratedTopicIDs adds the "moderated_topics" edge to the Topic entity by IDs.
+func (uuo *UserUpdateOne) AddModeratedTopicIDs(ids ...int) *UserUpdateOne {
+	uuo.mutation.AddModeratedTopicIDs(ids...)
 	return uuo
 }
 
-// AddThreadKudoes adds the "thread_kudoes" edges to the ThreadKudo entity.
-func (uuo *UserUpdateOne) AddThreadKudoes(t ...*ThreadKudo) *UserUpdateOne {
+// AddModeratedTopics adds the "moderated_topics" edges to the Topic entity.
+func (uuo *UserUpdateOne) AddModeratedTopics(t ...*Topic) *UserUpdateOne {
 	ids := make([]int, len(t))
 	for i := range t {
 		ids[i] = t[i].ID
 	}
-	return uuo.AddThreadKudoIDs(ids...)
-}
-
-// AddCommentKudoIDs adds the "comment_kudoes" edge to the CommentKudo entity by IDs.
-func (uuo *UserUpdateOne) AddCommentKudoIDs(ids ...int) *UserUpdateOne {
-	uuo.mutation.AddCommentKudoIDs(ids...)
-	return uuo
-}
-
-// AddCommentKudoes adds the "comment_kudoes" edges to the CommentKudo entity.
-func (uuo *UserUpdateOne) AddCommentKudoes(c ...*CommentKudo) *UserUpdateOne {
-	ids := make([]int, len(c))
-	for i := range c {
-		ids[i] = c[i].ID
-	}
-	return uuo.AddCommentKudoIDs(ids...)
+	return uuo.AddModeratedTopicIDs(ids...)
 }
 
 // Mutation returns the UserMutation object of the builder.
@@ -1067,46 +939,25 @@ func (uuo *UserUpdateOne) RemoveKudoedComments(c ...*Comment) *UserUpdateOne {
 	return uuo.RemoveKudoedCommentIDs(ids...)
 }
 
-// ClearThreadKudoes clears all "thread_kudoes" edges to the ThreadKudo entity.
-func (uuo *UserUpdateOne) ClearThreadKudoes() *UserUpdateOne {
-	uuo.mutation.ClearThreadKudoes()
+// ClearModeratedTopics clears all "moderated_topics" edges to the Topic entity.
+func (uuo *UserUpdateOne) ClearModeratedTopics() *UserUpdateOne {
+	uuo.mutation.ClearModeratedTopics()
 	return uuo
 }
 
-// RemoveThreadKudoIDs removes the "thread_kudoes" edge to ThreadKudo entities by IDs.
-func (uuo *UserUpdateOne) RemoveThreadKudoIDs(ids ...int) *UserUpdateOne {
-	uuo.mutation.RemoveThreadKudoIDs(ids...)
+// RemoveModeratedTopicIDs removes the "moderated_topics" edge to Topic entities by IDs.
+func (uuo *UserUpdateOne) RemoveModeratedTopicIDs(ids ...int) *UserUpdateOne {
+	uuo.mutation.RemoveModeratedTopicIDs(ids...)
 	return uuo
 }
 
-// RemoveThreadKudoes removes "thread_kudoes" edges to ThreadKudo entities.
-func (uuo *UserUpdateOne) RemoveThreadKudoes(t ...*ThreadKudo) *UserUpdateOne {
+// RemoveModeratedTopics removes "moderated_topics" edges to Topic entities.
+func (uuo *UserUpdateOne) RemoveModeratedTopics(t ...*Topic) *UserUpdateOne {
 	ids := make([]int, len(t))
 	for i := range t {
 		ids[i] = t[i].ID
 	}
-	return uuo.RemoveThreadKudoIDs(ids...)
-}
-
-// ClearCommentKudoes clears all "comment_kudoes" edges to the CommentKudo entity.
-func (uuo *UserUpdateOne) ClearCommentKudoes() *UserUpdateOne {
-	uuo.mutation.ClearCommentKudoes()
-	return uuo
-}
-
-// RemoveCommentKudoIDs removes the "comment_kudoes" edge to CommentKudo entities by IDs.
-func (uuo *UserUpdateOne) RemoveCommentKudoIDs(ids ...int) *UserUpdateOne {
-	uuo.mutation.RemoveCommentKudoIDs(ids...)
-	return uuo
-}
-
-// RemoveCommentKudoes removes "comment_kudoes" edges to CommentKudo entities.
-func (uuo *UserUpdateOne) RemoveCommentKudoes(c ...*CommentKudo) *UserUpdateOne {
-	ids := make([]int, len(c))
-	for i := range c {
-		ids[i] = c[i].ID
-	}
-	return uuo.RemoveCommentKudoIDs(ids...)
+	return uuo.RemoveModeratedTopicIDs(ids...)
 }
 
 // Where appends a list predicates to the UserUpdate builder.
@@ -1237,9 +1088,6 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 	}
 	if uuo.mutation.SaltCleared() {
 		_spec.ClearField(user.FieldSalt, field.TypeString)
-	}
-	if value, ok := uuo.mutation.IsModerator(); ok {
-		_spec.SetField(user.FieldIsModerator, field.TypeBool, value)
 	}
 	if uuo.mutation.UserThreadsCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -1421,28 +1269,28 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if uuo.mutation.ThreadKudoesCleared() {
+	if uuo.mutation.ModeratedTopicsCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   user.ThreadKudoesTable,
-			Columns: []string{user.ThreadKudoesColumn},
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   user.ModeratedTopicsTable,
+			Columns: user.ModeratedTopicsPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(threadkudo.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(topic.FieldID, field.TypeInt),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := uuo.mutation.RemovedThreadKudoesIDs(); len(nodes) > 0 && !uuo.mutation.ThreadKudoesCleared() {
+	if nodes := uuo.mutation.RemovedModeratedTopicsIDs(); len(nodes) > 0 && !uuo.mutation.ModeratedTopicsCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   user.ThreadKudoesTable,
-			Columns: []string{user.ThreadKudoesColumn},
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   user.ModeratedTopicsTable,
+			Columns: user.ModeratedTopicsPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(threadkudo.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(topic.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {
@@ -1450,60 +1298,15 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := uuo.mutation.ThreadKudoesIDs(); len(nodes) > 0 {
+	if nodes := uuo.mutation.ModeratedTopicsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   user.ThreadKudoesTable,
-			Columns: []string{user.ThreadKudoesColumn},
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   user.ModeratedTopicsTable,
+			Columns: user.ModeratedTopicsPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(threadkudo.FieldID, field.TypeInt),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if uuo.mutation.CommentKudoesCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   user.CommentKudoesTable,
-			Columns: []string{user.CommentKudoesColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(commentkudo.FieldID, field.TypeInt),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := uuo.mutation.RemovedCommentKudoesIDs(); len(nodes) > 0 && !uuo.mutation.CommentKudoesCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   user.CommentKudoesTable,
-			Columns: []string{user.CommentKudoesColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(commentkudo.FieldID, field.TypeInt),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := uuo.mutation.CommentKudoesIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   user.CommentKudoesTable,
-			Columns: []string{user.CommentKudoesColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(commentkudo.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(topic.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {

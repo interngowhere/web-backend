@@ -208,7 +208,7 @@ func newKudoedUsersStep() *sqlgraph.Step {
 func newCommentKudoesStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(CommentKudoesInverseTable, FieldID),
+		sqlgraph.To(CommentKudoesInverseTable, CommentKudoesColumn),
 		sqlgraph.Edge(sqlgraph.O2M, true, CommentKudoesTable, CommentKudoesColumn),
 	)
 }

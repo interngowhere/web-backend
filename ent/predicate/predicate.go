@@ -12,6 +12,9 @@ type Comment func(*sql.Selector)
 // CommentKudo is the predicate function for commentkudo builders.
 type CommentKudo func(*sql.Selector)
 
+// Moderator is the predicate function for moderator builders.
+type Moderator func(*sql.Selector)
+
 // Tag is the predicate function for tag builders.
 type Tag func(*sql.Selector)
 

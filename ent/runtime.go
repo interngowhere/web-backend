@@ -72,12 +72,8 @@ func init() {
 	topicDescDescription := topicFields[2].Descriptor()
 	// topic.DescriptionValidator is a validator for the "description" field. It is called by the builders before save.
 	topic.DescriptionValidator = topicDescDescription.Validators[0].(func(string) error)
-	// topicDescCreatedBy is the schema descriptor for created_by field.
-	topicDescCreatedBy := topicFields[4].Descriptor()
-	// topic.CreatedByValidator is a validator for the "created_by" field. It is called by the builders before save.
-	topic.CreatedByValidator = topicDescCreatedBy.Validators[0].(func(string) error)
 	// topicDescCreatedAt is the schema descriptor for created_at field.
-	topicDescCreatedAt := topicFields[5].Descriptor()
+	topicDescCreatedAt := topicFields[4].Descriptor()
 	// topic.DefaultCreatedAt holds the default value on creation for the created_at field.
 	topic.DefaultCreatedAt = topicDescCreatedAt.Default.(time.Time)
 	userFields := schema.User{}.Fields()
@@ -102,12 +98,8 @@ func init() {
 	userDescSalt := userFields[6].Descriptor()
 	// user.SaltValidator is a validator for the "salt" field. It is called by the builders before save.
 	user.SaltValidator = userDescSalt.Validators[0].(func(string) error)
-	// userDescIsModerator is the schema descriptor for is_moderator field.
-	userDescIsModerator := userFields[7].Descriptor()
-	// user.DefaultIsModerator holds the default value on creation for the is_moderator field.
-	user.DefaultIsModerator = userDescIsModerator.Default.(bool)
 	// userDescCreatedAt is the schema descriptor for created_at field.
-	userDescCreatedAt := userFields[8].Descriptor()
+	userDescCreatedAt := userFields[7].Descriptor()
 	// user.DefaultCreatedAt holds the default value on creation for the created_at field.
 	user.DefaultCreatedAt = userDescCreatedAt.Default.(time.Time)
 	// userDescID is the schema descriptor for id field.

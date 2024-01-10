@@ -30,8 +30,6 @@ type User struct {
 	Hash string `json:"-"`
 	// Salt holds the value of the "salt" field.
 	Salt string `json:"-"`
-	// IsModerator holds the value of the "is_moderator" field.
-	IsModerator bool `json:"is_moderator,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
@@ -50,13 +48,17 @@ type UserEdges struct {
 	UserComments []*Comment `json:"user_comments,omitempty"`
 	// KudoedComments holds the value of the kudoed_comments edge.
 	KudoedComments []*Comment `json:"kudoed_comments,omitempty"`
+	// ModeratedTopics holds the value of the moderated_topics edge.
+	ModeratedTopics []*Topic `json:"moderated_topics,omitempty"`
 	// ThreadKudoes holds the value of the thread_kudoes edge.
 	ThreadKudoes []*ThreadKudo `json:"thread_kudoes,omitempty"`
 	// CommentKudoes holds the value of the comment_kudoes edge.
 	CommentKudoes []*CommentKudo `json:"comment_kudoes,omitempty"`
+	// Moderators holds the value of the moderators edge.
+	Moderators []*Moderator `json:"moderators,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [6]bool
+	loadedTypes [8]bool
 }
 
 // UserThreadsOrErr returns the UserThreads value or an error if the edge
@@ -95,10 +97,19 @@ func (e UserEdges) KudoedCommentsOrErr() ([]*Comment, error) {
 	return nil, &NotLoadedError{edge: "kudoed_comments"}
 }
 
+// ModeratedTopicsOrErr returns the ModeratedTopics value or an error if the edge
+// was not loaded in eager-loading.
+func (e UserEdges) ModeratedTopicsOrErr() ([]*Topic, error) {
+	if e.loadedTypes[4] {
+		return e.ModeratedTopics, nil
+	}
+	return nil, &NotLoadedError{edge: "moderated_topics"}
+}
+
 // ThreadKudoesOrErr returns the ThreadKudoes value or an error if the edge
 // was not loaded in eager-loading.
 func (e UserEdges) ThreadKudoesOrErr() ([]*ThreadKudo, error) {
-	if e.loadedTypes[4] {
+	if e.loadedTypes[5] {
 		return e.ThreadKudoes, nil
 	}
 	return nil, &NotLoadedError{edge: "thread_kudoes"}
@@ -107,10 +118,19 @@ func (e UserEdges) ThreadKudoesOrErr() ([]*ThreadKudo, error) {
 // CommentKudoesOrErr returns the CommentKudoes value or an error if the edge
 // was not loaded in eager-loading.
 func (e UserEdges) CommentKudoesOrErr() ([]*CommentKudo, error) {
-	if e.loadedTypes[5] {
+	if e.loadedTypes[6] {
 		return e.CommentKudoes, nil
 	}
 	return nil, &NotLoadedError{edge: "comment_kudoes"}
+}
+
+// ModeratorsOrErr returns the Moderators value or an error if the edge
+// was not loaded in eager-loading.
+func (e UserEdges) ModeratorsOrErr() ([]*Moderator, error) {
+	if e.loadedTypes[7] {
+		return e.Moderators, nil
+	}
+	return nil, &NotLoadedError{edge: "moderators"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -118,8 +138,6 @@ func (*User) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case user.FieldIsModerator:
-			values[i] = new(sql.NullBool)
 		case user.FieldEmail, user.FieldUsername, user.FieldFirstName, user.FieldLastName, user.FieldHash, user.FieldSalt:
 			values[i] = new(sql.NullString)
 		case user.FieldCreatedAt:
@@ -183,12 +201,6 @@ func (u *User) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				u.Salt = value.String
 			}
-		case user.FieldIsModerator:
-			if value, ok := values[i].(*sql.NullBool); !ok {
-				return fmt.Errorf("unexpected type %T for field is_moderator", values[i])
-			} else if value.Valid {
-				u.IsModerator = value.Bool
-			}
 		case user.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field created_at", values[i])
@@ -228,6 +240,11 @@ func (u *User) QueryKudoedComments() *CommentQuery {
 	return NewUserClient(u.config).QueryKudoedComments(u)
 }
 
+// QueryModeratedTopics queries the "moderated_topics" edge of the User entity.
+func (u *User) QueryModeratedTopics() *TopicQuery {
+	return NewUserClient(u.config).QueryModeratedTopics(u)
+}
+
 // QueryThreadKudoes queries the "thread_kudoes" edge of the User entity.
 func (u *User) QueryThreadKudoes() *ThreadKudoQuery {
 	return NewUserClient(u.config).QueryThreadKudoes(u)
@@ -236,6 +253,11 @@ func (u *User) QueryThreadKudoes() *ThreadKudoQuery {
 // QueryCommentKudoes queries the "comment_kudoes" edge of the User entity.
 func (u *User) QueryCommentKudoes() *CommentKudoQuery {
 	return NewUserClient(u.config).QueryCommentKudoes(u)
+}
+
+// QueryModerators queries the "moderators" edge of the User entity.
+func (u *User) QueryModerators() *ModeratorQuery {
+	return NewUserClient(u.config).QueryModerators(u)
 }
 
 // Update returns a builder for updating this User.
@@ -276,9 +298,6 @@ func (u *User) String() string {
 	builder.WriteString("hash=<sensitive>")
 	builder.WriteString(", ")
 	builder.WriteString("salt=<sensitive>")
-	builder.WriteString(", ")
-	builder.WriteString("is_moderator=")
-	builder.WriteString(fmt.Sprintf("%v", u.IsModerator))
 	builder.WriteString(", ")
 	builder.WriteString("created_at=")
 	builder.WriteString(u.CreatedAt.Format(time.ANSIC))

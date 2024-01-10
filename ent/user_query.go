@@ -14,25 +14,29 @@ import (
 	"github.com/google/uuid"
 	"github.com/interngowhere/web-backend/ent/comment"
 	"github.com/interngowhere/web-backend/ent/commentkudo"
+	"github.com/interngowhere/web-backend/ent/moderator"
 	"github.com/interngowhere/web-backend/ent/predicate"
 	"github.com/interngowhere/web-backend/ent/thread"
 	"github.com/interngowhere/web-backend/ent/threadkudo"
+	"github.com/interngowhere/web-backend/ent/topic"
 	"github.com/interngowhere/web-backend/ent/user"
 )
 
 // UserQuery is the builder for querying User entities.
 type UserQuery struct {
 	config
-	ctx                *QueryContext
-	order              []user.OrderOption
-	inters             []Interceptor
-	predicates         []predicate.User
-	withUserThreads    *ThreadQuery
-	withKudoedThreads  *ThreadQuery
-	withUserComments   *CommentQuery
-	withKudoedComments *CommentQuery
-	withThreadKudoes   *ThreadKudoQuery
-	withCommentKudoes  *CommentKudoQuery
+	ctx                 *QueryContext
+	order               []user.OrderOption
+	inters              []Interceptor
+	predicates          []predicate.User
+	withUserThreads     *ThreadQuery
+	withKudoedThreads   *ThreadQuery
+	withUserComments    *CommentQuery
+	withKudoedComments  *CommentQuery
+	withModeratedTopics *TopicQuery
+	withThreadKudoes    *ThreadKudoQuery
+	withCommentKudoes   *CommentKudoQuery
+	withModerators      *ModeratorQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -157,6 +161,28 @@ func (uq *UserQuery) QueryKudoedComments() *CommentQuery {
 	return query
 }
 
+// QueryModeratedTopics chains the current query on the "moderated_topics" edge.
+func (uq *UserQuery) QueryModeratedTopics() *TopicQuery {
+	query := (&TopicClient{config: uq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := uq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := uq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, selector),
+			sqlgraph.To(topic.Table, topic.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, user.ModeratedTopicsTable, user.ModeratedTopicsPrimaryKey...),
+		)
+		fromU = sqlgraph.SetNeighbors(uq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
 // QueryThreadKudoes chains the current query on the "thread_kudoes" edge.
 func (uq *UserQuery) QueryThreadKudoes() *ThreadKudoQuery {
 	query := (&ThreadKudoClient{config: uq.config}).Query()
@@ -170,7 +196,7 @@ func (uq *UserQuery) QueryThreadKudoes() *ThreadKudoQuery {
 		}
 		step := sqlgraph.NewStep(
 			sqlgraph.From(user.Table, user.FieldID, selector),
-			sqlgraph.To(threadkudo.Table, threadkudo.FieldID),
+			sqlgraph.To(threadkudo.Table, threadkudo.UserColumn),
 			sqlgraph.Edge(sqlgraph.O2M, true, user.ThreadKudoesTable, user.ThreadKudoesColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(uq.driver.Dialect(), step)
@@ -192,8 +218,30 @@ func (uq *UserQuery) QueryCommentKudoes() *CommentKudoQuery {
 		}
 		step := sqlgraph.NewStep(
 			sqlgraph.From(user.Table, user.FieldID, selector),
-			sqlgraph.To(commentkudo.Table, commentkudo.FieldID),
+			sqlgraph.To(commentkudo.Table, commentkudo.UserColumn),
 			sqlgraph.Edge(sqlgraph.O2M, true, user.CommentKudoesTable, user.CommentKudoesColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(uq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryModerators chains the current query on the "moderators" edge.
+func (uq *UserQuery) QueryModerators() *ModeratorQuery {
+	query := (&ModeratorClient{config: uq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := uq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := uq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, selector),
+			sqlgraph.To(moderator.Table, moderator.ModeratorColumn),
+			sqlgraph.Edge(sqlgraph.O2M, true, user.ModeratorsTable, user.ModeratorsColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(uq.driver.Dialect(), step)
 		return fromU, nil
@@ -388,17 +436,19 @@ func (uq *UserQuery) Clone() *UserQuery {
 		return nil
 	}
 	return &UserQuery{
-		config:             uq.config,
-		ctx:                uq.ctx.Clone(),
-		order:              append([]user.OrderOption{}, uq.order...),
-		inters:             append([]Interceptor{}, uq.inters...),
-		predicates:         append([]predicate.User{}, uq.predicates...),
-		withUserThreads:    uq.withUserThreads.Clone(),
-		withKudoedThreads:  uq.withKudoedThreads.Clone(),
-		withUserComments:   uq.withUserComments.Clone(),
-		withKudoedComments: uq.withKudoedComments.Clone(),
-		withThreadKudoes:   uq.withThreadKudoes.Clone(),
-		withCommentKudoes:  uq.withCommentKudoes.Clone(),
+		config:              uq.config,
+		ctx:                 uq.ctx.Clone(),
+		order:               append([]user.OrderOption{}, uq.order...),
+		inters:              append([]Interceptor{}, uq.inters...),
+		predicates:          append([]predicate.User{}, uq.predicates...),
+		withUserThreads:     uq.withUserThreads.Clone(),
+		withKudoedThreads:   uq.withKudoedThreads.Clone(),
+		withUserComments:    uq.withUserComments.Clone(),
+		withKudoedComments:  uq.withKudoedComments.Clone(),
+		withModeratedTopics: uq.withModeratedTopics.Clone(),
+		withThreadKudoes:    uq.withThreadKudoes.Clone(),
+		withCommentKudoes:   uq.withCommentKudoes.Clone(),
+		withModerators:      uq.withModerators.Clone(),
 		// clone intermediate query.
 		sql:  uq.sql.Clone(),
 		path: uq.path,
@@ -449,6 +499,17 @@ func (uq *UserQuery) WithKudoedComments(opts ...func(*CommentQuery)) *UserQuery 
 	return uq
 }
 
+// WithModeratedTopics tells the query-builder to eager-load the nodes that are connected to
+// the "moderated_topics" edge. The optional arguments are used to configure the query builder of the edge.
+func (uq *UserQuery) WithModeratedTopics(opts ...func(*TopicQuery)) *UserQuery {
+	query := (&TopicClient{config: uq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	uq.withModeratedTopics = query
+	return uq
+}
+
 // WithThreadKudoes tells the query-builder to eager-load the nodes that are connected to
 // the "thread_kudoes" edge. The optional arguments are used to configure the query builder of the edge.
 func (uq *UserQuery) WithThreadKudoes(opts ...func(*ThreadKudoQuery)) *UserQuery {
@@ -468,6 +529,17 @@ func (uq *UserQuery) WithCommentKudoes(opts ...func(*CommentKudoQuery)) *UserQue
 		opt(query)
 	}
 	uq.withCommentKudoes = query
+	return uq
+}
+
+// WithModerators tells the query-builder to eager-load the nodes that are connected to
+// the "moderators" edge. The optional arguments are used to configure the query builder of the edge.
+func (uq *UserQuery) WithModerators(opts ...func(*ModeratorQuery)) *UserQuery {
+	query := (&ModeratorClient{config: uq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	uq.withModerators = query
 	return uq
 }
 
@@ -549,13 +621,15 @@ func (uq *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 	var (
 		nodes       = []*User{}
 		_spec       = uq.querySpec()
-		loadedTypes = [6]bool{
+		loadedTypes = [8]bool{
 			uq.withUserThreads != nil,
 			uq.withKudoedThreads != nil,
 			uq.withUserComments != nil,
 			uq.withKudoedComments != nil,
+			uq.withModeratedTopics != nil,
 			uq.withThreadKudoes != nil,
 			uq.withCommentKudoes != nil,
+			uq.withModerators != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -604,6 +678,13 @@ func (uq *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 			return nil, err
 		}
 	}
+	if query := uq.withModeratedTopics; query != nil {
+		if err := uq.loadModeratedTopics(ctx, query, nodes,
+			func(n *User) { n.Edges.ModeratedTopics = []*Topic{} },
+			func(n *User, e *Topic) { n.Edges.ModeratedTopics = append(n.Edges.ModeratedTopics, e) }); err != nil {
+			return nil, err
+		}
+	}
 	if query := uq.withThreadKudoes; query != nil {
 		if err := uq.loadThreadKudoes(ctx, query, nodes,
 			func(n *User) { n.Edges.ThreadKudoes = []*ThreadKudo{} },
@@ -615,6 +696,13 @@ func (uq *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 		if err := uq.loadCommentKudoes(ctx, query, nodes,
 			func(n *User) { n.Edges.CommentKudoes = []*CommentKudo{} },
 			func(n *User, e *CommentKudo) { n.Edges.CommentKudoes = append(n.Edges.CommentKudoes, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := uq.withModerators; query != nil {
+		if err := uq.loadModerators(ctx, query, nodes,
+			func(n *User) { n.Edges.Moderators = []*Moderator{} },
+			func(n *User, e *Moderator) { n.Edges.Moderators = append(n.Edges.Moderators, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -805,6 +893,67 @@ func (uq *UserQuery) loadKudoedComments(ctx context.Context, query *CommentQuery
 	}
 	return nil
 }
+func (uq *UserQuery) loadModeratedTopics(ctx context.Context, query *TopicQuery, nodes []*User, init func(*User), assign func(*User, *Topic)) error {
+	edgeIDs := make([]driver.Value, len(nodes))
+	byID := make(map[uuid.UUID]*User)
+	nids := make(map[int]map[*User]struct{})
+	for i, node := range nodes {
+		edgeIDs[i] = node.ID
+		byID[node.ID] = node
+		if init != nil {
+			init(node)
+		}
+	}
+	query.Where(func(s *sql.Selector) {
+		joinT := sql.Table(user.ModeratedTopicsTable)
+		s.Join(joinT).On(s.C(topic.FieldID), joinT.C(user.ModeratedTopicsPrimaryKey[1]))
+		s.Where(sql.InValues(joinT.C(user.ModeratedTopicsPrimaryKey[0]), edgeIDs...))
+		columns := s.SelectedColumns()
+		s.Select(joinT.C(user.ModeratedTopicsPrimaryKey[0]))
+		s.AppendSelect(columns...)
+		s.SetDistinct(false)
+	})
+	if err := query.prepareQuery(ctx); err != nil {
+		return err
+	}
+	qr := QuerierFunc(func(ctx context.Context, q Query) (Value, error) {
+		return query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
+			assign := spec.Assign
+			values := spec.ScanValues
+			spec.ScanValues = func(columns []string) ([]any, error) {
+				values, err := values(columns[1:])
+				if err != nil {
+					return nil, err
+				}
+				return append([]any{new(uuid.UUID)}, values...), nil
+			}
+			spec.Assign = func(columns []string, values []any) error {
+				outValue := *values[0].(*uuid.UUID)
+				inValue := int(values[1].(*sql.NullInt64).Int64)
+				if nids[inValue] == nil {
+					nids[inValue] = map[*User]struct{}{byID[outValue]: {}}
+					return assign(columns[1:], values[1:])
+				}
+				nids[inValue][byID[outValue]] = struct{}{}
+				return nil
+			}
+		})
+	})
+	neighbors, err := withInterceptors[[]*Topic](ctx, query, qr, query.inters)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected "moderated_topics" node returned %v`, n.ID)
+		}
+		for kn := range nodes {
+			assign(kn, n)
+		}
+	}
+	return nil
+}
 func (uq *UserQuery) loadThreadKudoes(ctx context.Context, query *ThreadKudoQuery, nodes []*User, init func(*User), assign func(*User, *ThreadKudo)) error {
 	fks := make([]driver.Value, 0, len(nodes))
 	nodeids := make(map[uuid.UUID]*User)
@@ -829,7 +978,7 @@ func (uq *UserQuery) loadThreadKudoes(ctx context.Context, query *ThreadKudoQuer
 		fk := n.UserID
 		node, ok := nodeids[fk]
 		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "user_id" returned %v for node %v`, fk, n.ID)
+			return fmt.Errorf(`unexpected referenced foreign-key "user_id" returned %v for node %v`, fk, n)
 		}
 		assign(node, n)
 	}
@@ -859,7 +1008,37 @@ func (uq *UserQuery) loadCommentKudoes(ctx context.Context, query *CommentKudoQu
 		fk := n.UserID
 		node, ok := nodeids[fk]
 		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "user_id" returned %v for node %v`, fk, n.ID)
+			return fmt.Errorf(`unexpected referenced foreign-key "user_id" returned %v for node %v`, fk, n)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (uq *UserQuery) loadModerators(ctx context.Context, query *ModeratorQuery, nodes []*User, init func(*User), assign func(*User, *Moderator)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*User)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(moderator.FieldModeratorID)
+	}
+	query.Where(predicate.Moderator(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(user.ModeratorsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.ModeratorID
+		node, ok := nodeids[fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "moderator_id" returned %v for node %v`, fk, n)
 		}
 		assign(node, n)
 	}

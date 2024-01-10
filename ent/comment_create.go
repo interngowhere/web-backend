@@ -12,7 +12,6 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/interngowhere/web-backend/ent/comment"
-	"github.com/interngowhere/web-backend/ent/commentkudo"
 	"github.com/interngowhere/web-backend/ent/thread"
 	"github.com/interngowhere/web-backend/ent/user"
 )
@@ -113,21 +112,6 @@ func (cc *CommentCreate) AddKudoedUsers(u ...*User) *CommentCreate {
 		ids[i] = u[i].ID
 	}
 	return cc.AddKudoedUserIDs(ids...)
-}
-
-// AddCommentKudoIDs adds the "comment_kudoes" edge to the CommentKudo entity by IDs.
-func (cc *CommentCreate) AddCommentKudoIDs(ids ...int) *CommentCreate {
-	cc.mutation.AddCommentKudoIDs(ids...)
-	return cc
-}
-
-// AddCommentKudoes adds the "comment_kudoes" edges to the CommentKudo entity.
-func (cc *CommentCreate) AddCommentKudoes(c ...*CommentKudo) *CommentCreate {
-	ids := make([]int, len(c))
-	for i := range c {
-		ids[i] = c[i].ID
-	}
-	return cc.AddCommentKudoIDs(ids...)
 }
 
 // Mutation returns the CommentMutation object of the builder.
@@ -290,22 +274,6 @@ func (cc *CommentCreate) createSpec() (*Comment, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := cc.mutation.CommentKudoesIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   comment.CommentKudoesTable,
-			Columns: []string{comment.CommentKudoesColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(commentkudo.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {

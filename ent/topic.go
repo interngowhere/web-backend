@@ -3,7 +3,6 @@
 package ent
 
 import (
-	"encoding/json"
 	"fmt"
 	"strings"
 	"time"
@@ -24,10 +23,8 @@ type Topic struct {
 	ShortTitle string `json:"short_title,omitempty"`
 	// Description holds the value of the "description" field.
 	Description string `json:"description,omitempty"`
-	// Moderators holds the value of the "moderators" field.
-	Moderators []string `json:"moderators,omitempty"`
-	// CreatedBy holds the value of the "created_by" field.
-	CreatedBy string `json:"created_by,omitempty"`
+	// ProfilePicURL holds the value of the "profile_pic_url" field.
+	ProfilePicURL string `json:"profile_pic_url,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
@@ -40,9 +37,13 @@ type Topic struct {
 type TopicEdges struct {
 	// TopicThreads holds the value of the topic_threads edge.
 	TopicThreads []*Thread `json:"topic_threads,omitempty"`
+	// TopicModerators holds the value of the topic_moderators edge.
+	TopicModerators []*User `json:"topic_moderators,omitempty"`
+	// Moderators holds the value of the moderators edge.
+	Moderators []*Moderator `json:"moderators,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [1]bool
+	loadedTypes [3]bool
 }
 
 // TopicThreadsOrErr returns the TopicThreads value or an error if the edge
@@ -54,16 +55,32 @@ func (e TopicEdges) TopicThreadsOrErr() ([]*Thread, error) {
 	return nil, &NotLoadedError{edge: "topic_threads"}
 }
 
+// TopicModeratorsOrErr returns the TopicModerators value or an error if the edge
+// was not loaded in eager-loading.
+func (e TopicEdges) TopicModeratorsOrErr() ([]*User, error) {
+	if e.loadedTypes[1] {
+		return e.TopicModerators, nil
+	}
+	return nil, &NotLoadedError{edge: "topic_moderators"}
+}
+
+// ModeratorsOrErr returns the Moderators value or an error if the edge
+// was not loaded in eager-loading.
+func (e TopicEdges) ModeratorsOrErr() ([]*Moderator, error) {
+	if e.loadedTypes[2] {
+		return e.Moderators, nil
+	}
+	return nil, &NotLoadedError{edge: "moderators"}
+}
+
 // scanValues returns the types for scanning values from sql.Rows.
 func (*Topic) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case topic.FieldModerators:
-			values[i] = new([]byte)
 		case topic.FieldID:
 			values[i] = new(sql.NullInt64)
-		case topic.FieldTitle, topic.FieldShortTitle, topic.FieldDescription, topic.FieldCreatedBy:
+		case topic.FieldTitle, topic.FieldShortTitle, topic.FieldDescription, topic.FieldProfilePicURL:
 			values[i] = new(sql.NullString)
 		case topic.FieldCreatedAt:
 			values[i] = new(sql.NullTime)
@@ -106,19 +123,11 @@ func (t *Topic) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				t.Description = value.String
 			}
-		case topic.FieldModerators:
-			if value, ok := values[i].(*[]byte); !ok {
-				return fmt.Errorf("unexpected type %T for field moderators", values[i])
-			} else if value != nil && len(*value) > 0 {
-				if err := json.Unmarshal(*value, &t.Moderators); err != nil {
-					return fmt.Errorf("unmarshal field moderators: %w", err)
-				}
-			}
-		case topic.FieldCreatedBy:
+		case topic.FieldProfilePicURL:
 			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field created_by", values[i])
+				return fmt.Errorf("unexpected type %T for field profile_pic_url", values[i])
 			} else if value.Valid {
-				t.CreatedBy = value.String
+				t.ProfilePicURL = value.String
 			}
 		case topic.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -142,6 +151,16 @@ func (t *Topic) Value(name string) (ent.Value, error) {
 // QueryTopicThreads queries the "topic_threads" edge of the Topic entity.
 func (t *Topic) QueryTopicThreads() *ThreadQuery {
 	return NewTopicClient(t.config).QueryTopicThreads(t)
+}
+
+// QueryTopicModerators queries the "topic_moderators" edge of the Topic entity.
+func (t *Topic) QueryTopicModerators() *UserQuery {
+	return NewTopicClient(t.config).QueryTopicModerators(t)
+}
+
+// QueryModerators queries the "moderators" edge of the Topic entity.
+func (t *Topic) QueryModerators() *ModeratorQuery {
+	return NewTopicClient(t.config).QueryModerators(t)
 }
 
 // Update returns a builder for updating this Topic.
@@ -176,11 +195,8 @@ func (t *Topic) String() string {
 	builder.WriteString("description=")
 	builder.WriteString(t.Description)
 	builder.WriteString(", ")
-	builder.WriteString("moderators=")
-	builder.WriteString(fmt.Sprintf("%v", t.Moderators))
-	builder.WriteString(", ")
-	builder.WriteString("created_by=")
-	builder.WriteString(t.CreatedBy)
+	builder.WriteString("profile_pic_url=")
+	builder.WriteString(t.ProfilePicURL)
 	builder.WriteString(", ")
 	builder.WriteString("created_at=")
 	builder.WriteString(t.CreatedAt.Format(time.ANSIC))

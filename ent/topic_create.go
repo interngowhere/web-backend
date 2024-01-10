@@ -10,8 +10,10 @@ import (
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/google/uuid"
 	"github.com/interngowhere/web-backend/ent/thread"
 	"github.com/interngowhere/web-backend/ent/topic"
+	"github.com/interngowhere/web-backend/ent/user"
 )
 
 // TopicCreate is the builder for creating a Topic entity.
@@ -47,15 +49,17 @@ func (tc *TopicCreate) SetNillableDescription(s *string) *TopicCreate {
 	return tc
 }
 
-// SetModerators sets the "moderators" field.
-func (tc *TopicCreate) SetModerators(s []string) *TopicCreate {
-	tc.mutation.SetModerators(s)
+// SetProfilePicURL sets the "profile_pic_url" field.
+func (tc *TopicCreate) SetProfilePicURL(s string) *TopicCreate {
+	tc.mutation.SetProfilePicURL(s)
 	return tc
 }
 
-// SetCreatedBy sets the "created_by" field.
-func (tc *TopicCreate) SetCreatedBy(s string) *TopicCreate {
-	tc.mutation.SetCreatedBy(s)
+// SetNillableProfilePicURL sets the "profile_pic_url" field if the given value is not nil.
+func (tc *TopicCreate) SetNillableProfilePicURL(s *string) *TopicCreate {
+	if s != nil {
+		tc.SetProfilePicURL(*s)
+	}
 	return tc
 }
 
@@ -86,6 +90,21 @@ func (tc *TopicCreate) AddTopicThreads(t ...*Thread) *TopicCreate {
 		ids[i] = t[i].ID
 	}
 	return tc.AddTopicThreadIDs(ids...)
+}
+
+// AddTopicModeratorIDs adds the "topic_moderators" edge to the User entity by IDs.
+func (tc *TopicCreate) AddTopicModeratorIDs(ids ...uuid.UUID) *TopicCreate {
+	tc.mutation.AddTopicModeratorIDs(ids...)
+	return tc
+}
+
+// AddTopicModerators adds the "topic_moderators" edges to the User entity.
+func (tc *TopicCreate) AddTopicModerators(u ...*User) *TopicCreate {
+	ids := make([]uuid.UUID, len(u))
+	for i := range u {
+		ids[i] = u[i].ID
+	}
+	return tc.AddTopicModeratorIDs(ids...)
 }
 
 // Mutation returns the TopicMutation object of the builder.
@@ -152,17 +171,6 @@ func (tc *TopicCreate) check() error {
 			return &ValidationError{Name: "description", err: fmt.Errorf(`ent: validator failed for field "Topic.description": %w`, err)}
 		}
 	}
-	if _, ok := tc.mutation.Moderators(); !ok {
-		return &ValidationError{Name: "moderators", err: errors.New(`ent: missing required field "Topic.moderators"`)}
-	}
-	if _, ok := tc.mutation.CreatedBy(); !ok {
-		return &ValidationError{Name: "created_by", err: errors.New(`ent: missing required field "Topic.created_by"`)}
-	}
-	if v, ok := tc.mutation.CreatedBy(); ok {
-		if err := topic.CreatedByValidator(v); err != nil {
-			return &ValidationError{Name: "created_by", err: fmt.Errorf(`ent: validator failed for field "Topic.created_by": %w`, err)}
-		}
-	}
 	if _, ok := tc.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "Topic.created_at"`)}
 	}
@@ -204,13 +212,9 @@ func (tc *TopicCreate) createSpec() (*Topic, *sqlgraph.CreateSpec) {
 		_spec.SetField(topic.FieldDescription, field.TypeString, value)
 		_node.Description = value
 	}
-	if value, ok := tc.mutation.Moderators(); ok {
-		_spec.SetField(topic.FieldModerators, field.TypeJSON, value)
-		_node.Moderators = value
-	}
-	if value, ok := tc.mutation.CreatedBy(); ok {
-		_spec.SetField(topic.FieldCreatedBy, field.TypeString, value)
-		_node.CreatedBy = value
+	if value, ok := tc.mutation.ProfilePicURL(); ok {
+		_spec.SetField(topic.FieldProfilePicURL, field.TypeString, value)
+		_node.ProfilePicURL = value
 	}
 	if value, ok := tc.mutation.CreatedAt(); ok {
 		_spec.SetField(topic.FieldCreatedAt, field.TypeTime, value)
@@ -225,6 +229,22 @@ func (tc *TopicCreate) createSpec() (*Topic, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(thread.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := tc.mutation.TopicModeratorsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   topic.TopicModeratorsTable,
+			Columns: topic.TopicModeratorsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

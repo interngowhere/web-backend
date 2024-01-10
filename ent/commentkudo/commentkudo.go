@@ -10,8 +10,6 @@ import (
 const (
 	// Label holds the string label denoting the commentkudo type in the database.
 	Label = "comment_kudo"
-	// FieldID holds the string denoting the id field in the database.
-	FieldID = "id"
 	// FieldUserID holds the string denoting the user_id field in the database.
 	FieldUserID = "user_id"
 	// FieldCommentID holds the string denoting the comment_id field in the database.
@@ -20,6 +18,10 @@ const (
 	EdgeUser = "user"
 	// EdgeComment holds the string denoting the comment edge name in mutations.
 	EdgeComment = "comment"
+	// UserFieldID holds the string denoting the ID field of the User.
+	UserFieldID = "id"
+	// CommentFieldID holds the string denoting the ID field of the Comment.
+	CommentFieldID = "id"
 	// Table holds the table name of the commentkudo in the database.
 	Table = "comment_kudos"
 	// UserTable is the table that holds the user relation/edge.
@@ -40,7 +42,6 @@ const (
 
 // Columns holds all SQL columns for commentkudo fields.
 var Columns = []string{
-	FieldID,
 	FieldUserID,
 	FieldCommentID,
 }
@@ -57,11 +58,6 @@ func ValidColumn(column string) bool {
 
 // OrderOption defines the ordering options for the CommentKudo queries.
 type OrderOption func(*sql.Selector)
-
-// ByID orders the results by the id field.
-func ByID(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldID, opts...).ToFunc()
-}
 
 // ByUserID orders the results by the user_id field.
 func ByUserID(opts ...sql.OrderTermOption) OrderOption {
@@ -88,15 +84,15 @@ func ByCommentField(field string, opts ...sql.OrderTermOption) OrderOption {
 }
 func newUserStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(UserInverseTable, FieldID),
+		sqlgraph.From(Table, UserColumn),
+		sqlgraph.To(UserInverseTable, UserFieldID),
 		sqlgraph.Edge(sqlgraph.M2O, false, UserTable, UserColumn),
 	)
 }
 func newCommentStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(CommentInverseTable, FieldID),
+		sqlgraph.From(Table, CommentColumn),
+		sqlgraph.To(CommentInverseTable, CommentFieldID),
 		sqlgraph.Edge(sqlgraph.M2O, false, CommentTable, CommentColumn),
 	)
 }

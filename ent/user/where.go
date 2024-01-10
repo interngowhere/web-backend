@@ -86,11 +86,6 @@ func Salt(v string) predicate.User {
 	return predicate.User(sql.FieldEQ(FieldSalt, v))
 }
 
-// IsModerator applies equality check predicate on the "is_moderator" field. It's identical to IsModeratorEQ.
-func IsModerator(v bool) predicate.User {
-	return predicate.User(sql.FieldEQ(FieldIsModerator, v))
-}
-
 // CreatedAt applies equality check predicate on the "created_at" field. It's identical to CreatedAtEQ.
 func CreatedAt(v time.Time) predicate.User {
 	return predicate.User(sql.FieldEQ(FieldCreatedAt, v))
@@ -526,16 +521,6 @@ func SaltContainsFold(v string) predicate.User {
 	return predicate.User(sql.FieldContainsFold(FieldSalt, v))
 }
 
-// IsModeratorEQ applies the EQ predicate on the "is_moderator" field.
-func IsModeratorEQ(v bool) predicate.User {
-	return predicate.User(sql.FieldEQ(FieldIsModerator, v))
-}
-
-// IsModeratorNEQ applies the NEQ predicate on the "is_moderator" field.
-func IsModeratorNEQ(v bool) predicate.User {
-	return predicate.User(sql.FieldNEQ(FieldIsModerator, v))
-}
-
 // CreatedAtEQ applies the EQ predicate on the "created_at" field.
 func CreatedAtEQ(v time.Time) predicate.User {
 	return predicate.User(sql.FieldEQ(FieldCreatedAt, v))
@@ -668,6 +653,29 @@ func HasKudoedCommentsWith(preds ...predicate.Comment) predicate.User {
 	})
 }
 
+// HasModeratedTopics applies the HasEdge predicate on the "moderated_topics" edge.
+func HasModeratedTopics() predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, ModeratedTopicsTable, ModeratedTopicsPrimaryKey...),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasModeratedTopicsWith applies the HasEdge predicate on the "moderated_topics" edge with a given conditions (other predicates).
+func HasModeratedTopicsWith(preds ...predicate.Topic) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := newModeratedTopicsStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // HasThreadKudoes applies the HasEdge predicate on the "thread_kudoes" edge.
 func HasThreadKudoes() predicate.User {
 	return predicate.User(func(s *sql.Selector) {
@@ -706,6 +714,29 @@ func HasCommentKudoes() predicate.User {
 func HasCommentKudoesWith(preds ...predicate.CommentKudo) predicate.User {
 	return predicate.User(func(s *sql.Selector) {
 		step := newCommentKudoesStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasModerators applies the HasEdge predicate on the "moderators" edge.
+func HasModerators() predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, ModeratorsTable, ModeratorsColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasModeratorsWith applies the HasEdge predicate on the "moderators" edge with a given conditions (other predicates).
+func HasModeratorsWith(preds ...predicate.Moderator) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := newModeratorsStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

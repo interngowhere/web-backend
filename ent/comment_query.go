@@ -146,7 +146,7 @@ func (cq *CommentQuery) QueryCommentKudoes() *CommentKudoQuery {
 		}
 		step := sqlgraph.NewStep(
 			sqlgraph.From(comment.Table, comment.FieldID, selector),
-			sqlgraph.To(commentkudo.Table, commentkudo.FieldID),
+			sqlgraph.To(commentkudo.Table, commentkudo.CommentColumn),
 			sqlgraph.Edge(sqlgraph.O2M, true, comment.CommentKudoesTable, comment.CommentKudoesColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(cq.driver.Dialect(), step)
@@ -686,7 +686,7 @@ func (cq *CommentQuery) loadCommentKudoes(ctx context.Context, query *CommentKud
 		fk := n.CommentID
 		node, ok := nodeids[fk]
 		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "comment_id" returned %v for node %v`, fk, n.ID)
+			return fmt.Errorf(`unexpected referenced foreign-key "comment_id" returned %v for node %v`, fk, n)
 		}
 		assign(node, n)
 	}
