@@ -38,10 +38,6 @@ func init() {
 	tagDescTagName := tagFields[0].Descriptor()
 	// tag.TagNameValidator is a validator for the "tag_name" field. It is called by the builders before save.
 	tag.TagNameValidator = tagDescTagName.Validators[0].(func(string) error)
-	// tagDescTagDescription is the schema descriptor for tag_description field.
-	tagDescTagDescription := tagFields[1].Descriptor()
-	// tag.TagDescriptionValidator is a validator for the "tag_description" field. It is called by the builders before save.
-	tag.TagDescriptionValidator = tagDescTagDescription.Validators[0].(func(string) error)
 	threadFields := schema.Thread{}.Fields()
 	_ = threadFields
 	// threadDescTitle is the schema descriptor for title field.

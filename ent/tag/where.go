@@ -58,11 +58,6 @@ func TagName(v string) predicate.Tag {
 	return predicate.Tag(sql.FieldEQ(FieldTagName, v))
 }
 
-// TagDescription applies equality check predicate on the "tag_description" field. It's identical to TagDescriptionEQ.
-func TagDescription(v string) predicate.Tag {
-	return predicate.Tag(sql.FieldEQ(FieldTagDescription, v))
-}
-
 // TagNameEQ applies the EQ predicate on the "tag_name" field.
 func TagNameEQ(v string) predicate.Tag {
 	return predicate.Tag(sql.FieldEQ(FieldTagName, v))
@@ -126,71 +121,6 @@ func TagNameEqualFold(v string) predicate.Tag {
 // TagNameContainsFold applies the ContainsFold predicate on the "tag_name" field.
 func TagNameContainsFold(v string) predicate.Tag {
 	return predicate.Tag(sql.FieldContainsFold(FieldTagName, v))
-}
-
-// TagDescriptionEQ applies the EQ predicate on the "tag_description" field.
-func TagDescriptionEQ(v string) predicate.Tag {
-	return predicate.Tag(sql.FieldEQ(FieldTagDescription, v))
-}
-
-// TagDescriptionNEQ applies the NEQ predicate on the "tag_description" field.
-func TagDescriptionNEQ(v string) predicate.Tag {
-	return predicate.Tag(sql.FieldNEQ(FieldTagDescription, v))
-}
-
-// TagDescriptionIn applies the In predicate on the "tag_description" field.
-func TagDescriptionIn(vs ...string) predicate.Tag {
-	return predicate.Tag(sql.FieldIn(FieldTagDescription, vs...))
-}
-
-// TagDescriptionNotIn applies the NotIn predicate on the "tag_description" field.
-func TagDescriptionNotIn(vs ...string) predicate.Tag {
-	return predicate.Tag(sql.FieldNotIn(FieldTagDescription, vs...))
-}
-
-// TagDescriptionGT applies the GT predicate on the "tag_description" field.
-func TagDescriptionGT(v string) predicate.Tag {
-	return predicate.Tag(sql.FieldGT(FieldTagDescription, v))
-}
-
-// TagDescriptionGTE applies the GTE predicate on the "tag_description" field.
-func TagDescriptionGTE(v string) predicate.Tag {
-	return predicate.Tag(sql.FieldGTE(FieldTagDescription, v))
-}
-
-// TagDescriptionLT applies the LT predicate on the "tag_description" field.
-func TagDescriptionLT(v string) predicate.Tag {
-	return predicate.Tag(sql.FieldLT(FieldTagDescription, v))
-}
-
-// TagDescriptionLTE applies the LTE predicate on the "tag_description" field.
-func TagDescriptionLTE(v string) predicate.Tag {
-	return predicate.Tag(sql.FieldLTE(FieldTagDescription, v))
-}
-
-// TagDescriptionContains applies the Contains predicate on the "tag_description" field.
-func TagDescriptionContains(v string) predicate.Tag {
-	return predicate.Tag(sql.FieldContains(FieldTagDescription, v))
-}
-
-// TagDescriptionHasPrefix applies the HasPrefix predicate on the "tag_description" field.
-func TagDescriptionHasPrefix(v string) predicate.Tag {
-	return predicate.Tag(sql.FieldHasPrefix(FieldTagDescription, v))
-}
-
-// TagDescriptionHasSuffix applies the HasSuffix predicate on the "tag_description" field.
-func TagDescriptionHasSuffix(v string) predicate.Tag {
-	return predicate.Tag(sql.FieldHasSuffix(FieldTagDescription, v))
-}
-
-// TagDescriptionEqualFold applies the EqualFold predicate on the "tag_description" field.
-func TagDescriptionEqualFold(v string) predicate.Tag {
-	return predicate.Tag(sql.FieldEqualFold(FieldTagDescription, v))
-}
-
-// TagDescriptionContainsFold applies the ContainsFold predicate on the "tag_description" field.
-func TagDescriptionContainsFold(v string) predicate.Tag {
-	return predicate.Tag(sql.FieldContainsFold(FieldTagDescription, v))
 }
 
 // HasTaggedThreads applies the HasEdge predicate on the "tagged_threads" edge.

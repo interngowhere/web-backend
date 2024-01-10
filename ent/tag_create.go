@@ -26,12 +26,6 @@ func (tc *TagCreate) SetTagName(s string) *TagCreate {
 	return tc
 }
 
-// SetTagDescription sets the "tag_description" field.
-func (tc *TagCreate) SetTagDescription(s string) *TagCreate {
-	tc.mutation.SetTagDescription(s)
-	return tc
-}
-
 // AddTaggedThreadIDs adds the "tagged_threads" edge to the Thread entity by IDs.
 func (tc *TagCreate) AddTaggedThreadIDs(ids ...int) *TagCreate {
 	tc.mutation.AddTaggedThreadIDs(ids...)
@@ -89,14 +83,6 @@ func (tc *TagCreate) check() error {
 			return &ValidationError{Name: "tag_name", err: fmt.Errorf(`ent: validator failed for field "Tag.tag_name": %w`, err)}
 		}
 	}
-	if _, ok := tc.mutation.TagDescription(); !ok {
-		return &ValidationError{Name: "tag_description", err: errors.New(`ent: missing required field "Tag.tag_description"`)}
-	}
-	if v, ok := tc.mutation.TagDescription(); ok {
-		if err := tag.TagDescriptionValidator(v); err != nil {
-			return &ValidationError{Name: "tag_description", err: fmt.Errorf(`ent: validator failed for field "Tag.tag_description": %w`, err)}
-		}
-	}
 	return nil
 }
 
@@ -126,10 +112,6 @@ func (tc *TagCreate) createSpec() (*Tag, *sqlgraph.CreateSpec) {
 	if value, ok := tc.mutation.TagName(); ok {
 		_spec.SetField(tag.FieldTagName, field.TypeString, value)
 		_node.TagName = value
-	}
-	if value, ok := tc.mutation.TagDescription(); ok {
-		_spec.SetField(tag.FieldTagDescription, field.TypeString, value)
-		_node.TagDescription = value
 	}
 	if nodes := tc.mutation.TaggedThreadsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

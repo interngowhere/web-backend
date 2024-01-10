@@ -1624,7 +1624,6 @@ type TagMutation struct {
 	typ                   string
 	id                    *int
 	tag_name              *string
-	tag_description       *string
 	clearedFields         map[string]struct{}
 	tagged_threads        map[int]struct{}
 	removedtagged_threads map[int]struct{}
@@ -1768,42 +1767,6 @@ func (m *TagMutation) ResetTagName() {
 	m.tag_name = nil
 }
 
-// SetTagDescription sets the "tag_description" field.
-func (m *TagMutation) SetTagDescription(s string) {
-	m.tag_description = &s
-}
-
-// TagDescription returns the value of the "tag_description" field in the mutation.
-func (m *TagMutation) TagDescription() (r string, exists bool) {
-	v := m.tag_description
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldTagDescription returns the old "tag_description" field's value of the Tag entity.
-// If the Tag object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *TagMutation) OldTagDescription(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldTagDescription is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldTagDescription requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldTagDescription: %w", err)
-	}
-	return oldValue.TagDescription, nil
-}
-
-// ResetTagDescription resets all changes to the "tag_description" field.
-func (m *TagMutation) ResetTagDescription() {
-	m.tag_description = nil
-}
-
 // AddTaggedThreadIDs adds the "tagged_threads" edge to the Thread entity by ids.
 func (m *TagMutation) AddTaggedThreadIDs(ids ...int) {
 	if m.tagged_threads == nil {
@@ -1892,12 +1855,9 @@ func (m *TagMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *TagMutation) Fields() []string {
-	fields := make([]string, 0, 2)
+	fields := make([]string, 0, 1)
 	if m.tag_name != nil {
 		fields = append(fields, tag.FieldTagName)
-	}
-	if m.tag_description != nil {
-		fields = append(fields, tag.FieldTagDescription)
 	}
 	return fields
 }
@@ -1909,8 +1869,6 @@ func (m *TagMutation) Field(name string) (ent.Value, bool) {
 	switch name {
 	case tag.FieldTagName:
 		return m.TagName()
-	case tag.FieldTagDescription:
-		return m.TagDescription()
 	}
 	return nil, false
 }
@@ -1922,8 +1880,6 @@ func (m *TagMutation) OldField(ctx context.Context, name string) (ent.Value, err
 	switch name {
 	case tag.FieldTagName:
 		return m.OldTagName(ctx)
-	case tag.FieldTagDescription:
-		return m.OldTagDescription(ctx)
 	}
 	return nil, fmt.Errorf("unknown Tag field %s", name)
 }
@@ -1939,13 +1895,6 @@ func (m *TagMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetTagName(v)
-		return nil
-	case tag.FieldTagDescription:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetTagDescription(v)
 		return nil
 	}
 	return fmt.Errorf("unknown Tag field %s", name)
@@ -1998,9 +1947,6 @@ func (m *TagMutation) ResetField(name string) error {
 	switch name {
 	case tag.FieldTagName:
 		m.ResetTagName()
-		return nil
-	case tag.FieldTagDescription:
-		m.ResetTagDescription()
 		return nil
 	}
 	return fmt.Errorf("unknown Tag field %s", name)

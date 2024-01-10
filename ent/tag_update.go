@@ -42,20 +42,6 @@ func (tu *TagUpdate) SetNillableTagName(s *string) *TagUpdate {
 	return tu
 }
 
-// SetTagDescription sets the "tag_description" field.
-func (tu *TagUpdate) SetTagDescription(s string) *TagUpdate {
-	tu.mutation.SetTagDescription(s)
-	return tu
-}
-
-// SetNillableTagDescription sets the "tag_description" field if the given value is not nil.
-func (tu *TagUpdate) SetNillableTagDescription(s *string) *TagUpdate {
-	if s != nil {
-		tu.SetTagDescription(*s)
-	}
-	return tu
-}
-
 // AddTaggedThreadIDs adds the "tagged_threads" edge to the Thread entity by IDs.
 func (tu *TagUpdate) AddTaggedThreadIDs(ids ...int) *TagUpdate {
 	tu.mutation.AddTaggedThreadIDs(ids...)
@@ -131,11 +117,6 @@ func (tu *TagUpdate) check() error {
 			return &ValidationError{Name: "tag_name", err: fmt.Errorf(`ent: validator failed for field "Tag.tag_name": %w`, err)}
 		}
 	}
-	if v, ok := tu.mutation.TagDescription(); ok {
-		if err := tag.TagDescriptionValidator(v); err != nil {
-			return &ValidationError{Name: "tag_description", err: fmt.Errorf(`ent: validator failed for field "Tag.tag_description": %w`, err)}
-		}
-	}
 	return nil
 }
 
@@ -153,9 +134,6 @@ func (tu *TagUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if value, ok := tu.mutation.TagName(); ok {
 		_spec.SetField(tag.FieldTagName, field.TypeString, value)
-	}
-	if value, ok := tu.mutation.TagDescription(); ok {
-		_spec.SetField(tag.FieldTagDescription, field.TypeString, value)
 	}
 	if tu.mutation.TaggedThreadsCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -232,20 +210,6 @@ func (tuo *TagUpdateOne) SetTagName(s string) *TagUpdateOne {
 func (tuo *TagUpdateOne) SetNillableTagName(s *string) *TagUpdateOne {
 	if s != nil {
 		tuo.SetTagName(*s)
-	}
-	return tuo
-}
-
-// SetTagDescription sets the "tag_description" field.
-func (tuo *TagUpdateOne) SetTagDescription(s string) *TagUpdateOne {
-	tuo.mutation.SetTagDescription(s)
-	return tuo
-}
-
-// SetNillableTagDescription sets the "tag_description" field if the given value is not nil.
-func (tuo *TagUpdateOne) SetNillableTagDescription(s *string) *TagUpdateOne {
-	if s != nil {
-		tuo.SetTagDescription(*s)
 	}
 	return tuo
 }
@@ -338,11 +302,6 @@ func (tuo *TagUpdateOne) check() error {
 			return &ValidationError{Name: "tag_name", err: fmt.Errorf(`ent: validator failed for field "Tag.tag_name": %w`, err)}
 		}
 	}
-	if v, ok := tuo.mutation.TagDescription(); ok {
-		if err := tag.TagDescriptionValidator(v); err != nil {
-			return &ValidationError{Name: "tag_description", err: fmt.Errorf(`ent: validator failed for field "Tag.tag_description": %w`, err)}
-		}
-	}
 	return nil
 }
 
@@ -377,9 +336,6 @@ func (tuo *TagUpdateOne) sqlSave(ctx context.Context) (_node *Tag, err error) {
 	}
 	if value, ok := tuo.mutation.TagName(); ok {
 		_spec.SetField(tag.FieldTagName, field.TypeString, value)
-	}
-	if value, ok := tuo.mutation.TagDescription(); ok {
-		_spec.SetField(tag.FieldTagDescription, field.TypeString, value)
 	}
 	if tuo.mutation.TaggedThreadsCleared() {
 		edge := &sqlgraph.EdgeSpec{

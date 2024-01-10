@@ -16,8 +16,6 @@ func (Tag) Fields() []ent.Field {
 	return []ent.Field{
 		field.String("tag_name").
 			MaxLen(255),
-		field.String("tag_description").
-			MaxLen(4096),
 	}
 }
 

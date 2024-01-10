@@ -14,8 +14,6 @@ const (
 	FieldID = "id"
 	// FieldTagName holds the string denoting the tag_name field in the database.
 	FieldTagName = "tag_name"
-	// FieldTagDescription holds the string denoting the tag_description field in the database.
-	FieldTagDescription = "tag_description"
 	// EdgeTaggedThreads holds the string denoting the tagged_threads edge name in mutations.
 	EdgeTaggedThreads = "tagged_threads"
 	// Table holds the table name of the tag in the database.
@@ -31,7 +29,6 @@ const (
 var Columns = []string{
 	FieldID,
 	FieldTagName,
-	FieldTagDescription,
 }
 
 var (
@@ -53,8 +50,6 @@ func ValidColumn(column string) bool {
 var (
 	// TagNameValidator is a validator for the "tag_name" field. It is called by the builders before save.
 	TagNameValidator func(string) error
-	// TagDescriptionValidator is a validator for the "tag_description" field. It is called by the builders before save.
-	TagDescriptionValidator func(string) error
 )
 
 // OrderOption defines the ordering options for the Tag queries.
@@ -68,11 +63,6 @@ func ByID(opts ...sql.OrderTermOption) OrderOption {
 // ByTagName orders the results by the tag_name field.
 func ByTagName(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldTagName, opts...).ToFunc()
-}
-
-// ByTagDescription orders the results by the tag_description field.
-func ByTagDescription(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldTagDescription, opts...).ToFunc()
 }
 
 // ByTaggedThreadsCount orders the results by tagged_threads count.
