@@ -29,6 +29,12 @@ func (tc *TopicCreate) SetTitle(s string) *TopicCreate {
 	return tc
 }
 
+// SetSlug sets the "slug" field.
+func (tc *TopicCreate) SetSlug(s string) *TopicCreate {
+	tc.mutation.SetSlug(s)
+	return tc
+}
+
 // SetShortDescription sets the "short_description" field.
 func (tc *TopicCreate) SetShortDescription(s string) *TopicCreate {
 	tc.mutation.SetShortDescription(s)
@@ -158,6 +164,14 @@ func (tc *TopicCreate) check() error {
 			return &ValidationError{Name: "title", err: fmt.Errorf(`ent: validator failed for field "Topic.title": %w`, err)}
 		}
 	}
+	if _, ok := tc.mutation.Slug(); !ok {
+		return &ValidationError{Name: "slug", err: errors.New(`ent: missing required field "Topic.slug"`)}
+	}
+	if v, ok := tc.mutation.Slug(); ok {
+		if err := topic.SlugValidator(v); err != nil {
+			return &ValidationError{Name: "slug", err: fmt.Errorf(`ent: validator failed for field "Topic.slug": %w`, err)}
+		}
+	}
 	if _, ok := tc.mutation.ShortDescription(); !ok {
 		return &ValidationError{Name: "short_description", err: errors.New(`ent: missing required field "Topic.short_description"`)}
 	}
@@ -203,6 +217,10 @@ func (tc *TopicCreate) createSpec() (*Topic, *sqlgraph.CreateSpec) {
 	if value, ok := tc.mutation.Title(); ok {
 		_spec.SetField(topic.FieldTitle, field.TypeString, value)
 		_node.Title = value
+	}
+	if value, ok := tc.mutation.Slug(); ok {
+		_spec.SetField(topic.FieldSlug, field.TypeString, value)
+		_node.Slug = value
 	}
 	if value, ok := tc.mutation.ShortDescription(); ok {
 		_spec.SetField(topic.FieldShortDescription, field.TypeString, value)

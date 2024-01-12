@@ -22,6 +22,8 @@ type Thread struct {
 	ID int `json:"id,omitempty"`
 	// Title holds the value of the "title" field.
 	Title string `json:"title,omitempty"`
+	// Slug holds the value of the "slug" field.
+	Slug string `json:"slug,omitempty"`
 	// Description holds the value of the "description" field.
 	Description string `json:"description,omitempty"`
 	// ModifiedAt holds the value of the "modified_at" field.
@@ -125,7 +127,7 @@ func (*Thread) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case thread.FieldID:
 			values[i] = new(sql.NullInt64)
-		case thread.FieldTitle, thread.FieldDescription:
+		case thread.FieldTitle, thread.FieldSlug, thread.FieldDescription:
 			values[i] = new(sql.NullString)
 		case thread.FieldModifiedAt, thread.FieldCreatedAt:
 			values[i] = new(sql.NullTime)
@@ -159,6 +161,12 @@ func (t *Thread) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field title", values[i])
 			} else if value.Valid {
 				t.Title = value.String
+			}
+		case thread.FieldSlug:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field slug", values[i])
+			} else if value.Valid {
+				t.Slug = value.String
 			}
 		case thread.FieldDescription:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -259,6 +267,9 @@ func (t *Thread) String() string {
 	builder.WriteString(fmt.Sprintf("id=%v, ", t.ID))
 	builder.WriteString("title=")
 	builder.WriteString(t.Title)
+	builder.WriteString(", ")
+	builder.WriteString("slug=")
+	builder.WriteString(t.Slug)
 	builder.WriteString(", ")
 	builder.WriteString("description=")
 	builder.WriteString(t.Description)

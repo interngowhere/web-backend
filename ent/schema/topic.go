@@ -18,6 +18,8 @@ func (Topic) Fields() []ent.Field {
 	return []ent.Field{
 		field.String("title").
 			MaxLen(255),
+		field.String("slug").
+			MaxLen(255),
 		field.String("short_description").
 			MaxLen(255),
 		field.String("description").

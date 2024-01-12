@@ -2043,6 +2043,7 @@ type ThreadMutation struct {
 	typ                    string
 	id                     *int
 	title                  *string
+	slug                   *string
 	description            *string
 	modified_at            *time.Time
 	created_at             *time.Time
@@ -2197,6 +2198,42 @@ func (m *ThreadMutation) OldTitle(ctx context.Context) (v string, err error) {
 // ResetTitle resets all changes to the "title" field.
 func (m *ThreadMutation) ResetTitle() {
 	m.title = nil
+}
+
+// SetSlug sets the "slug" field.
+func (m *ThreadMutation) SetSlug(s string) {
+	m.slug = &s
+}
+
+// Slug returns the value of the "slug" field in the mutation.
+func (m *ThreadMutation) Slug() (r string, exists bool) {
+	v := m.slug
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSlug returns the old "slug" field's value of the Thread entity.
+// If the Thread object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ThreadMutation) OldSlug(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldSlug is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldSlug requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSlug: %w", err)
+	}
+	return oldValue.Slug, nil
+}
+
+// ResetSlug resets all changes to the "slug" field.
+func (m *ThreadMutation) ResetSlug() {
+	m.slug = nil
 }
 
 // SetDescription sets the "description" field.
@@ -2644,9 +2681,12 @@ func (m *ThreadMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *ThreadMutation) Fields() []string {
-	fields := make([]string, 0, 5)
+	fields := make([]string, 0, 6)
 	if m.title != nil {
 		fields = append(fields, thread.FieldTitle)
+	}
+	if m.slug != nil {
+		fields = append(fields, thread.FieldSlug)
 	}
 	if m.description != nil {
 		fields = append(fields, thread.FieldDescription)
@@ -2670,6 +2710,8 @@ func (m *ThreadMutation) Field(name string) (ent.Value, bool) {
 	switch name {
 	case thread.FieldTitle:
 		return m.Title()
+	case thread.FieldSlug:
+		return m.Slug()
 	case thread.FieldDescription:
 		return m.Description()
 	case thread.FieldModifiedAt:
@@ -2689,6 +2731,8 @@ func (m *ThreadMutation) OldField(ctx context.Context, name string) (ent.Value, 
 	switch name {
 	case thread.FieldTitle:
 		return m.OldTitle(ctx)
+	case thread.FieldSlug:
+		return m.OldSlug(ctx)
 	case thread.FieldDescription:
 		return m.OldDescription(ctx)
 	case thread.FieldModifiedAt:
@@ -2712,6 +2756,13 @@ func (m *ThreadMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetTitle(v)
+		return nil
+	case thread.FieldSlug:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSlug(v)
 		return nil
 	case thread.FieldDescription:
 		v, ok := value.(string)
@@ -2807,6 +2858,9 @@ func (m *ThreadMutation) ResetField(name string) error {
 	switch name {
 	case thread.FieldTitle:
 		m.ResetTitle()
+		return nil
+	case thread.FieldSlug:
+		m.ResetSlug()
 		return nil
 	case thread.FieldDescription:
 		m.ResetDescription()
@@ -3385,6 +3439,7 @@ type TopicMutation struct {
 	typ                     string
 	id                      *int
 	title                   *string
+	slug                    *string
 	short_description       *string
 	description             *string
 	profile_pic_url         *string
@@ -3533,6 +3588,42 @@ func (m *TopicMutation) OldTitle(ctx context.Context) (v string, err error) {
 // ResetTitle resets all changes to the "title" field.
 func (m *TopicMutation) ResetTitle() {
 	m.title = nil
+}
+
+// SetSlug sets the "slug" field.
+func (m *TopicMutation) SetSlug(s string) {
+	m.slug = &s
+}
+
+// Slug returns the value of the "slug" field in the mutation.
+func (m *TopicMutation) Slug() (r string, exists bool) {
+	v := m.slug
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSlug returns the old "slug" field's value of the Topic entity.
+// If the Topic object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TopicMutation) OldSlug(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldSlug is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldSlug requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSlug: %w", err)
+	}
+	return oldValue.Slug, nil
+}
+
+// ResetSlug resets all changes to the "slug" field.
+func (m *TopicMutation) ResetSlug() {
+	m.slug = nil
 }
 
 // SetShortDescription sets the "short_description" field.
@@ -3847,9 +3938,12 @@ func (m *TopicMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *TopicMutation) Fields() []string {
-	fields := make([]string, 0, 5)
+	fields := make([]string, 0, 6)
 	if m.title != nil {
 		fields = append(fields, topic.FieldTitle)
+	}
+	if m.slug != nil {
+		fields = append(fields, topic.FieldSlug)
 	}
 	if m.short_description != nil {
 		fields = append(fields, topic.FieldShortDescription)
@@ -3873,6 +3967,8 @@ func (m *TopicMutation) Field(name string) (ent.Value, bool) {
 	switch name {
 	case topic.FieldTitle:
 		return m.Title()
+	case topic.FieldSlug:
+		return m.Slug()
 	case topic.FieldShortDescription:
 		return m.ShortDescription()
 	case topic.FieldDescription:
@@ -3892,6 +3988,8 @@ func (m *TopicMutation) OldField(ctx context.Context, name string) (ent.Value, e
 	switch name {
 	case topic.FieldTitle:
 		return m.OldTitle(ctx)
+	case topic.FieldSlug:
+		return m.OldSlug(ctx)
 	case topic.FieldShortDescription:
 		return m.OldShortDescription(ctx)
 	case topic.FieldDescription:
@@ -3915,6 +4013,13 @@ func (m *TopicMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetTitle(v)
+		return nil
+	case topic.FieldSlug:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSlug(v)
 		return nil
 	case topic.FieldShortDescription:
 		v, ok := value.(string)
@@ -4010,6 +4115,9 @@ func (m *TopicMutation) ResetField(name string) error {
 	switch name {
 	case topic.FieldTitle:
 		m.ResetTitle()
+		return nil
+	case topic.FieldSlug:
+		m.ResetSlug()
 		return nil
 	case topic.FieldShortDescription:
 		m.ResetShortDescription()

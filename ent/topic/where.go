@@ -60,6 +60,11 @@ func Title(v string) predicate.Topic {
 	return predicate.Topic(sql.FieldEQ(FieldTitle, v))
 }
 
+// Slug applies equality check predicate on the "slug" field. It's identical to SlugEQ.
+func Slug(v string) predicate.Topic {
+	return predicate.Topic(sql.FieldEQ(FieldSlug, v))
+}
+
 // ShortDescription applies equality check predicate on the "short_description" field. It's identical to ShortDescriptionEQ.
 func ShortDescription(v string) predicate.Topic {
 	return predicate.Topic(sql.FieldEQ(FieldShortDescription, v))
@@ -143,6 +148,71 @@ func TitleEqualFold(v string) predicate.Topic {
 // TitleContainsFold applies the ContainsFold predicate on the "title" field.
 func TitleContainsFold(v string) predicate.Topic {
 	return predicate.Topic(sql.FieldContainsFold(FieldTitle, v))
+}
+
+// SlugEQ applies the EQ predicate on the "slug" field.
+func SlugEQ(v string) predicate.Topic {
+	return predicate.Topic(sql.FieldEQ(FieldSlug, v))
+}
+
+// SlugNEQ applies the NEQ predicate on the "slug" field.
+func SlugNEQ(v string) predicate.Topic {
+	return predicate.Topic(sql.FieldNEQ(FieldSlug, v))
+}
+
+// SlugIn applies the In predicate on the "slug" field.
+func SlugIn(vs ...string) predicate.Topic {
+	return predicate.Topic(sql.FieldIn(FieldSlug, vs...))
+}
+
+// SlugNotIn applies the NotIn predicate on the "slug" field.
+func SlugNotIn(vs ...string) predicate.Topic {
+	return predicate.Topic(sql.FieldNotIn(FieldSlug, vs...))
+}
+
+// SlugGT applies the GT predicate on the "slug" field.
+func SlugGT(v string) predicate.Topic {
+	return predicate.Topic(sql.FieldGT(FieldSlug, v))
+}
+
+// SlugGTE applies the GTE predicate on the "slug" field.
+func SlugGTE(v string) predicate.Topic {
+	return predicate.Topic(sql.FieldGTE(FieldSlug, v))
+}
+
+// SlugLT applies the LT predicate on the "slug" field.
+func SlugLT(v string) predicate.Topic {
+	return predicate.Topic(sql.FieldLT(FieldSlug, v))
+}
+
+// SlugLTE applies the LTE predicate on the "slug" field.
+func SlugLTE(v string) predicate.Topic {
+	return predicate.Topic(sql.FieldLTE(FieldSlug, v))
+}
+
+// SlugContains applies the Contains predicate on the "slug" field.
+func SlugContains(v string) predicate.Topic {
+	return predicate.Topic(sql.FieldContains(FieldSlug, v))
+}
+
+// SlugHasPrefix applies the HasPrefix predicate on the "slug" field.
+func SlugHasPrefix(v string) predicate.Topic {
+	return predicate.Topic(sql.FieldHasPrefix(FieldSlug, v))
+}
+
+// SlugHasSuffix applies the HasSuffix predicate on the "slug" field.
+func SlugHasSuffix(v string) predicate.Topic {
+	return predicate.Topic(sql.FieldHasSuffix(FieldSlug, v))
+}
+
+// SlugEqualFold applies the EqualFold predicate on the "slug" field.
+func SlugEqualFold(v string) predicate.Topic {
+	return predicate.Topic(sql.FieldEqualFold(FieldSlug, v))
+}
+
+// SlugContainsFold applies the ContainsFold predicate on the "slug" field.
+func SlugContainsFold(v string) predicate.Topic {
+	return predicate.Topic(sql.FieldContainsFold(FieldSlug, v))
 }
 
 // ShortDescriptionEQ applies the EQ predicate on the "short_description" field.

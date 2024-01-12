@@ -47,6 +47,20 @@ func (tu *ThreadUpdate) SetNillableTitle(s *string) *ThreadUpdate {
 	return tu
 }
 
+// SetSlug sets the "slug" field.
+func (tu *ThreadUpdate) SetSlug(s string) *ThreadUpdate {
+	tu.mutation.SetSlug(s)
+	return tu
+}
+
+// SetNillableSlug sets the "slug" field if the given value is not nil.
+func (tu *ThreadUpdate) SetNillableSlug(s *string) *ThreadUpdate {
+	if s != nil {
+		tu.SetSlug(*s)
+	}
+	return tu
+}
+
 // SetDescription sets the "description" field.
 func (tu *ThreadUpdate) SetDescription(s string) *ThreadUpdate {
 	tu.mutation.SetDescription(s)
@@ -251,6 +265,11 @@ func (tu *ThreadUpdate) check() error {
 			return &ValidationError{Name: "title", err: fmt.Errorf(`ent: validator failed for field "Thread.title": %w`, err)}
 		}
 	}
+	if v, ok := tu.mutation.Slug(); ok {
+		if err := thread.SlugValidator(v); err != nil {
+			return &ValidationError{Name: "slug", err: fmt.Errorf(`ent: validator failed for field "Thread.slug": %w`, err)}
+		}
+	}
 	if v, ok := tu.mutation.Description(); ok {
 		if err := thread.DescriptionValidator(v); err != nil {
 			return &ValidationError{Name: "description", err: fmt.Errorf(`ent: validator failed for field "Thread.description": %w`, err)}
@@ -279,6 +298,9 @@ func (tu *ThreadUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if value, ok := tu.mutation.Title(); ok {
 		_spec.SetField(thread.FieldTitle, field.TypeString, value)
+	}
+	if value, ok := tu.mutation.Slug(); ok {
+		_spec.SetField(thread.FieldSlug, field.TypeString, value)
 	}
 	if value, ok := tu.mutation.Description(); ok {
 		_spec.SetField(thread.FieldDescription, field.TypeString, value)
@@ -486,6 +508,20 @@ func (tuo *ThreadUpdateOne) SetTitle(s string) *ThreadUpdateOne {
 func (tuo *ThreadUpdateOne) SetNillableTitle(s *string) *ThreadUpdateOne {
 	if s != nil {
 		tuo.SetTitle(*s)
+	}
+	return tuo
+}
+
+// SetSlug sets the "slug" field.
+func (tuo *ThreadUpdateOne) SetSlug(s string) *ThreadUpdateOne {
+	tuo.mutation.SetSlug(s)
+	return tuo
+}
+
+// SetNillableSlug sets the "slug" field if the given value is not nil.
+func (tuo *ThreadUpdateOne) SetNillableSlug(s *string) *ThreadUpdateOne {
+	if s != nil {
+		tuo.SetSlug(*s)
 	}
 	return tuo
 }
@@ -707,6 +743,11 @@ func (tuo *ThreadUpdateOne) check() error {
 			return &ValidationError{Name: "title", err: fmt.Errorf(`ent: validator failed for field "Thread.title": %w`, err)}
 		}
 	}
+	if v, ok := tuo.mutation.Slug(); ok {
+		if err := thread.SlugValidator(v); err != nil {
+			return &ValidationError{Name: "slug", err: fmt.Errorf(`ent: validator failed for field "Thread.slug": %w`, err)}
+		}
+	}
 	if v, ok := tuo.mutation.Description(); ok {
 		if err := thread.DescriptionValidator(v); err != nil {
 			return &ValidationError{Name: "description", err: fmt.Errorf(`ent: validator failed for field "Thread.description": %w`, err)}
@@ -752,6 +793,9 @@ func (tuo *ThreadUpdateOne) sqlSave(ctx context.Context) (_node *Thread, err err
 	}
 	if value, ok := tuo.mutation.Title(); ok {
 		_spec.SetField(thread.FieldTitle, field.TypeString, value)
+	}
+	if value, ok := tuo.mutation.Slug(); ok {
+		_spec.SetField(thread.FieldSlug, field.TypeString, value)
 	}
 	if value, ok := tuo.mutation.Description(); ok {
 		_spec.SetField(thread.FieldDescription, field.TypeString, value)

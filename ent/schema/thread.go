@@ -19,6 +19,8 @@ func (Thread) Fields() []ent.Field {
 	return []ent.Field{
 		field.String("title").
 			MaxLen(255),
+		field.String("slug").
+			MaxLen(255),
 		field.String("description").
 			MaxLen(4096).
 			Optional(),

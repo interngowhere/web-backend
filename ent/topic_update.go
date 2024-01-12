@@ -44,6 +44,20 @@ func (tu *TopicUpdate) SetNillableTitle(s *string) *TopicUpdate {
 	return tu
 }
 
+// SetSlug sets the "slug" field.
+func (tu *TopicUpdate) SetSlug(s string) *TopicUpdate {
+	tu.mutation.SetSlug(s)
+	return tu
+}
+
+// SetNillableSlug sets the "slug" field if the given value is not nil.
+func (tu *TopicUpdate) SetNillableSlug(s *string) *TopicUpdate {
+	if s != nil {
+		tu.SetSlug(*s)
+	}
+	return tu
+}
+
 // SetShortDescription sets the "short_description" field.
 func (tu *TopicUpdate) SetShortDescription(s string) *TopicUpdate {
 	tu.mutation.SetShortDescription(s)
@@ -209,6 +223,11 @@ func (tu *TopicUpdate) check() error {
 			return &ValidationError{Name: "title", err: fmt.Errorf(`ent: validator failed for field "Topic.title": %w`, err)}
 		}
 	}
+	if v, ok := tu.mutation.Slug(); ok {
+		if err := topic.SlugValidator(v); err != nil {
+			return &ValidationError{Name: "slug", err: fmt.Errorf(`ent: validator failed for field "Topic.slug": %w`, err)}
+		}
+	}
 	if v, ok := tu.mutation.ShortDescription(); ok {
 		if err := topic.ShortDescriptionValidator(v); err != nil {
 			return &ValidationError{Name: "short_description", err: fmt.Errorf(`ent: validator failed for field "Topic.short_description": %w`, err)}
@@ -236,6 +255,9 @@ func (tu *TopicUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if value, ok := tu.mutation.Title(); ok {
 		_spec.SetField(topic.FieldTitle, field.TypeString, value)
+	}
+	if value, ok := tu.mutation.Slug(); ok {
+		_spec.SetField(topic.FieldSlug, field.TypeString, value)
 	}
 	if value, ok := tu.mutation.ShortDescription(); ok {
 		_spec.SetField(topic.FieldShortDescription, field.TypeString, value)
@@ -372,6 +394,20 @@ func (tuo *TopicUpdateOne) SetTitle(s string) *TopicUpdateOne {
 func (tuo *TopicUpdateOne) SetNillableTitle(s *string) *TopicUpdateOne {
 	if s != nil {
 		tuo.SetTitle(*s)
+	}
+	return tuo
+}
+
+// SetSlug sets the "slug" field.
+func (tuo *TopicUpdateOne) SetSlug(s string) *TopicUpdateOne {
+	tuo.mutation.SetSlug(s)
+	return tuo
+}
+
+// SetNillableSlug sets the "slug" field if the given value is not nil.
+func (tuo *TopicUpdateOne) SetNillableSlug(s *string) *TopicUpdateOne {
+	if s != nil {
+		tuo.SetSlug(*s)
 	}
 	return tuo
 }
@@ -554,6 +590,11 @@ func (tuo *TopicUpdateOne) check() error {
 			return &ValidationError{Name: "title", err: fmt.Errorf(`ent: validator failed for field "Topic.title": %w`, err)}
 		}
 	}
+	if v, ok := tuo.mutation.Slug(); ok {
+		if err := topic.SlugValidator(v); err != nil {
+			return &ValidationError{Name: "slug", err: fmt.Errorf(`ent: validator failed for field "Topic.slug": %w`, err)}
+		}
+	}
 	if v, ok := tuo.mutation.ShortDescription(); ok {
 		if err := topic.ShortDescriptionValidator(v); err != nil {
 			return &ValidationError{Name: "short_description", err: fmt.Errorf(`ent: validator failed for field "Topic.short_description": %w`, err)}
@@ -598,6 +639,9 @@ func (tuo *TopicUpdateOne) sqlSave(ctx context.Context) (_node *Topic, err error
 	}
 	if value, ok := tuo.mutation.Title(); ok {
 		_spec.SetField(topic.FieldTitle, field.TypeString, value)
+	}
+	if value, ok := tuo.mutation.Slug(); ok {
+		_spec.SetField(topic.FieldSlug, field.TypeString, value)
 	}
 	if value, ok := tuo.mutation.ShortDescription(); ok {
 		_spec.SetField(topic.FieldShortDescription, field.TypeString, value)

@@ -44,12 +44,16 @@ func init() {
 	threadDescTitle := threadFields[0].Descriptor()
 	// thread.TitleValidator is a validator for the "title" field. It is called by the builders before save.
 	thread.TitleValidator = threadDescTitle.Validators[0].(func(string) error)
+	// threadDescSlug is the schema descriptor for slug field.
+	threadDescSlug := threadFields[1].Descriptor()
+	// thread.SlugValidator is a validator for the "slug" field. It is called by the builders before save.
+	thread.SlugValidator = threadDescSlug.Validators[0].(func(string) error)
 	// threadDescDescription is the schema descriptor for description field.
-	threadDescDescription := threadFields[1].Descriptor()
+	threadDescDescription := threadFields[2].Descriptor()
 	// thread.DescriptionValidator is a validator for the "description" field. It is called by the builders before save.
 	thread.DescriptionValidator = threadDescDescription.Validators[0].(func(string) error)
 	// threadDescCreatedAt is the schema descriptor for created_at field.
-	threadDescCreatedAt := threadFields[4].Descriptor()
+	threadDescCreatedAt := threadFields[5].Descriptor()
 	// thread.DefaultCreatedAt holds the default value on creation for the created_at field.
 	thread.DefaultCreatedAt = threadDescCreatedAt.Default.(time.Time)
 	topicFields := schema.Topic{}.Fields()
@@ -58,16 +62,20 @@ func init() {
 	topicDescTitle := topicFields[0].Descriptor()
 	// topic.TitleValidator is a validator for the "title" field. It is called by the builders before save.
 	topic.TitleValidator = topicDescTitle.Validators[0].(func(string) error)
+	// topicDescSlug is the schema descriptor for slug field.
+	topicDescSlug := topicFields[1].Descriptor()
+	// topic.SlugValidator is a validator for the "slug" field. It is called by the builders before save.
+	topic.SlugValidator = topicDescSlug.Validators[0].(func(string) error)
 	// topicDescShortDescription is the schema descriptor for short_description field.
-	topicDescShortDescription := topicFields[1].Descriptor()
+	topicDescShortDescription := topicFields[2].Descriptor()
 	// topic.ShortDescriptionValidator is a validator for the "short_description" field. It is called by the builders before save.
 	topic.ShortDescriptionValidator = topicDescShortDescription.Validators[0].(func(string) error)
 	// topicDescDescription is the schema descriptor for description field.
-	topicDescDescription := topicFields[2].Descriptor()
+	topicDescDescription := topicFields[3].Descriptor()
 	// topic.DescriptionValidator is a validator for the "description" field. It is called by the builders before save.
 	topic.DescriptionValidator = topicDescDescription.Validators[0].(func(string) error)
 	// topicDescCreatedAt is the schema descriptor for created_at field.
-	topicDescCreatedAt := topicFields[4].Descriptor()
+	topicDescCreatedAt := topicFields[5].Descriptor()
 	// topic.DefaultCreatedAt holds the default value on creation for the created_at field.
 	topic.DefaultCreatedAt = topicDescCreatedAt.Default.(time.Time)
 	userFields := schema.User{}.Fields()

@@ -61,6 +61,11 @@ func Title(v string) predicate.Thread {
 	return predicate.Thread(sql.FieldEQ(FieldTitle, v))
 }
 
+// Slug applies equality check predicate on the "slug" field. It's identical to SlugEQ.
+func Slug(v string) predicate.Thread {
+	return predicate.Thread(sql.FieldEQ(FieldSlug, v))
+}
+
 // Description applies equality check predicate on the "description" field. It's identical to DescriptionEQ.
 func Description(v string) predicate.Thread {
 	return predicate.Thread(sql.FieldEQ(FieldDescription, v))
@@ -144,6 +149,71 @@ func TitleEqualFold(v string) predicate.Thread {
 // TitleContainsFold applies the ContainsFold predicate on the "title" field.
 func TitleContainsFold(v string) predicate.Thread {
 	return predicate.Thread(sql.FieldContainsFold(FieldTitle, v))
+}
+
+// SlugEQ applies the EQ predicate on the "slug" field.
+func SlugEQ(v string) predicate.Thread {
+	return predicate.Thread(sql.FieldEQ(FieldSlug, v))
+}
+
+// SlugNEQ applies the NEQ predicate on the "slug" field.
+func SlugNEQ(v string) predicate.Thread {
+	return predicate.Thread(sql.FieldNEQ(FieldSlug, v))
+}
+
+// SlugIn applies the In predicate on the "slug" field.
+func SlugIn(vs ...string) predicate.Thread {
+	return predicate.Thread(sql.FieldIn(FieldSlug, vs...))
+}
+
+// SlugNotIn applies the NotIn predicate on the "slug" field.
+func SlugNotIn(vs ...string) predicate.Thread {
+	return predicate.Thread(sql.FieldNotIn(FieldSlug, vs...))
+}
+
+// SlugGT applies the GT predicate on the "slug" field.
+func SlugGT(v string) predicate.Thread {
+	return predicate.Thread(sql.FieldGT(FieldSlug, v))
+}
+
+// SlugGTE applies the GTE predicate on the "slug" field.
+func SlugGTE(v string) predicate.Thread {
+	return predicate.Thread(sql.FieldGTE(FieldSlug, v))
+}
+
+// SlugLT applies the LT predicate on the "slug" field.
+func SlugLT(v string) predicate.Thread {
+	return predicate.Thread(sql.FieldLT(FieldSlug, v))
+}
+
+// SlugLTE applies the LTE predicate on the "slug" field.
+func SlugLTE(v string) predicate.Thread {
+	return predicate.Thread(sql.FieldLTE(FieldSlug, v))
+}
+
+// SlugContains applies the Contains predicate on the "slug" field.
+func SlugContains(v string) predicate.Thread {
+	return predicate.Thread(sql.FieldContains(FieldSlug, v))
+}
+
+// SlugHasPrefix applies the HasPrefix predicate on the "slug" field.
+func SlugHasPrefix(v string) predicate.Thread {
+	return predicate.Thread(sql.FieldHasPrefix(FieldSlug, v))
+}
+
+// SlugHasSuffix applies the HasSuffix predicate on the "slug" field.
+func SlugHasSuffix(v string) predicate.Thread {
+	return predicate.Thread(sql.FieldHasSuffix(FieldSlug, v))
+}
+
+// SlugEqualFold applies the EqualFold predicate on the "slug" field.
+func SlugEqualFold(v string) predicate.Thread {
+	return predicate.Thread(sql.FieldEqualFold(FieldSlug, v))
+}
+
+// SlugContainsFold applies the ContainsFold predicate on the "slug" field.
+func SlugContainsFold(v string) predicate.Thread {
+	return predicate.Thread(sql.FieldContainsFold(FieldSlug, v))
 }
 
 // DescriptionEQ applies the EQ predicate on the "description" field.

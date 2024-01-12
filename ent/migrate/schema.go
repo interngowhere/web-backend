@@ -103,6 +103,7 @@ var (
 	ThreadsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
 		{Name: "title", Type: field.TypeString, Size: 255},
+		{Name: "slug", Type: field.TypeString, Size: 255},
 		{Name: "description", Type: field.TypeString, Nullable: true, Size: 4096},
 		{Name: "modified_at", Type: field.TypeTime, Nullable: true},
 		{Name: "created_at", Type: field.TypeTime},
@@ -117,13 +118,13 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "threads_topics_topic_threads",
-				Columns:    []*schema.Column{ThreadsColumns[5]},
+				Columns:    []*schema.Column{ThreadsColumns[6]},
 				RefColumns: []*schema.Column{TopicsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
 				Symbol:     "threads_users_user_threads",
-				Columns:    []*schema.Column{ThreadsColumns[6]},
+				Columns:    []*schema.Column{ThreadsColumns[7]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
@@ -158,6 +159,7 @@ var (
 	TopicsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
 		{Name: "title", Type: field.TypeString, Size: 255},
+		{Name: "slug", Type: field.TypeString, Size: 255},
 		{Name: "short_description", Type: field.TypeString, Size: 255},
 		{Name: "description", Type: field.TypeString, Nullable: true, Size: 4096},
 		{Name: "profile_pic_url", Type: field.TypeString, Nullable: true},

@@ -31,6 +31,12 @@ func (tc *ThreadCreate) SetTitle(s string) *ThreadCreate {
 	return tc
 }
 
+// SetSlug sets the "slug" field.
+func (tc *ThreadCreate) SetSlug(s string) *ThreadCreate {
+	tc.mutation.SetSlug(s)
+	return tc
+}
+
 // SetDescription sets the "description" field.
 func (tc *ThreadCreate) SetDescription(s string) *ThreadCreate {
 	tc.mutation.SetDescription(s)
@@ -197,6 +203,14 @@ func (tc *ThreadCreate) check() error {
 			return &ValidationError{Name: "title", err: fmt.Errorf(`ent: validator failed for field "Thread.title": %w`, err)}
 		}
 	}
+	if _, ok := tc.mutation.Slug(); !ok {
+		return &ValidationError{Name: "slug", err: errors.New(`ent: missing required field "Thread.slug"`)}
+	}
+	if v, ok := tc.mutation.Slug(); ok {
+		if err := thread.SlugValidator(v); err != nil {
+			return &ValidationError{Name: "slug", err: fmt.Errorf(`ent: validator failed for field "Thread.slug": %w`, err)}
+		}
+	}
 	if v, ok := tc.mutation.Description(); ok {
 		if err := thread.DescriptionValidator(v); err != nil {
 			return &ValidationError{Name: "description", err: fmt.Errorf(`ent: validator failed for field "Thread.description": %w`, err)}
@@ -243,6 +257,10 @@ func (tc *ThreadCreate) createSpec() (*Thread, *sqlgraph.CreateSpec) {
 	if value, ok := tc.mutation.Title(); ok {
 		_spec.SetField(thread.FieldTitle, field.TypeString, value)
 		_node.Title = value
+	}
+	if value, ok := tc.mutation.Slug(); ok {
+		_spec.SetField(thread.FieldSlug, field.TypeString, value)
+		_node.Slug = value
 	}
 	if value, ok := tc.mutation.Description(); ok {
 		_spec.SetField(thread.FieldDescription, field.TypeString, value)

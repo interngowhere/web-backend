@@ -16,6 +16,8 @@ const (
 	FieldID = "id"
 	// FieldTitle holds the string denoting the title field in the database.
 	FieldTitle = "title"
+	// FieldSlug holds the string denoting the slug field in the database.
+	FieldSlug = "slug"
 	// FieldShortDescription holds the string denoting the short_description field in the database.
 	FieldShortDescription = "short_description"
 	// FieldDescription holds the string denoting the description field in the database.
@@ -57,6 +59,7 @@ const (
 var Columns = []string{
 	FieldID,
 	FieldTitle,
+	FieldSlug,
 	FieldShortDescription,
 	FieldDescription,
 	FieldProfilePicURL,
@@ -82,6 +85,8 @@ func ValidColumn(column string) bool {
 var (
 	// TitleValidator is a validator for the "title" field. It is called by the builders before save.
 	TitleValidator func(string) error
+	// SlugValidator is a validator for the "slug" field. It is called by the builders before save.
+	SlugValidator func(string) error
 	// ShortDescriptionValidator is a validator for the "short_description" field. It is called by the builders before save.
 	ShortDescriptionValidator func(string) error
 	// DescriptionValidator is a validator for the "description" field. It is called by the builders before save.
@@ -101,6 +106,11 @@ func ByID(opts ...sql.OrderTermOption) OrderOption {
 // ByTitle orders the results by the title field.
 func ByTitle(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldTitle, opts...).ToFunc()
+}
+
+// BySlug orders the results by the slug field.
+func BySlug(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldSlug, opts...).ToFunc()
 }
 
 // ByShortDescription orders the results by the short_description field.

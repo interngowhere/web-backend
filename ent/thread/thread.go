@@ -16,6 +16,8 @@ const (
 	FieldID = "id"
 	// FieldTitle holds the string denoting the title field in the database.
 	FieldTitle = "title"
+	// FieldSlug holds the string denoting the slug field in the database.
+	FieldSlug = "slug"
 	// FieldDescription holds the string denoting the description field in the database.
 	FieldDescription = "description"
 	// FieldModifiedAt holds the string denoting the modified_at field in the database.
@@ -82,6 +84,7 @@ const (
 var Columns = []string{
 	FieldID,
 	FieldTitle,
+	FieldSlug,
 	FieldDescription,
 	FieldModifiedAt,
 	FieldCreatedBy,
@@ -121,6 +124,8 @@ func ValidColumn(column string) bool {
 var (
 	// TitleValidator is a validator for the "title" field. It is called by the builders before save.
 	TitleValidator func(string) error
+	// SlugValidator is a validator for the "slug" field. It is called by the builders before save.
+	SlugValidator func(string) error
 	// DescriptionValidator is a validator for the "description" field. It is called by the builders before save.
 	DescriptionValidator func(string) error
 	// DefaultCreatedAt holds the default value on creation for the "created_at" field.
@@ -138,6 +143,11 @@ func ByID(opts ...sql.OrderTermOption) OrderOption {
 // ByTitle orders the results by the title field.
 func ByTitle(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldTitle, opts...).ToFunc()
+}
+
+// BySlug orders the results by the slug field.
+func BySlug(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldSlug, opts...).ToFunc()
 }
 
 // ByDescription orders the results by the description field.
