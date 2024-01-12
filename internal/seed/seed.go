@@ -60,17 +60,22 @@ func main() {
 
 	log.Println("Cleared all tables")
 
-	u1, err 	:=	CreateUser(ctx, db, SeedUser1); handleError(err)
-	u2, err 	:=	CreateUser(ctx, db, SeedUser2); handleError(err)
-	topic, err  :=	CreateTopic(ctx, db, SeedTopic, u1); handleError(err)
-	thread, err :=	CreateThread(ctx, db, SeedThread, topic, u1); handleError(err)
-	c1, err 	:=	CreateComment(ctx, db, SeedComment1, thread, u2, 0); handleError(err)
-	c2, err 	:=	CreateComment(ctx, db, SeedComment2, thread, u1, c1.ID); handleError(err)
-	c3, err 	:=	CreateComment(ctx, db, SeedComment3, thread, u2, c1.ID); handleError(err)
-	tag1, err 	:=	CreateTag(ctx, db, SeedTag1, thread); handleError(err)
-	tag2, err 	:=	CreateTag(ctx, db, SeedTag2, thread); handleError(err)
-	tag3, err 	:=	CreateTag(ctx, db, SeedTag3, thread); handleError(err)
-	_,_,_,_,_ = c2, c3, tag1, tag2, tag3
+	u1, err 	 :=	CreateUser(ctx, db, SeedUser1); handleError(err)
+	u2, err 	 :=	CreateUser(ctx, db, SeedUser2); handleError(err)
+	topic1, err  :=	CreateTopic(ctx, db, SeedTopic1, u1); handleError(err)
+	topic2, err  :=	CreateTopic(ctx, db, SeedTopic2, u1); handleError(err)
+	topic3, err  :=	CreateTopic(ctx, db, SeedTopic3, u1); handleError(err)
+	thread1, err :=	CreateThread(ctx, db, SeedThread1, topic1, u1); handleError(err)
+	thread2, err :=	CreateThread(ctx, db, SeedThread2, topic2, u1); handleError(err)
+	thread3, err :=	CreateThread(ctx, db, SeedThread3, topic2, u1); handleError(err)
+	thread4, err :=	CreateThread(ctx, db, SeedThread4, topic3, u1); handleError(err)
+	c1, err 	 :=	CreateComment(ctx, db, SeedComment1, thread1, u2, 0); handleError(err)
+	c2, err 	 :=	CreateComment(ctx, db, SeedComment2, thread1, u1, c1.ID); handleError(err)
+	c3, err 	 :=	CreateComment(ctx, db, SeedComment3, thread1, u2, c1.ID); handleError(err)
+	tag1, err 	 :=	CreateTag(ctx, db, SeedTag1, thread1); handleError(err)
+	tag2, err 	 :=	CreateTag(ctx, db, SeedTag2, thread1); handleError(err)
+	tag3, err 	 :=	CreateTag(ctx, db, SeedTag3, thread1); handleError(err)
+	_,_,_,_,_,_,_,_ = thread2, thread3, thread4, c2, c3, tag1, tag2, tag3
 }
 
 func handleError(err error) {
@@ -98,6 +103,7 @@ func CreateTopic(ctx context.Context, client *ent.Client, topic ent.Topic, user 
 	t, err := client.Topic.
         Create().
 		SetTitle(topic.Title).
+		SetSlug(topic.Slug).
 		SetDescription(topic.Description).
 		SetShortDescription(topic.ShortDescription).
 		AddTopicModerators(user).
@@ -119,6 +125,7 @@ func CreateThread(
 	t, err := client.Thread.
         Create().
 		SetTitle(thread.Title).
+		SetSlug(thread.Slug).
 		SetDescription(thread.Description).
 		SetTopics(topic).
 		SetUsers(user).
