@@ -70,28 +70,6 @@ func (uc *UserCreate) SetHash(s string) *UserCreate {
 	return uc
 }
 
-// SetNillableHash sets the "hash" field if the given value is not nil.
-func (uc *UserCreate) SetNillableHash(s *string) *UserCreate {
-	if s != nil {
-		uc.SetHash(*s)
-	}
-	return uc
-}
-
-// SetSalt sets the "salt" field.
-func (uc *UserCreate) SetSalt(s string) *UserCreate {
-	uc.mutation.SetSalt(s)
-	return uc
-}
-
-// SetNillableSalt sets the "salt" field if the given value is not nil.
-func (uc *UserCreate) SetNillableSalt(s *string) *UserCreate {
-	if s != nil {
-		uc.SetSalt(*s)
-	}
-	return uc
-}
-
 // SetEmailVerified sets the "email_verified" field.
 func (uc *UserCreate) SetEmailVerified(b bool) *UserCreate {
 	uc.mutation.SetEmailVerified(b)
@@ -286,9 +264,12 @@ func (uc *UserCreate) check() error {
 			return &ValidationError{Name: "last_name", err: fmt.Errorf(`ent: validator failed for field "User.last_name": %w`, err)}
 		}
 	}
-	if v, ok := uc.mutation.Salt(); ok {
-		if err := user.SaltValidator(v); err != nil {
-			return &ValidationError{Name: "salt", err: fmt.Errorf(`ent: validator failed for field "User.salt": %w`, err)}
+	if _, ok := uc.mutation.Hash(); !ok {
+		return &ValidationError{Name: "hash", err: errors.New(`ent: missing required field "User.hash"`)}
+	}
+	if v, ok := uc.mutation.Hash(); ok {
+		if err := user.HashValidator(v); err != nil {
+			return &ValidationError{Name: "hash", err: fmt.Errorf(`ent: validator failed for field "User.hash": %w`, err)}
 		}
 	}
 	if _, ok := uc.mutation.EmailVerified(); !ok {
@@ -351,10 +332,6 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 	if value, ok := uc.mutation.Hash(); ok {
 		_spec.SetField(user.FieldHash, field.TypeString, value)
 		_node.Hash = value
-	}
-	if value, ok := uc.mutation.Salt(); ok {
-		_spec.SetField(user.FieldSalt, field.TypeString, value)
-		_node.Salt = value
 	}
 	if value, ok := uc.mutation.EmailVerified(); ok {
 		_spec.SetField(user.FieldEmailVerified, field.TypeBool, value)

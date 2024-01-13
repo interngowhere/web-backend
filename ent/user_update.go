@@ -112,32 +112,6 @@ func (uu *UserUpdate) SetNillableHash(s *string) *UserUpdate {
 	return uu
 }
 
-// ClearHash clears the value of the "hash" field.
-func (uu *UserUpdate) ClearHash() *UserUpdate {
-	uu.mutation.ClearHash()
-	return uu
-}
-
-// SetSalt sets the "salt" field.
-func (uu *UserUpdate) SetSalt(s string) *UserUpdate {
-	uu.mutation.SetSalt(s)
-	return uu
-}
-
-// SetNillableSalt sets the "salt" field if the given value is not nil.
-func (uu *UserUpdate) SetNillableSalt(s *string) *UserUpdate {
-	if s != nil {
-		uu.SetSalt(*s)
-	}
-	return uu
-}
-
-// ClearSalt clears the value of the "salt" field.
-func (uu *UserUpdate) ClearSalt() *UserUpdate {
-	uu.mutation.ClearSalt()
-	return uu
-}
-
 // SetEmailVerified sets the "email_verified" field.
 func (uu *UserUpdate) SetEmailVerified(b bool) *UserUpdate {
 	uu.mutation.SetEmailVerified(b)
@@ -386,9 +360,9 @@ func (uu *UserUpdate) check() error {
 			return &ValidationError{Name: "last_name", err: fmt.Errorf(`ent: validator failed for field "User.last_name": %w`, err)}
 		}
 	}
-	if v, ok := uu.mutation.Salt(); ok {
-		if err := user.SaltValidator(v); err != nil {
-			return &ValidationError{Name: "salt", err: fmt.Errorf(`ent: validator failed for field "User.salt": %w`, err)}
+	if v, ok := uu.mutation.Hash(); ok {
+		if err := user.HashValidator(v); err != nil {
+			return &ValidationError{Name: "hash", err: fmt.Errorf(`ent: validator failed for field "User.hash": %w`, err)}
 		}
 	}
 	return nil
@@ -426,15 +400,6 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if value, ok := uu.mutation.Hash(); ok {
 		_spec.SetField(user.FieldHash, field.TypeString, value)
-	}
-	if uu.mutation.HashCleared() {
-		_spec.ClearField(user.FieldHash, field.TypeString)
-	}
-	if value, ok := uu.mutation.Salt(); ok {
-		_spec.SetField(user.FieldSalt, field.TypeString, value)
-	}
-	if uu.mutation.SaltCleared() {
-		_spec.ClearField(user.FieldSalt, field.TypeString)
 	}
 	if value, ok := uu.mutation.EmailVerified(); ok {
 		_spec.SetField(user.FieldEmailVerified, field.TypeBool, value)
@@ -766,32 +731,6 @@ func (uuo *UserUpdateOne) SetNillableHash(s *string) *UserUpdateOne {
 	return uuo
 }
 
-// ClearHash clears the value of the "hash" field.
-func (uuo *UserUpdateOne) ClearHash() *UserUpdateOne {
-	uuo.mutation.ClearHash()
-	return uuo
-}
-
-// SetSalt sets the "salt" field.
-func (uuo *UserUpdateOne) SetSalt(s string) *UserUpdateOne {
-	uuo.mutation.SetSalt(s)
-	return uuo
-}
-
-// SetNillableSalt sets the "salt" field if the given value is not nil.
-func (uuo *UserUpdateOne) SetNillableSalt(s *string) *UserUpdateOne {
-	if s != nil {
-		uuo.SetSalt(*s)
-	}
-	return uuo
-}
-
-// ClearSalt clears the value of the "salt" field.
-func (uuo *UserUpdateOne) ClearSalt() *UserUpdateOne {
-	uuo.mutation.ClearSalt()
-	return uuo
-}
-
 // SetEmailVerified sets the "email_verified" field.
 func (uuo *UserUpdateOne) SetEmailVerified(b bool) *UserUpdateOne {
 	uuo.mutation.SetEmailVerified(b)
@@ -1053,9 +992,9 @@ func (uuo *UserUpdateOne) check() error {
 			return &ValidationError{Name: "last_name", err: fmt.Errorf(`ent: validator failed for field "User.last_name": %w`, err)}
 		}
 	}
-	if v, ok := uuo.mutation.Salt(); ok {
-		if err := user.SaltValidator(v); err != nil {
-			return &ValidationError{Name: "salt", err: fmt.Errorf(`ent: validator failed for field "User.salt": %w`, err)}
+	if v, ok := uuo.mutation.Hash(); ok {
+		if err := user.HashValidator(v); err != nil {
+			return &ValidationError{Name: "hash", err: fmt.Errorf(`ent: validator failed for field "User.hash": %w`, err)}
 		}
 	}
 	return nil
@@ -1110,15 +1049,6 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 	}
 	if value, ok := uuo.mutation.Hash(); ok {
 		_spec.SetField(user.FieldHash, field.TypeString, value)
-	}
-	if uuo.mutation.HashCleared() {
-		_spec.ClearField(user.FieldHash, field.TypeString)
-	}
-	if value, ok := uuo.mutation.Salt(); ok {
-		_spec.SetField(user.FieldSalt, field.TypeString, value)
-	}
-	if uuo.mutation.SaltCleared() {
-		_spec.ClearField(user.FieldSalt, field.TypeString)
 	}
 	if value, ok := uuo.mutation.EmailVerified(); ok {
 		_spec.SetField(user.FieldEmailVerified, field.TypeBool, value)

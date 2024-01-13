@@ -4256,7 +4256,6 @@ type UserMutation struct {
 	first_name              *string
 	last_name               *string
 	hash                    *string
-	salt                    *string
 	email_verified          *bool
 	created_at              *time.Time
 	clearedFields           map[string]struct{}
@@ -4585,71 +4584,9 @@ func (m *UserMutation) OldHash(ctx context.Context) (v string, err error) {
 	return oldValue.Hash, nil
 }
 
-// ClearHash clears the value of the "hash" field.
-func (m *UserMutation) ClearHash() {
-	m.hash = nil
-	m.clearedFields[user.FieldHash] = struct{}{}
-}
-
-// HashCleared returns if the "hash" field was cleared in this mutation.
-func (m *UserMutation) HashCleared() bool {
-	_, ok := m.clearedFields[user.FieldHash]
-	return ok
-}
-
 // ResetHash resets all changes to the "hash" field.
 func (m *UserMutation) ResetHash() {
 	m.hash = nil
-	delete(m.clearedFields, user.FieldHash)
-}
-
-// SetSalt sets the "salt" field.
-func (m *UserMutation) SetSalt(s string) {
-	m.salt = &s
-}
-
-// Salt returns the value of the "salt" field in the mutation.
-func (m *UserMutation) Salt() (r string, exists bool) {
-	v := m.salt
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldSalt returns the old "salt" field's value of the User entity.
-// If the User object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *UserMutation) OldSalt(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldSalt is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldSalt requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldSalt: %w", err)
-	}
-	return oldValue.Salt, nil
-}
-
-// ClearSalt clears the value of the "salt" field.
-func (m *UserMutation) ClearSalt() {
-	m.salt = nil
-	m.clearedFields[user.FieldSalt] = struct{}{}
-}
-
-// SaltCleared returns if the "salt" field was cleared in this mutation.
-func (m *UserMutation) SaltCleared() bool {
-	_, ok := m.clearedFields[user.FieldSalt]
-	return ok
-}
-
-// ResetSalt resets all changes to the "salt" field.
-func (m *UserMutation) ResetSalt() {
-	m.salt = nil
-	delete(m.clearedFields, user.FieldSalt)
 }
 
 // SetEmailVerified sets the "email_verified" field.
@@ -5028,7 +4965,7 @@ func (m *UserMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *UserMutation) Fields() []string {
-	fields := make([]string, 0, 8)
+	fields := make([]string, 0, 7)
 	if m.email != nil {
 		fields = append(fields, user.FieldEmail)
 	}
@@ -5043,9 +4980,6 @@ func (m *UserMutation) Fields() []string {
 	}
 	if m.hash != nil {
 		fields = append(fields, user.FieldHash)
-	}
-	if m.salt != nil {
-		fields = append(fields, user.FieldSalt)
 	}
 	if m.email_verified != nil {
 		fields = append(fields, user.FieldEmailVerified)
@@ -5071,8 +5005,6 @@ func (m *UserMutation) Field(name string) (ent.Value, bool) {
 		return m.LastName()
 	case user.FieldHash:
 		return m.Hash()
-	case user.FieldSalt:
-		return m.Salt()
 	case user.FieldEmailVerified:
 		return m.EmailVerified()
 	case user.FieldCreatedAt:
@@ -5096,8 +5028,6 @@ func (m *UserMutation) OldField(ctx context.Context, name string) (ent.Value, er
 		return m.OldLastName(ctx)
 	case user.FieldHash:
 		return m.OldHash(ctx)
-	case user.FieldSalt:
-		return m.OldSalt(ctx)
 	case user.FieldEmailVerified:
 		return m.OldEmailVerified(ctx)
 	case user.FieldCreatedAt:
@@ -5145,13 +5075,6 @@ func (m *UserMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetHash(v)
-		return nil
-	case user.FieldSalt:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetSalt(v)
 		return nil
 	case user.FieldEmailVerified:
 		v, ok := value.(bool)
@@ -5203,12 +5126,6 @@ func (m *UserMutation) ClearedFields() []string {
 	if m.FieldCleared(user.FieldLastName) {
 		fields = append(fields, user.FieldLastName)
 	}
-	if m.FieldCleared(user.FieldHash) {
-		fields = append(fields, user.FieldHash)
-	}
-	if m.FieldCleared(user.FieldSalt) {
-		fields = append(fields, user.FieldSalt)
-	}
 	return fields
 }
 
@@ -5228,12 +5145,6 @@ func (m *UserMutation) ClearField(name string) error {
 		return nil
 	case user.FieldLastName:
 		m.ClearLastName()
-		return nil
-	case user.FieldHash:
-		m.ClearHash()
-		return nil
-	case user.FieldSalt:
-		m.ClearSalt()
 		return nil
 	}
 	return fmt.Errorf("unknown User nullable field %s", name)
@@ -5257,9 +5168,6 @@ func (m *UserMutation) ResetField(name string) error {
 		return nil
 	case user.FieldHash:
 		m.ResetHash()
-		return nil
-	case user.FieldSalt:
-		m.ResetSalt()
 		return nil
 	case user.FieldEmailVerified:
 		m.ResetEmailVerified()

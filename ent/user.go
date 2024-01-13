@@ -28,8 +28,6 @@ type User struct {
 	LastName string `json:"last_name,omitempty"`
 	// Hash holds the value of the "hash" field.
 	Hash string `json:"-"`
-	// Salt holds the value of the "salt" field.
-	Salt string `json:"-"`
 	// EmailVerified holds the value of the "email_verified" field.
 	EmailVerified bool `json:"email_verified,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
@@ -142,7 +140,7 @@ func (*User) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case user.FieldEmailVerified:
 			values[i] = new(sql.NullBool)
-		case user.FieldEmail, user.FieldUsername, user.FieldFirstName, user.FieldLastName, user.FieldHash, user.FieldSalt:
+		case user.FieldEmail, user.FieldUsername, user.FieldFirstName, user.FieldLastName, user.FieldHash:
 			values[i] = new(sql.NullString)
 		case user.FieldCreatedAt:
 			values[i] = new(sql.NullTime)
@@ -198,12 +196,6 @@ func (u *User) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field hash", values[i])
 			} else if value.Valid {
 				u.Hash = value.String
-			}
-		case user.FieldSalt:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field salt", values[i])
-			} else if value.Valid {
-				u.Salt = value.String
 			}
 		case user.FieldEmailVerified:
 			if value, ok := values[i].(*sql.NullBool); !ok {
@@ -306,8 +298,6 @@ func (u *User) String() string {
 	builder.WriteString(u.LastName)
 	builder.WriteString(", ")
 	builder.WriteString("hash=<sensitive>")
-	builder.WriteString(", ")
-	builder.WriteString("salt=<sensitive>")
 	builder.WriteString(", ")
 	builder.WriteString("email_verified=")
 	builder.WriteString(fmt.Sprintf("%v", u.EmailVerified))

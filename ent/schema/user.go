@@ -32,13 +32,9 @@ func (User) Fields() []ent.Field {
 			MaxLen(255).
 			Optional(),
 		field.String("hash").
-			Optional().
-			Sensitive().
-			Unique(),
-		field.String("salt").
 			MaxLen(255).
 			Sensitive().
-			Optional(),
+			Unique(),
 		field.Bool("email_verified").
 			Default(false),
 		field.Time("created_at").
