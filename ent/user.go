@@ -27,7 +27,7 @@ type User struct {
 	// LastName holds the value of the "last_name" field.
 	LastName string `json:"last_name,omitempty"`
 	// Hash holds the value of the "hash" field.
-	Hash string `json:"-"`
+	Hash []byte `json:"-"`
 	// EmailVerified holds the value of the "email_verified" field.
 	EmailVerified bool `json:"email_verified,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
@@ -138,9 +138,11 @@ func (*User) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
+		case user.FieldHash:
+			values[i] = new([]byte)
 		case user.FieldEmailVerified:
 			values[i] = new(sql.NullBool)
-		case user.FieldEmail, user.FieldUsername, user.FieldFirstName, user.FieldLastName, user.FieldHash:
+		case user.FieldEmail, user.FieldUsername, user.FieldFirstName, user.FieldLastName:
 			values[i] = new(sql.NullString)
 		case user.FieldCreatedAt:
 			values[i] = new(sql.NullTime)
@@ -192,10 +194,10 @@ func (u *User) assignValues(columns []string, values []any) error {
 				u.LastName = value.String
 			}
 		case user.FieldHash:
-			if value, ok := values[i].(*sql.NullString); !ok {
+			if value, ok := values[i].(*[]byte); !ok {
 				return fmt.Errorf("unexpected type %T for field hash", values[i])
-			} else if value.Valid {
-				u.Hash = value.String
+			} else if value != nil {
+				u.Hash = *value
 			}
 		case user.FieldEmailVerified:
 			if value, ok := values[i].(*sql.NullBool); !ok {

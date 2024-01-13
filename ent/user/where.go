@@ -77,7 +77,7 @@ func LastName(v string) predicate.User {
 }
 
 // Hash applies equality check predicate on the "hash" field. It's identical to HashEQ.
-func Hash(v string) predicate.User {
+func Hash(v []byte) predicate.User {
 	return predicate.User(sql.FieldEQ(FieldHash, v))
 }
 
@@ -372,68 +372,43 @@ func LastNameContainsFold(v string) predicate.User {
 }
 
 // HashEQ applies the EQ predicate on the "hash" field.
-func HashEQ(v string) predicate.User {
+func HashEQ(v []byte) predicate.User {
 	return predicate.User(sql.FieldEQ(FieldHash, v))
 }
 
 // HashNEQ applies the NEQ predicate on the "hash" field.
-func HashNEQ(v string) predicate.User {
+func HashNEQ(v []byte) predicate.User {
 	return predicate.User(sql.FieldNEQ(FieldHash, v))
 }
 
 // HashIn applies the In predicate on the "hash" field.
-func HashIn(vs ...string) predicate.User {
+func HashIn(vs ...[]byte) predicate.User {
 	return predicate.User(sql.FieldIn(FieldHash, vs...))
 }
 
 // HashNotIn applies the NotIn predicate on the "hash" field.
-func HashNotIn(vs ...string) predicate.User {
+func HashNotIn(vs ...[]byte) predicate.User {
 	return predicate.User(sql.FieldNotIn(FieldHash, vs...))
 }
 
 // HashGT applies the GT predicate on the "hash" field.
-func HashGT(v string) predicate.User {
+func HashGT(v []byte) predicate.User {
 	return predicate.User(sql.FieldGT(FieldHash, v))
 }
 
 // HashGTE applies the GTE predicate on the "hash" field.
-func HashGTE(v string) predicate.User {
+func HashGTE(v []byte) predicate.User {
 	return predicate.User(sql.FieldGTE(FieldHash, v))
 }
 
 // HashLT applies the LT predicate on the "hash" field.
-func HashLT(v string) predicate.User {
+func HashLT(v []byte) predicate.User {
 	return predicate.User(sql.FieldLT(FieldHash, v))
 }
 
 // HashLTE applies the LTE predicate on the "hash" field.
-func HashLTE(v string) predicate.User {
+func HashLTE(v []byte) predicate.User {
 	return predicate.User(sql.FieldLTE(FieldHash, v))
-}
-
-// HashContains applies the Contains predicate on the "hash" field.
-func HashContains(v string) predicate.User {
-	return predicate.User(sql.FieldContains(FieldHash, v))
-}
-
-// HashHasPrefix applies the HasPrefix predicate on the "hash" field.
-func HashHasPrefix(v string) predicate.User {
-	return predicate.User(sql.FieldHasPrefix(FieldHash, v))
-}
-
-// HashHasSuffix applies the HasSuffix predicate on the "hash" field.
-func HashHasSuffix(v string) predicate.User {
-	return predicate.User(sql.FieldHasSuffix(FieldHash, v))
-}
-
-// HashEqualFold applies the EqualFold predicate on the "hash" field.
-func HashEqualFold(v string) predicate.User {
-	return predicate.User(sql.FieldEqualFold(FieldHash, v))
-}
-
-// HashContainsFold applies the ContainsFold predicate on the "hash" field.
-func HashContainsFold(v string) predicate.User {
-	return predicate.User(sql.FieldContainsFold(FieldHash, v))
 }
 
 // EmailVerifiedEQ applies the EQ predicate on the "email_verified" field.

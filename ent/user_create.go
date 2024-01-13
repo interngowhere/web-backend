@@ -65,8 +65,8 @@ func (uc *UserCreate) SetNillableLastName(s *string) *UserCreate {
 }
 
 // SetHash sets the "hash" field.
-func (uc *UserCreate) SetHash(s string) *UserCreate {
-	uc.mutation.SetHash(s)
+func (uc *UserCreate) SetHash(b []byte) *UserCreate {
+	uc.mutation.SetHash(b)
 	return uc
 }
 
@@ -330,7 +330,7 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 		_node.LastName = value
 	}
 	if value, ok := uc.mutation.Hash(); ok {
-		_spec.SetField(user.FieldHash, field.TypeString, value)
+		_spec.SetField(user.FieldHash, field.TypeBytes, value)
 		_node.Hash = value
 	}
 	if value, ok := uc.mutation.EmailVerified(); ok {

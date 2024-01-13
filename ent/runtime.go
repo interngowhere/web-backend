@@ -99,7 +99,7 @@ func init() {
 	// userDescHash is the schema descriptor for hash field.
 	userDescHash := userFields[5].Descriptor()
 	// user.HashValidator is a validator for the "hash" field. It is called by the builders before save.
-	user.HashValidator = userDescHash.Validators[0].(func(string) error)
+	user.HashValidator = userDescHash.Validators[0].(func([]byte) error)
 	// userDescEmailVerified is the schema descriptor for email_verified field.
 	userDescEmailVerified := userFields[6].Descriptor()
 	// user.DefaultEmailVerified holds the default value on creation for the email_verified field.

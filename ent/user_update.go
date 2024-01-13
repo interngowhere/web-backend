@@ -99,16 +99,8 @@ func (uu *UserUpdate) ClearLastName() *UserUpdate {
 }
 
 // SetHash sets the "hash" field.
-func (uu *UserUpdate) SetHash(s string) *UserUpdate {
-	uu.mutation.SetHash(s)
-	return uu
-}
-
-// SetNillableHash sets the "hash" field if the given value is not nil.
-func (uu *UserUpdate) SetNillableHash(s *string) *UserUpdate {
-	if s != nil {
-		uu.SetHash(*s)
-	}
+func (uu *UserUpdate) SetHash(b []byte) *UserUpdate {
+	uu.mutation.SetHash(b)
 	return uu
 }
 
@@ -399,7 +391,7 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		_spec.ClearField(user.FieldLastName, field.TypeString)
 	}
 	if value, ok := uu.mutation.Hash(); ok {
-		_spec.SetField(user.FieldHash, field.TypeString, value)
+		_spec.SetField(user.FieldHash, field.TypeBytes, value)
 	}
 	if value, ok := uu.mutation.EmailVerified(); ok {
 		_spec.SetField(user.FieldEmailVerified, field.TypeBool, value)
@@ -718,16 +710,8 @@ func (uuo *UserUpdateOne) ClearLastName() *UserUpdateOne {
 }
 
 // SetHash sets the "hash" field.
-func (uuo *UserUpdateOne) SetHash(s string) *UserUpdateOne {
-	uuo.mutation.SetHash(s)
-	return uuo
-}
-
-// SetNillableHash sets the "hash" field if the given value is not nil.
-func (uuo *UserUpdateOne) SetNillableHash(s *string) *UserUpdateOne {
-	if s != nil {
-		uuo.SetHash(*s)
-	}
+func (uuo *UserUpdateOne) SetHash(b []byte) *UserUpdateOne {
+	uuo.mutation.SetHash(b)
 	return uuo
 }
 
@@ -1048,7 +1032,7 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 		_spec.ClearField(user.FieldLastName, field.TypeString)
 	}
 	if value, ok := uuo.mutation.Hash(); ok {
-		_spec.SetField(user.FieldHash, field.TypeString, value)
+		_spec.SetField(user.FieldHash, field.TypeBytes, value)
 	}
 	if value, ok := uuo.mutation.EmailVerified(); ok {
 		_spec.SetField(user.FieldEmailVerified, field.TypeBool, value)

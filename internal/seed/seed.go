@@ -8,6 +8,7 @@ import (
 
 	"github.com/interngowhere/web-backend/ent"
 	"github.com/joho/godotenv"
+	"golang.org/x/crypto/bcrypt"
 
 	_ "github.com/lib/pq"
 )
@@ -60,8 +61,8 @@ func main() {
 
 	log.Println("Cleared all tables")
 
-	u1, err 	 		:=	CreateUser(ctx, db, SeedUser1); handleError(err)
-	u2, err 	 		:=	CreateUser(ctx, db, SeedUser2); handleError(err)
+	u1, err 	 		:=	CreateUser(ctx, db, SeedUser1, "a123"); handleError(err)
+	u2, err 	 		:=	CreateUser(ctx, db, SeedUser2, "d456"); handleError(err)
 	topic1, err  		:=	CreateTopic(ctx, db, SeedTopic1, u1); handleError(err)
 	topic2, err  		:=	CreateTopic(ctx, db, SeedTopic2, u1); handleError(err)
 	topic3, err  		:=	CreateTopic(ctx, db, SeedTopic3, u1); handleError(err)
@@ -87,10 +88,16 @@ func handleError(err error) {
 	}
 }
 
-func CreateUser(ctx context.Context, client *ent.Client, user ent.User) (*ent.User, error) {
+func CreateUser(ctx context.Context, client *ent.Client, user ent.User, password string) (*ent.User, error) {
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+    if err != nil {
+		return nil, fmt.Errorf("failed to create user: %w", err)
+	}
+	
     u, err := client.User.
         Create().
 		SetEmail(user.Email).
+		SetHash(hashedPassword).
 		SetFirstName(user.FirstName).
 		SetLastName(user.LastName).
 		SetUsername(user.Username).

@@ -31,7 +31,7 @@ func (User) Fields() []ent.Field {
 		field.String("last_name").
 			MaxLen(255).
 			Optional(),
-		field.String("hash").
+		field.Bytes("hash").
 			MaxLen(255).
 			Sensitive().
 			Unique(),

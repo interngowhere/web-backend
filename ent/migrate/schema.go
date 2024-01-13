@@ -178,7 +178,7 @@ var (
 		{Name: "username", Type: field.TypeString, Unique: true, Size: 255},
 		{Name: "first_name", Type: field.TypeString, Nullable: true, Size: 255},
 		{Name: "last_name", Type: field.TypeString, Nullable: true, Size: 255},
-		{Name: "hash", Type: field.TypeString, Unique: true, Size: 255},
+		{Name: "hash", Type: field.TypeBytes, Unique: true, Size: 255},
 		{Name: "email_verified", Type: field.TypeBool, Default: false},
 		{Name: "created_at", Type: field.TypeTime},
 	}

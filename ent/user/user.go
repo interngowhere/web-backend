@@ -143,7 +143,7 @@ var (
 	// LastNameValidator is a validator for the "last_name" field. It is called by the builders before save.
 	LastNameValidator func(string) error
 	// HashValidator is a validator for the "hash" field. It is called by the builders before save.
-	HashValidator func(string) error
+	HashValidator func([]byte) error
 	// DefaultEmailVerified holds the default value on creation for the "email_verified" field.
 	DefaultEmailVerified bool
 	// DefaultCreatedAt holds the default value on creation for the "created_at" field.
@@ -178,11 +178,6 @@ func ByFirstName(opts ...sql.OrderTermOption) OrderOption {
 // ByLastName orders the results by the last_name field.
 func ByLastName(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldLastName, opts...).ToFunc()
-}
-
-// ByHash orders the results by the hash field.
-func ByHash(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldHash, opts...).ToFunc()
 }
 
 // ByEmailVerified orders the results by the email_verified field.
