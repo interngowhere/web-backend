@@ -60,22 +60,25 @@ func main() {
 
 	log.Println("Cleared all tables")
 
-	u1, err 	 :=	CreateUser(ctx, db, SeedUser1); handleError(err)
-	u2, err 	 :=	CreateUser(ctx, db, SeedUser2); handleError(err)
-	topic1, err  :=	CreateTopic(ctx, db, SeedTopic1, u1); handleError(err)
-	topic2, err  :=	CreateTopic(ctx, db, SeedTopic2, u1); handleError(err)
-	topic3, err  :=	CreateTopic(ctx, db, SeedTopic3, u1); handleError(err)
-	thread1, err :=	CreateThread(ctx, db, SeedThread1, topic1, u1); handleError(err)
-	thread2, err :=	CreateThread(ctx, db, SeedThread2, topic2, u1); handleError(err)
-	thread3, err :=	CreateThread(ctx, db, SeedThread3, topic2, u1); handleError(err)
-	thread4, err :=	CreateThread(ctx, db, SeedThread4, topic3, u1); handleError(err)
-	c1, err 	 :=	CreateComment(ctx, db, SeedComment1, thread1, u2, 0); handleError(err)
-	c2, err 	 :=	CreateComment(ctx, db, SeedComment2, thread1, u1, c1.ID); handleError(err)
-	c3, err 	 :=	CreateComment(ctx, db, SeedComment3, thread1, u2, c1.ID); handleError(err)
-	tag1, err 	 :=	CreateTag(ctx, db, SeedTag1, thread1); handleError(err)
-	tag2, err 	 :=	CreateTag(ctx, db, SeedTag2, thread1); handleError(err)
-	tag3, err 	 :=	CreateTag(ctx, db, SeedTag3, thread1); handleError(err)
-	_,_,_,_,_,_,_,_ = thread2, thread3, thread4, c2, c3, tag1, tag2, tag3
+	u1, err 	 		:=	CreateUser(ctx, db, SeedUser1); handleError(err)
+	u2, err 	 		:=	CreateUser(ctx, db, SeedUser2); handleError(err)
+	topic1, err  		:=	CreateTopic(ctx, db, SeedTopic1, u1); handleError(err)
+	topic2, err  		:=	CreateTopic(ctx, db, SeedTopic2, u1); handleError(err)
+	topic3, err  		:=	CreateTopic(ctx, db, SeedTopic3, u1); handleError(err)
+	thread1, err 		:=	CreateThread(ctx, db, SeedThread1, topic1, u1); handleError(err)
+	thread2, err 		:=	CreateThread(ctx, db, SeedThread2, topic2, u1); handleError(err)
+	thread3, err 		:=	CreateThread(ctx, db, SeedThread3, topic2, u1); handleError(err)
+	thread4, err 		:=	CreateThread(ctx, db, SeedThread4, topic3, u1); handleError(err)
+	c1, err 	 		:=	CreateComment(ctx, db, SeedComment1, thread1, u2, 0); handleError(err)
+	c2, err 	 		:=	CreateComment(ctx, db, SeedComment2, thread1, u1, c1.ID); handleError(err)
+	c3, err 	 		:=	CreateComment(ctx, db, SeedComment3, thread1, u2, c1.ID); handleError(err)
+	tag1, err 	 		:=	CreateTag(ctx, db, SeedTag1, thread1); handleError(err)
+	tag2, err 	 		:=	CreateTag(ctx, db, SeedTag2, thread1); handleError(err)
+	tag3, err 	 		:=	CreateTag(ctx, db, SeedTag3, thread1); handleError(err)
+	threadKudo1, err 	:= 	CreateThreadKudo(ctx, db, u2, thread1); handleError(err)
+	commentKudo1, err 	:= 	CreateCommentKudo(ctx, db, u1, c1); handleError(err)
+
+	_,_,_,_,_,_,_,_,_,_ = thread2, thread3, thread4, c2, c3, tag1, tag2, tag3, threadKudo1, commentKudo1
 }
 
 func handleError(err error) {
@@ -177,4 +180,40 @@ func CreateTag(
 	}
 	log.Printf("Created tag: %v", t.TagName)
 	return t, nil
+}
+
+func CreateThreadKudo(
+	ctx context.Context,
+	client *ent.Client,
+	user *ent.User,
+	thread *ent.Thread,
+) (*ent.ThreadKudo, error) {
+	t, err := client.ThreadKudo.
+		Create().
+		SetThread(thread).
+		SetUser(user).
+		Save(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to add kudo by %v to thread: %w", t.UserID, err)
+	}
+	log.Printf("Added kudo by %v to thread: %v", t.UserID, t.ThreadID)
+	return t, nil
+}
+
+func CreateCommentKudo(
+	ctx context.Context,
+	client *ent.Client,
+	user *ent.User,
+	comment *ent.Comment,
+) (*ent.CommentKudo, error) {
+	c, err := client.CommentKudo.
+		Create().
+		SetComment(comment).
+		SetUser(user).
+		Save(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to add kudo by %v to comment: %w", c.UserID, err)
+	}
+	log.Printf("Added kudo by %v to comment: %v", c.UserID, c.CommentID)
+	return c, nil
 }
