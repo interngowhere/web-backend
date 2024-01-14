@@ -158,8 +158,8 @@ var (
 	// TopicsColumns holds the columns for the "topics" table.
 	TopicsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
-		{Name: "title", Type: field.TypeString, Size: 255},
-		{Name: "slug", Type: field.TypeString, Size: 255},
+		{Name: "title", Type: field.TypeString, Unique: true, Size: 255},
+		{Name: "slug", Type: field.TypeString, Unique: true, Size: 255},
 		{Name: "short_description", Type: field.TypeString, Size: 255},
 		{Name: "description", Type: field.TypeString, Nullable: true, Size: 4096},
 		{Name: "profile_pic_url", Type: field.TypeString, Nullable: true},
