@@ -2,6 +2,7 @@ package schema
 
 import (
 	"entgo.io/ent"
+	"entgo.io/ent/dialect/entsql"
 	"entgo.io/ent/schema"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
@@ -38,11 +39,13 @@ func (Moderator) Edges() []ent.Edge {
             Unique().
             Required().
 			Immutable().
-            Field("moderator_id"),
+            Field("moderator_id").
+			Annotations(entsql.OnDelete(entsql.Cascade)),
         edge.To("topic", Topic.Type).
             Unique().
             Required().
 			Immutable().
-            Field("topic_id"),
+            Field("topic_id").
+			Annotations(entsql.OnDelete(entsql.Cascade)),
 	}
 }

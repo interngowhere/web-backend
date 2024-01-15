@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"entgo.io/ent"
+	"entgo.io/ent/dialect/entsql"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 )
@@ -38,7 +39,8 @@ func (Topic) Fields() []ent.Field {
 // Edges of the Topic.
 func (Topic) Edges() []ent.Edge {
 	return []ent.Edge{
-        edge.To("topic_threads", Thread.Type),
+        edge.To("topic_threads", Thread.Type).
+			Annotations(entsql.OnDelete(entsql.Cascade)),
 		edge.From("topic_moderators", User.Type).
             Ref("moderated_topics").
             Through("moderators", Moderator.Type),

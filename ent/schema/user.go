@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"entgo.io/ent"
+	"entgo.io/ent/dialect/entsql"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
@@ -46,13 +47,18 @@ func (User) Fields() []ent.Field {
 // Edges of the User.
 func (User) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.To("user_threads", Thread.Type),
+		edge.To("user_threads", Thread.Type).
+			Annotations(entsql.OnDelete(entsql.Cascade)),
         edge.To("kudoed_threads", Thread.Type).
+			Annotations(entsql.OnDelete(entsql.Cascade)).
 			Through("thread_kudoes", ThreadKudo.Type),
-		edge.To("user_comments", Comment.Type),
+		edge.To("user_comments", Comment.Type).
+			Annotations(entsql.OnDelete(entsql.Cascade)),
 		edge.To("kudoed_comments", Comment.Type).
+			Annotations(entsql.OnDelete(entsql.Cascade)).
 			Through("comment_kudoes", CommentKudo.Type),
 		edge.To("moderated_topics", Topic.Type).
+			Annotations(entsql.OnDelete(entsql.Cascade)).
 			Through("moderators", Moderator.Type),
     }
 }

@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"entgo.io/ent"
+	"entgo.io/ent/dialect/entsql"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
@@ -37,7 +38,8 @@ func (Thread) Fields() []ent.Field {
 // Edges of the Thread.
 func (Thread) Edges() []ent.Edge {
 	return []ent.Edge{
-        edge.To("thread_comments", Comment.Type),
+        edge.To("thread_comments", Comment.Type).
+			Annotations(entsql.OnDelete(entsql.Cascade)),
 		edge.To("tags", Tag.Type),
 		edge.From("topics", Topic.Type).
 			Ref("topic_threads").

@@ -2,6 +2,7 @@ package schema
 
 import (
 	"entgo.io/ent"
+	"entgo.io/ent/dialect/entsql"
 	"entgo.io/ent/schema"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
@@ -38,11 +39,13 @@ func (ThreadKudo) Edges() []ent.Edge {
             Unique().
             Required().
 			Immutable().
-            Field("user_id"),
+            Field("user_id").
+			Annotations(entsql.OnDelete(entsql.Cascade)),
         edge.To("thread", Thread.Type).
             Unique().
             Required().
 			Immutable().
-            Field("thread_id"),
+            Field("thread_id").
+			Annotations(entsql.OnDelete(entsql.Cascade)),
     }
 }
