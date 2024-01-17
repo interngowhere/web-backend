@@ -5,12 +5,11 @@ import (
 	"github.com/interngowhere/web-backend/internal/routes"
 )
 
-// setUpRoutes mounts all handlers
+// Setup mounts all handlers
 func Setup(r chi.Router) {
 	// Public Routes
-	r.Group(routes.GetRoutes())
+	r.Group(routes.PublicRoutes())
 
-	// TODO Private Routes
-	// r.Use(AuthMiddleware)
-    // r.Group(routes.PostRoutes())
+	// Protected Routes
+	r.Group(routes.ProtectedRoutes())
 }

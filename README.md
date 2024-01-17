@@ -1,5 +1,7 @@
 # web-backend
 
+### Project structure
+
 ### Commit messages
 
 This project follows [conventional commits](https://www.conventionalcommits.org/en/v1.0.0/) guideline for commit messages. See the table below for the list of commit types.
