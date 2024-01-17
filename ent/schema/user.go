@@ -19,7 +19,7 @@ type User struct {
 func (User) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).
-            Default(uuid.New).
+			Default(uuid.New).
 			Immutable(),
 		field.String("email").
 			MaxLen(255),
@@ -49,7 +49,7 @@ func (User) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("user_threads", Thread.Type).
 			Annotations(entsql.OnDelete(entsql.Cascade)),
-        edge.To("kudoed_threads", Thread.Type).
+		edge.To("kudoed_threads", Thread.Type).
 			Annotations(entsql.OnDelete(entsql.Cascade)).
 			Through("thread_kudoes", ThreadKudo.Type),
 		edge.To("user_comments", Comment.Type).
@@ -60,5 +60,5 @@ func (User) Edges() []ent.Edge {
 		edge.To("moderated_topics", Topic.Type).
 			Annotations(entsql.OnDelete(entsql.Cascade)).
 			Through("moderators", Moderator.Type),
-    }
+	}
 }

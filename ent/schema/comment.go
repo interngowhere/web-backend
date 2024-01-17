@@ -45,7 +45,7 @@ func (Comment) Edges() []ent.Edge {
 			Unique().
 			Immutable(),
 		edge.From("kudoed_users", User.Type).
-            Ref("kudoed_comments").
-            Through("comment_kudoes", CommentKudo.Type),
-    }
+			Ref("kudoed_comments").
+			Through("comment_kudoes", CommentKudo.Type),
+	}
 }

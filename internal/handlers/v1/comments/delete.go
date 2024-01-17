@@ -70,7 +70,7 @@ func RemoveKudo(ctx context.Context, client *ent.Client, userId uuid.UUID, comme
 	return client.CommentKudo.
 		Delete().
 		Where(
-			commentkudo.UserID(userId), 
+			commentkudo.UserID(userId),
 			commentkudo.CommentID(commentId),
 		).
 		Exec(ctx)
@@ -95,7 +95,7 @@ func HandleRemoveKudo(w http.ResponseWriter, r *http.Request) (*api.Response, er
 		res.Message = WrapErrStrToInt.Message
 		return res, err
 	}
-	
+
 	_, err = RemoveKudo(ctx, database.Client, userId, commentId)
 	if err != nil {
 		res.Error = api.BuildError(err, WrapErrRemoveKudo, DeleteHandler)

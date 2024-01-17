@@ -8,17 +8,17 @@ import (
 
 // Custom errors
 var (
-	ErrTopicExist = errors.New("topic already exists")
+	ErrTopicExist        = errors.New("topic already exists")
 	ErrMissingIdentifier = errors.New("missing topic title identifier. Expected 'slug'")
 	ErrMissingInputField = errors.New("there is one or more more missing input field(s) in the request body")
-	ErrNoMatchFromSlug = errors.New("no match from the slug provided")
+	ErrNoMatchFromSlug   = errors.New("no match from the slug provided")
 )
 
 // Custom error message wrappers
 var (
-	WrapErrDecodeRequest = api.ErrorMessage{Message: "Failed to decode request body", Code: 500}
+	WrapErrDecodeRequest   = api.ErrorMessage{Message: "Failed to decode request body", Code: 500}
 	WrapErrRequestFormat   = api.ErrorMessage{Message: "Invalid request format", Code: 400}
-	WrapErrNoTopicFound	   = api.ErrorMessage{Message: "No topic found", Code: 404}
+	WrapErrNoTopicFound    = api.ErrorMessage{Message: "No topic found", Code: 404}
 	WrapErrCheckTopicExist = api.ErrorMessage{Message: "Failed to check if topic already exists", Code: 500}
 	WrapErrRetrieveTopics  = api.ErrorMessage{Message: "Failed to retrieve topic(s)", Code: 500}
 	WrapErrCreateTopic     = api.ErrorMessage{Message: "Failed to create topic", Code: 500}

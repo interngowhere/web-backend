@@ -42,7 +42,7 @@ func ProtectedRoutes() func(r chi.Router) {
 		r.Post("/topics", api.BuildRouteHandler(topics.HandleCreate))
 		r.Put("/topics/{title}", api.BuildRouteHandler(topics.HandleUpdate))
 		r.Delete("/topics/{title}", api.BuildRouteHandler(topics.HandleDelete))
-		
+
 		// Threads
 		r.Post("/topics/{title}/threads", api.BuildRouteHandler(threads.HandleCreate))
 		r.Put("/threads/{threadId}", api.BuildRouteHandler(threads.HandleUpdate))

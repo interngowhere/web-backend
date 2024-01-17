@@ -14,12 +14,12 @@ type ThreadKudo struct {
 	ent.Schema
 }
 
-// Annotations of the ThreadKudo to generate composite 
+// Annotations of the ThreadKudo to generate composite
 // primary key from user_id and thread_id.
 func (ThreadKudo) Annotations() []schema.Annotation {
-    return []schema.Annotation{
-        field.ID("user_id", "thread_id"),
-    }
+	return []schema.Annotation{
+		field.ID("user_id", "thread_id"),
+	}
 }
 
 // Fields of the ThreadKudo.
@@ -36,16 +36,16 @@ func (ThreadKudo) Fields() []ent.Field {
 func (ThreadKudo) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("user", User.Type).
-            Unique().
-            Required().
+			Unique().
+			Required().
 			Immutable().
-            Field("user_id").
+			Field("user_id").
 			Annotations(entsql.OnDelete(entsql.Cascade)),
-        edge.To("thread", Thread.Type).
-            Unique().
-            Required().
+		edge.To("thread", Thread.Type).
+			Unique().
+			Required().
 			Immutable().
-            Field("thread_id").
+			Field("thread_id").
 			Annotations(entsql.OnDelete(entsql.Cascade)),
-    }
+	}
 }

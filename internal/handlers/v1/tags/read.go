@@ -19,17 +19,17 @@ const SuccessfulListTagsMessage = "Listed all tags found"
 // If no query parameter is provided, all tags will be returned by default.
 func GetTags(q string) ([]*ent.Tag, error) {
 	return database.Client.Tag.
-			Query().
-			Where(tag.TagNameContains(q)).
-			All(context.Background())
+		Query().
+		Where(tag.TagNameContains(q)).
+		All(context.Background())
 }
 
 // GetTagByID returns a single tag based on the tag ID provided
 func GetTagByID(tagId int) (*ent.Tag, error) {
 	return database.Client.Tag.
-			Query().
-			Where(tag.ID(tagId)).
-			Only(context.Background())
+		Query().
+		Where(tag.ID(tagId)).
+		Only(context.Background())
 }
 
 // HandleList handles the GET request, calls

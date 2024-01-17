@@ -24,14 +24,14 @@ const SuccessfulListCommentsMessage = "Listed all comments found"
 // which do not have a parent) in a given thread
 func GetRootComments(threadId int) ([]*ent.Comment, error) {
 	return database.Client.Comment.
-	Query().
-	Where(
-		comment.HasThreadsWith(
-			thread.ID(threadId),
-		),
-		comment.ParentID(0),
-	).
-	All(context.Background())
+		Query().
+		Where(
+			comment.HasThreadsWith(
+				thread.ID(threadId),
+			),
+			comment.ParentID(0),
+		).
+		All(context.Background())
 }
 
 // GetCommentById returns a single comment matching the ID provided

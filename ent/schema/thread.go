@@ -38,7 +38,7 @@ func (Thread) Fields() []ent.Field {
 // Edges of the Thread.
 func (Thread) Edges() []ent.Edge {
 	return []ent.Edge{
-        edge.To("thread_comments", Comment.Type).
+		edge.To("thread_comments", Comment.Type).
 			Annotations(entsql.OnDelete(entsql.Cascade)),
 		edge.To("tags", Tag.Type),
 		edge.From("topics", Topic.Type).
@@ -52,7 +52,7 @@ func (Thread) Edges() []ent.Edge {
 			Unique().
 			Immutable(),
 		edge.From("kudoed_users", User.Type).
-            Ref("kudoed_threads").
-            Through("thread_kudoes", ThreadKudo.Type),
-    }
+			Ref("kudoed_threads").
+			Through("thread_kudoes", ThreadKudo.Type),
+	}
 }

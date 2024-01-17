@@ -29,21 +29,21 @@ func CreateTopic(ctx context.Context, client *ent.Client, topic ent.Topic) error
 		Exec(ctx)
 }
 
-// HandleCreate parses the POST request form data, calls 
+// HandleCreate parses the POST request form data, calls
 // CreateTopic if needed and returns a JSON encoded API response
 func HandleCreate(w http.ResponseWriter, r *http.Request) (*api.Response, error) {
 	ctx := context.Background()
 	res := &api.Response{}
-	
+
 	// Read JSON body in request into a new TopicRequest object for use
 	decoder := json.NewDecoder(r.Body)
-    var data TopicRequest
-    err := decoder.Decode(&data)
-    if err != nil {
-        res.Error = api.BuildError(err, WrapErrDecodeRequest, CreateHandler)
+	var data TopicRequest
+	err := decoder.Decode(&data)
+	if err != nil {
+		res.Error = api.BuildError(err, WrapErrDecodeRequest, CreateHandler)
 		res.Message = WrapErrDecodeRequest.Message
 		return res, err
-    }
+	}
 
 	// Check for missing input fields in request body
 	if len(data.Title) == 0 ||

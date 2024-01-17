@@ -14,12 +14,12 @@ type Moderator struct {
 	ent.Schema
 }
 
-// Annotations of the Moderator to generate composite 
+// Annotations of the Moderator to generate composite
 // primary key from moderator_id and topic_id.
 func (Moderator) Annotations() []schema.Annotation {
-    return []schema.Annotation{
-        field.ID("moderator_id", "topic_id"),
-    }
+	return []schema.Annotation{
+		field.ID("moderator_id", "topic_id"),
+	}
 }
 
 // Fields of the Tag.
@@ -36,16 +36,16 @@ func (Moderator) Fields() []ent.Field {
 func (Moderator) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("moderator", User.Type).
-            Unique().
-            Required().
+			Unique().
+			Required().
 			Immutable().
-            Field("moderator_id").
+			Field("moderator_id").
 			Annotations(entsql.OnDelete(entsql.Cascade)),
-        edge.To("topic", Topic.Type).
-            Unique().
-            Required().
+		edge.To("topic", Topic.Type).
+			Unique().
+			Required().
 			Immutable().
-            Field("topic_id").
+			Field("topic_id").
 			Annotations(entsql.OnDelete(entsql.Cascade)),
 	}
 }

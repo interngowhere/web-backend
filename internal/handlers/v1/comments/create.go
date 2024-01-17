@@ -35,7 +35,7 @@ func CreateComment(ctx context.Context, client *ent.Client, threadId int, commen
 		Exec(ctx)
 }
 
-// HandleCreate parses the POST request form data, calls 
+// HandleCreate parses the POST request form data, calls
 // CreateComment if needed and returns a JSON encoded API response
 func HandleCreate(w http.ResponseWriter, r *http.Request) (*api.Response, error) {
 	ctx := context.Background()
@@ -69,14 +69,14 @@ func HandleCreate(w http.ResponseWriter, r *http.Request) (*api.Response, error)
 
 	// Read JSON body in request into a new ThreadRequest object for use
 	decoder := json.NewDecoder(r.Body)
-    var data CommentRequest
-    err = decoder.Decode(&data)
-    if err != nil {
-        res.Error = api.BuildError(err, WrapErrDecodeRequest, CreateHandler)
+	var data CommentRequest
+	err = decoder.Decode(&data)
+	if err != nil {
+		res.Error = api.BuildError(err, WrapErrDecodeRequest, CreateHandler)
 		res.Message = WrapErrDecodeRequest.Message
 		return res, err
-    }
-    
+	}
+
 	// Check if content field is present in request body
 	// Note: content is the only required field in the POST request
 	// If parentId field is not provided, parentId will be set to 0
@@ -98,10 +98,10 @@ func HandleCreate(w http.ResponseWriter, r *http.Request) (*api.Response, error)
 	}
 
 	c := ent.Comment{
-		ParentID: parentId,
-		Content: data.Content,
-		CreatedBy:	userId,
-		CreatedAt:	time.Now(),
+		ParentID:  parentId,
+		Content:   data.Content,
+		CreatedBy: userId,
+		CreatedAt: time.Now(),
 	}
 
 	err = CreateComment(ctx, database.Client, threadId, c)
@@ -116,7 +116,6 @@ func HandleCreate(w http.ResponseWriter, r *http.Request) (*api.Response, error)
 	return res, err
 }
 
-
 // AddKudo adds a new kudo for the given user and comment in the database
 func AddKudo(ctx context.Context, client *ent.Client, userId uuid.UUID, commentId int) error {
 	return client.CommentKudo.
@@ -126,7 +125,7 @@ func AddKudo(ctx context.Context, client *ent.Client, userId uuid.UUID, commentI
 		Exec(ctx)
 }
 
-// HandleAddKudo parses the JSON body in the POST request, calls 
+// HandleAddKudo parses the JSON body in the POST request, calls
 // AddKudo if there is no error and returns a JSON encoded API response
 func HandleAddKudo(w http.ResponseWriter, r *http.Request) (*api.Response, error) {
 	ctx := context.Background()
@@ -158,7 +157,7 @@ func HandleAddKudo(w http.ResponseWriter, r *http.Request) (*api.Response, error
 			res.Message = WrapErrNoCommentFound.Message
 		}
 		return res, err
-	} 
+	}
 
 	// Check if user has already given a kudo to the same comment
 	c, err := database.Client.CommentKudo.
@@ -172,7 +171,7 @@ func HandleAddKudo(w http.ResponseWriter, r *http.Request) (*api.Response, error
 		res.Error = api.BuildError(err, WrapErrCheckCommentKudo, AddKudoHandler)
 		res.Message = WrapErrCheckCommentKudo.Message
 		return res, err
-	} 
+	}
 
 	if c != 0 {
 		res.Error = api.BuildError(ErrCommentKudoExist, WrapErrCommentKudoExist, AddKudoHandler)

@@ -26,7 +26,7 @@ func UpdateComment(ctx context.Context, client *ent.Client, comment *ent.Comment
 		Exec(ctx)
 }
 
-// HandleUpdate parses the PUT request form data, calls 
+// HandleUpdate parses the PUT request form data, calls
 // UpdateThread if needed and returns a JSON encoded API response
 func HandleUpdate(w http.ResponseWriter, r *http.Request) (*api.Response, error) {
 	ctx := context.Background()
@@ -54,13 +54,13 @@ func HandleUpdate(w http.ResponseWriter, r *http.Request) (*api.Response, error)
 
 	// Read JSON body in request into a new ThreadRequest object for use
 	decoder := json.NewDecoder(r.Body)
-    var data CommentRequest
-    err = decoder.Decode(&data)
-    if err != nil {
-        res.Error = api.BuildError(err, WrapErrDecodeRequest, UpdateHandler)
+	var data CommentRequest
+	err = decoder.Decode(&data)
+	if err != nil {
+		res.Error = api.BuildError(err, WrapErrDecodeRequest, UpdateHandler)
 		res.Message = WrapErrDecodeRequest.Message
 		return res, err
-    }
+	}
 
 	// Update fields in thread object only if a new value for the field is provided
 	if len(data.Content) != 0 {

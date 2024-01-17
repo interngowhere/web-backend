@@ -7,8 +7,8 @@ import (
 )
 
 type CommentRequest struct {
-	ParentID 	string		`json:"parentId"`
-	Content 	string 		`json:"content"`
+	ParentID string `json:"parentId"`
+	Content  string `json:"content"`
 }
 
 type CommentsResponse struct {

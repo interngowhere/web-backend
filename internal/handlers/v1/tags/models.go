@@ -1,7 +1,7 @@
 package tags
 
 type TagRequest struct {
-	TagName	string	`json:"tagName"`
+	TagName string `json:"tagName"`
 }
 
 type TagResponse struct {

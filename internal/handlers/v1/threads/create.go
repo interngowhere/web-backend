@@ -37,7 +37,7 @@ func CreateThread(ctx context.Context, client *ent.Client, topic *ent.Topic, thr
 		Exec(ctx)
 }
 
-// HandleCreate parses the POST request form data, calls 
+// HandleCreate parses the POST request form data, calls
 // CreateThread if needed and returns a JSON encoded API response
 func HandleCreate(w http.ResponseWriter, r *http.Request) (*api.Response, error) {
 	ctx := context.Background()
@@ -59,14 +59,14 @@ func HandleCreate(w http.ResponseWriter, r *http.Request) (*api.Response, error)
 
 	// Read JSON body in request into a new ThreadRequest object for use
 	decoder := json.NewDecoder(r.Body)
-    var data ThreadRequest
-    err = decoder.Decode(&data)
-    if err != nil {
-        res.Error = api.BuildError(err, WrapErrDecodeRequest, CreateHandler)
+	var data ThreadRequest
+	err = decoder.Decode(&data)
+	if err != nil {
+		res.Error = api.BuildError(err, WrapErrDecodeRequest, CreateHandler)
 		res.Message = WrapErrDecodeRequest.Message
 		return res, err
-    }
-    
+	}
+
 	// Check for missing title in request body
 	// Note: title is the only required field in the POST request
 	if len(data.Title) == 0 {
@@ -78,10 +78,10 @@ func HandleCreate(w http.ResponseWriter, r *http.Request) (*api.Response, error)
 	slug := mystr.ToLowerKebab(data.Title)
 
 	t := ent.Thread{
-		Title:            data.Title,
-		Slug:             slug,
-		Description:      data.Description,
-		CreatedBy: 		  userId,
+		Title:       data.Title,
+		Slug:        slug,
+		Description: data.Description,
+		CreatedBy:   userId,
 	}
 
 	err = CreateThread(ctx, database.Client, topics[0], t, data.Tags)
@@ -105,7 +105,7 @@ func AddKudo(ctx context.Context, client *ent.Client, userId uuid.UUID, threadId
 		Exec(ctx)
 }
 
-// HandleAddKudo parses the JSON body in the POST request, calls 
+// HandleAddKudo parses the JSON body in the POST request, calls
 // AddKudo if there is no error and returns a JSON encoded API response
 func HandleAddKudo(w http.ResponseWriter, r *http.Request) (*api.Response, error) {
 	ctx := context.Background()
@@ -137,7 +137,7 @@ func HandleAddKudo(w http.ResponseWriter, r *http.Request) (*api.Response, error
 			res.Message = WrapErrNoThreadFound.Message
 		}
 		return res, err
-	} 
+	}
 
 	// Check if user has already given a kudo to the same thread
 	c, err := database.Client.ThreadKudo.
@@ -151,7 +151,7 @@ func HandleAddKudo(w http.ResponseWriter, r *http.Request) (*api.Response, error
 		res.Error = api.BuildError(err, WrapErrCheckThreadKudo, AddKudoHandler)
 		res.Message = WrapErrCheckThreadKudo.Message
 		return res, err
-	} 
+	}
 
 	if c != 0 {
 		res.Error = api.BuildError(ErrThreadKudoExist, WrapErrThreadKudoExist, AddKudoHandler)

@@ -25,14 +25,14 @@ func UpdateTopic(ctx context.Context, client *ent.Client, topic *ent.Topic) erro
 		Exec(ctx)
 }
 
-// HandleCreate parses the PUT request form data, calls 
+// HandleCreate parses the PUT request form data, calls
 // UpdateTopic if needed and returns a JSON encoded API response
 func HandleUpdate(w http.ResponseWriter, r *http.Request) (*api.Response, error) {
 	ctx := context.Background()
 	res := &api.Response{}
 
 	slug := chi.URLParam(r, "title")
-	
+
 	// Retrieve a reference to the topic
 	t, err := GetTopics(slug)
 	if err != nil {
@@ -48,13 +48,13 @@ func HandleUpdate(w http.ResponseWriter, r *http.Request) (*api.Response, error)
 
 	// Read JSON body in request into a new TopicRequest object for use
 	decoder := json.NewDecoder(r.Body)
-    var data TopicRequest
-    err = decoder.Decode(&data)
-    if err != nil {
-        res.Error = api.BuildError(err, WrapErrDecodeRequest, CreateHandler)
+	var data TopicRequest
+	err = decoder.Decode(&data)
+	if err != nil {
+		res.Error = api.BuildError(err, WrapErrDecodeRequest, CreateHandler)
 		res.Message = WrapErrDecodeRequest.Message
 		return res, err
-    }
+	}
 
 	// Update fields in topic object only if a new value for the field is provided
 	if len(data.Description) != 0 {

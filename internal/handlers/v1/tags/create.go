@@ -22,21 +22,21 @@ func CreateTag(ctx context.Context, client *ent.Client, tag ent.Tag) error {
 		Exec(ctx)
 }
 
-// HandleCreate parses the POST request form data, calls 
+// HandleCreate parses the POST request form data, calls
 // CreateTag if needed and returns a JSON encoded API response
 func HandleCreate(w http.ResponseWriter, r *http.Request) (*api.Response, error) {
 	ctx := context.Background()
 	res := &api.Response{}
-	
+
 	// Read JSON body in request into a new TagRequest object for use
 	decoder := json.NewDecoder(r.Body)
-    var data TagRequest
-    err := decoder.Decode(&data)
-    if err != nil {
-        res.Error = api.BuildError(err, WrapErrDecodeRequest, CreateHandler)
+	var data TagRequest
+	err := decoder.Decode(&data)
+	if err != nil {
+		res.Error = api.BuildError(err, WrapErrDecodeRequest, CreateHandler)
 		res.Message = WrapErrDecodeRequest.Message
 		return res, err
-    }
+	}
 
 	// Check for missing input fields in request body
 	if len(data.TagName) == 0 {

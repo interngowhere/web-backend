@@ -69,7 +69,7 @@ func RemoveKudo(ctx context.Context, client *ent.Client, userId uuid.UUID, threa
 	return client.ThreadKudo.
 		Delete().
 		Where(
-			threadkudo.UserID(userId), 
+			threadkudo.UserID(userId),
 			threadkudo.ThreadID(threadId),
 		).
 		Exec(ctx)
@@ -94,7 +94,7 @@ func HandleRemoveKudo(w http.ResponseWriter, r *http.Request) (*api.Response, er
 		res.Message = WrapErrStrToInt.Message
 		return res, err
 	}
-	
+
 	_, err = RemoveKudo(ctx, database.Client, userId, threadId)
 	if err != nil {
 		res.Error = api.BuildError(err, WrapErrRemoveKudo, DeleteHandler)
