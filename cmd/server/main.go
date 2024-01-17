@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -10,19 +11,11 @@ import (
 	"github.com/interngowhere/web-backend/internal/database"
 	"github.com/interngowhere/web-backend/internal/middleware"
 	"github.com/interngowhere/web-backend/internal/router"
-	"github.com/joho/godotenv"
 
 	_ "github.com/lib/pq"
 )
 
 func main() {
-	// load .env file
-	err := godotenv.Load(".env")
-
-	if err != nil {
-		log.Fatalf("Failed to load .env file: %v", err)
-	}
-
 	// Set up server
 	s := CreateNewServer()
 	r := s.Router
@@ -36,7 +29,7 @@ func main() {
 
 	log.Println("Listening on port 8000 at http://localhost:8000")
 
-	log.Fatalln(http.ListenAndServe("localhost:8000", r))
+	log.Fatalln(http.ListenAndServe(fmt.Sprintf("%s:8000", os.Getenv("SERVER_HOST")), r))
 }
 
 type Server struct {

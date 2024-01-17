@@ -7,20 +7,12 @@ import (
 	"os"
 
 	"github.com/interngowhere/web-backend/ent"
-	"github.com/joho/godotenv"
 	"golang.org/x/crypto/bcrypt"
 
 	_ "github.com/lib/pq"
 )
 
 func main() {
-	// load .env file
-	err := godotenv.Load("../../.env")
-
-	if err != nil {
-		log.Fatalf("Failed to load .env file: %v", err)
-	}
-
 	// Setup database
 	db, err := ent.Open(
 		os.Getenv("DB_DIALECT"),
