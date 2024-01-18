@@ -16,5 +16,9 @@ RUN --mount=type=cache,target=/go/pkg/mod/cache \
     --mount=type=cache,target=/go-build \
     go build -o bin/server cmd/server/main.go
 
+RUN cp /usr/src/server/certificate.crt /etc/ssl/certificate.crt
+RUN cp /usr/src/server/private.key /etc/ssl/private.key
+RUN cp /usr/src/server/bin/server /usr/local/bin/server
+
 EXPOSE 8000
-ENTRYPOINT ["/usr/src/server/bin/server"]
+ENTRYPOINT ["/usr/local/bin/server"]
