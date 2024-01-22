@@ -22,11 +22,17 @@ const SuccessfulListThreadsMessage = "Listed all threads found"
 
 // GetThreads returns the matching threads based on thread id
 // provided. If no id is provided, all threads will be returned
-func GetThreads(id int) ([]*ent.Thread, error) {
-	return database.Client.Thread.
-		Query().
-		Where(thread.IDEQ(id)).
-		All(context.Background())
+func GetThreads(threadId int) ([]*ent.Thread, error) {
+	if threadId == 0 {
+		return database.Client.Thread.
+			Query().
+			All(context.Background())
+	} else {
+		return database.Client.Thread.
+			Query().
+			Where(thread.ID(threadId)).
+			All(context.Background())
+	}
 }
 
 func GetThreadByID(threadId int) (*ent.Thread, error) {
@@ -70,19 +76,20 @@ func HandleList(w http.ResponseWriter, r *http.Request) (*api.Response, error) {
 	data := []ThreadsResponse{}
 
 	// get threads
-	threadId, err := strconv.Atoi(chi.URLParam(r, "threadId"))
-	if err != nil {
-		res.Error = api.BuildError(err, WrapErrStrToInt, ReadHandler)
-		res.Message = WrapErrStrToInt.Message
-		return res, err
-	}
-	threads, err := GetThreads(threadId)
-	if err != nil {
-		res.Error = api.BuildError(err, WrapErrRetrieveThreads, ReadHandler)
-		res.Message = WrapErrRetrieveThreads.Message
-		return res, err
+	q := chi.URLParam(r, "threadId")
+	threadId := 0
+
+	if len(q) != 0 {
+		threadId, _ = strconv.Atoi(q)
 	}
 
+	threads, err := GetThreads(threadId)
+		if err != nil {
+			res.Error = api.BuildError(err, WrapErrRetrieveThreads, ReadHandler)
+			res.Message = WrapErrRetrieveThreads.Message
+			return res, err
+		}
+	
 	userId, _ := users.GetUserIDFromToken(r)
 
 	for _, thread := range threads {

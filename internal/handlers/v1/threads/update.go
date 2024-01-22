@@ -44,13 +44,13 @@ func HandleUpdate(w http.ResponseWriter, r *http.Request) (*api.Response, error)
 		res.Message = WrapErrStrToInt.Message
 		return res, err
 	}
-	t, err := GetThreads(threadId)
+	t, err := GetThreadByID(threadId)
 	if err != nil {
 		res.Error = api.BuildError(err, WrapErrRetrieveThreads, UpdateHandler)
 		res.Message = WrapErrRetrieveThreads.Message
 		return res, err
 	}
-	if len(t) == 0 {
+	if t == nil {
 		res.Error = api.BuildError(ErrNoMatchFromID, WrapErrNoThreadFound, UpdateHandler)
 		res.Message = WrapErrNoThreadFound.Message
 		return res, ErrNoMatchFromID
@@ -68,14 +68,14 @@ func HandleUpdate(w http.ResponseWriter, r *http.Request) (*api.Response, error)
 
 	// Update fields in thread object only if a new value for the field is provided
 	if len(data.Title) != 0 {
-		t[0].Title = data.Title
-		t[0].Slug = mystr.ToLowerKebab(data.Title)
+		t.Title = data.Title
+		t.Slug = mystr.ToLowerKebab(data.Title)
 	}
 	if len(data.Description) != 0 {
-		t[0].Description = data.Description
+		t.Description = data.Description
 	}
 
-	err = UpdateThread(ctx, database.Client, t[0], data.Tags)
+	err = UpdateThread(ctx, database.Client, t, data.Tags)
 	if err != nil {
 		res.Error = api.BuildError(err, WrapErrUpdateThread, UpdateHandler)
 		res.Message = WrapErrUpdateThread.Message

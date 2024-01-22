@@ -40,19 +40,19 @@ func HandleDelete(w http.ResponseWriter, r *http.Request) (*api.Response, error)
 		res.Message = WrapErrStrToInt.Message
 		return res, err
 	}
-	t, err := GetThreads(threadId)
+	t, err := GetThreadByID(threadId)
 	if err != nil {
 		res.Error = api.BuildError(err, WrapErrRetrieveThreads, DeleteHandler)
 		res.Message = WrapErrRetrieveThreads.Message
 		return res, err
 	}
-	if len(t) == 0 {
+	if t == nil {
 		res.Error = api.BuildError(ErrNoMatchFromID, WrapErrNoThreadFound, DeleteHandler)
 		res.Message = WrapErrNoThreadFound.Message
 		return res, ErrNoMatchFromID
 	}
 
-	err = DeleteThread(ctx, database.Client, t[0])
+	err = DeleteThread(ctx, database.Client, t)
 	if err != nil {
 		res.Error = api.BuildError(err, WrapErrDeleteThread, DeleteHandler)
 		res.Message = WrapErrDeleteThread.Message
