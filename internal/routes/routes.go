@@ -39,7 +39,7 @@ func PublicRoutes() func(r chi.Router) {
 func ProtectedRoutes() func(r chi.Router) {
 	return func(r chi.Router) {
 		r.Use(jwtauth.Authenticator(jwt.TokenAuth))
-		
+
 		// Check if user is still authenticated
 		r.Post("/ping", func(w http.ResponseWriter, req *http.Request) {
 			w.Write([]byte("."))

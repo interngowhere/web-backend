@@ -34,6 +34,8 @@ func GetTopics(q string) ([]*ent.Topic, error) {
 // GetTopics if needed and returns a JSON encoded API response
 func HandleList(w http.ResponseWriter, r *http.Request) (*api.Response, error) {
 	res := &api.Response{}
+	data := []TopicResponse{}
+
 	q := chi.URLParam(r, "title")
 	topics, err := GetTopics(q)
 	if err != nil {
@@ -42,12 +44,24 @@ func HandleList(w http.ResponseWriter, r *http.Request) (*api.Response, error) {
 		return res, err
 	}
 
-	data, err := json.Marshal(topics)
+	for _, t := range topics {
+		data = append(data, TopicResponse{
+			ID:               t.ID,
+			Title:            t.Title,
+			Slug:             t.Slug,
+			Description:      t.Description,
+			ShortDescription: t.ShortDescription,
+			ProfilePicURL:    t.ProfilePicURL,
+			CreatedAt:        t.CreatedAt,
+		})
+	}
+
+	encodedData, err := json.Marshal(data)
 	if err != nil {
 		res.Error = api.BuildError(err, WrapErrEncodeView, ReadHandler)
 		res.Message = WrapErrEncodeView.Message
 	} else {
-		res.Data = data
+		res.Data = encodedData
 		res.Message = SuccessfulListTopicsMessage
 	}
 
