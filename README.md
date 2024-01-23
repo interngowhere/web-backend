@@ -2,6 +2,18 @@
 
 ### Project structure
 
+### Local Development
+
+To run docker containers locally, run
+
+```
+docker-compose up -d -f docker-compose-dev.yml
+```
+
+This will spin up docker containers for the backend go server, PostgreSQL database, and nginx reverse proxy respectively.
+
+In dev environment, nginx is configured to listen on port 80. In production environment, nginx is configured to handle TLS/SSL encryption for HTTPS traffic and will listen on port 443.
+
 ### Commit messages
 
 This project follows [conventional commits](https://www.conventionalcommits.org/en/v1.0.0/) guideline for commit messages. See the table below for the list of commit types.

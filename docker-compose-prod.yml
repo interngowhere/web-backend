@@ -21,7 +21,7 @@ services:
   server:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: prod.Dockerfile
       target: builder
     container_name: server
     environment:
