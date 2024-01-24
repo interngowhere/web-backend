@@ -31,15 +31,14 @@ func HandleLogin(w http.ResponseWriter, r *http.Request) (*api.Response, error) 
 	var data LoginRequest
 	err := decoder.Decode(&data)
 	if err != nil {
-		res.Error = api.BuildError(err, customerrors.WrapErrDecodeRequest, CreateHandler)
-		res.Message = customerrors.WrapErrDecodeRequest.Message
+		res = api.BuildError(err, customerrors.WrapErrDecodeRequest, CreateHandler)
 		return res, err
 	}
 
 	// Check for missing input fields in request body
 	if len(data.Email) == 0 ||
 		len(data.Password) == 0 {
-		res.Error = api.BuildError(customerrors.ErrMalformedRequest, customerrors.WrapErrRequestFormat, CreateHandler)
+		res = api.BuildError(customerrors.ErrMalformedRequest, customerrors.WrapErrRequestFormat, CreateHandler)
 		res.Message = customerrors.WrapErrRequestFormat.Message
 		return res, customerrors.ErrMalformedRequest
 	}
@@ -49,10 +48,10 @@ func HandleLogin(w http.ResponseWriter, r *http.Request) (*api.Response, error) 
 	if err != nil {
 		switch t := err.(type) {
 		default:
-			res.Error = api.BuildError(t, WrapErrGetUser, LoginHandler)
+			res = api.BuildError(t, WrapErrGetUser, LoginHandler)
 			res.Message = WrapErrGetUser.Message
 		case *ent.NotFoundError:
-			res.Error = api.BuildError(t, customerrors.WrapErrNotFound, LoginHandler)
+			res = api.BuildError(t, customerrors.WrapErrNotFound, LoginHandler)
 			res.Message = customerrors.WrapErrNotFound.Message
 		}
 		return res, err
@@ -61,8 +60,7 @@ func HandleLogin(w http.ResponseWriter, r *http.Request) (*api.Response, error) 
 	// Compare password hash
 	err = bcrypt.CompareHashAndPassword(u.Hash, []byte(data.Password))
 	if err != nil {
-		res.Error = api.BuildError(err, WrapErrIncorrectPassword, LoginHandler)
-		res.Message = WrapErrIncorrectPassword.Message
+		res = api.BuildError(err, WrapErrIncorrectPassword, LoginHandler)
 		return res, err
 	}
 
@@ -70,21 +68,19 @@ func HandleLogin(w http.ResponseWriter, r *http.Request) (*api.Response, error) 
 	claims := map[string]interface{}{"id": u.ID}
 	err = jwt.SetExpiry(claims)
 	if err != nil {
-		res.Error = api.BuildError(err, WrapErrSetExpiry, LoginHandler)
-		res.Message = WrapErrSetExpiry.Message
+		res = api.BuildError(err, WrapErrSetExpiry, LoginHandler)
 		return res, err
 	}
 
 	_, tokenString, err := jwt.TokenAuth.Encode(claims)
 	if err != nil {
-		res.Error = api.BuildError(err, WrapErrEncodeJWT, LoginHandler)
-		res.Message = WrapErrEncodeJWT.Message
+		res = api.BuildError(err, WrapErrEncodeJWT, LoginHandler)
 		return res, err
 	}
 
 	encodedData, err := json.Marshal(JWTResponse{Token: tokenString})
 	if err != nil {
-		res.Error = api.BuildError(err, customerrors.WrapErrEncodeView, LoginHandler)
+		res = api.BuildError(err, customerrors.WrapErrEncodeView, LoginHandler)
 		res.Message = customerrors.WrapErrEncodeView.Message
 	} else {
 		res.Data = encodedData

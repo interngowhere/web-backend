@@ -37,27 +37,23 @@ func HandleDelete(w http.ResponseWriter, r *http.Request) (*api.Response, error)
 	// Retrieve a reference to the comment
 	commentID, err := strconv.Atoi(chi.URLParam(r, "commentID"))
 	if err != nil {
-		res.Error = api.BuildError(err, customerrors.WrapErrStrToInt, ListHandler)
-		res.Message = customerrors.WrapErrStrToInt.Message
+		res = api.BuildError(err, customerrors.WrapErrStrToInt, ListHandler)
 		return res, err
 	}
 
 	c, err := GetCommentById(ctx, commentID)
 	if err != nil {
-		res.Error = api.BuildError(err, WrapErrRetrieveComments, UpdateHandler)
-		res.Message = WrapErrRetrieveComments.Message
+		res = api.BuildError(err, WrapErrRetrieveComments, UpdateHandler)
 		return res, err
 	}
 	if c == nil {
-		res.Error = api.BuildError(ErrNoMatchFromCommentID, customerrors.WrapErrNotFound, UpdateHandler)
-		res.Message = customerrors.WrapErrNotFound.Message
+		res = api.BuildError(ErrNoMatchFromCommentID, customerrors.WrapErrNotFound, UpdateHandler)
 		return res, ErrNoMatchFromCommentID
 	}
 
 	err = DeleteComment(ctx, database.Client, c)
 	if err != nil {
-		res.Error = api.BuildError(err, WrapErrDeleteComment, DeleteHandler)
-		res.Message = WrapErrDeleteComment.Message
+		res = api.BuildError(err, WrapErrDeleteComment, DeleteHandler)
 		return res, err
 	}
 
@@ -85,22 +81,19 @@ func HandleRemoveKudo(w http.ResponseWriter, r *http.Request) (*api.Response, er
 
 	userID, err := users.GetUserIDFromToken(r)
 	if err != nil {
-		res.Error = api.BuildError(err, users.WrapErrRetrieveIDFromJWT, CreateHandler)
-		res.Message = users.WrapErrRetrieveIDFromJWT.Message
+		res = api.BuildError(err, users.WrapErrRetrieveIDFromJWT, CreateHandler)
 		return res, err
 	}
 
 	commentID, err := strconv.Atoi(chi.URLParam(r, "commentID"))
 	if err != nil {
-		res.Error = api.BuildError(err, customerrors.WrapErrStrToInt, AddKudoHandler)
-		res.Message = customerrors.WrapErrStrToInt.Message
+		res = api.BuildError(err, customerrors.WrapErrStrToInt, AddKudoHandler)
 		return res, err
 	}
 
 	_, err = RemoveKudo(ctx, database.Client, userID, commentID)
 	if err != nil {
-		res.Error = api.BuildError(err, WrapErrRemoveKudo, DeleteHandler)
-		res.Message = WrapErrRemoveKudo.Message
+		res = api.BuildError(err, WrapErrRemoveKudo, DeleteHandler)
 		return res, err
 	}
 

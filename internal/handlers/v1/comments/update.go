@@ -36,20 +36,17 @@ func HandleUpdate(w http.ResponseWriter, r *http.Request) (*api.Response, error)
 	// Retrieve a reference to the thread
 	commentID, err := strconv.Atoi(chi.URLParam(r, "commentID"))
 	if err != nil {
-		res.Error = api.BuildError(err, customerrors.WrapErrStrToInt, ListHandler)
-		res.Message = customerrors.WrapErrStrToInt.Message
+		res = api.BuildError(err, customerrors.WrapErrStrToInt, ListHandler)
 		return res, err
 	}
 
 	c, err := GetCommentById(ctx, commentID)
 	if err != nil {
-		res.Error = api.BuildError(err, WrapErrRetrieveComments, UpdateHandler)
-		res.Message = WrapErrRetrieveComments.Message
+		res = api.BuildError(err, WrapErrRetrieveComments, UpdateHandler)
 		return res, err
 	}
 	if c == nil {
-		res.Error = api.BuildError(ErrNoMatchFromCommentID, customerrors.WrapErrNotFound, UpdateHandler)
-		res.Message = customerrors.WrapErrNotFound.Message
+		res = api.BuildError(ErrNoMatchFromCommentID, customerrors.WrapErrNotFound, UpdateHandler)
 		return res, ErrNoMatchFromCommentID
 	}
 
@@ -58,8 +55,7 @@ func HandleUpdate(w http.ResponseWriter, r *http.Request) (*api.Response, error)
 	var data CommentRequest
 	err = decoder.Decode(&data)
 	if err != nil {
-		res.Error = api.BuildError(err, customerrors.WrapErrDecodeRequest, UpdateHandler)
-		res.Message = customerrors.WrapErrDecodeRequest.Message
+		res = api.BuildError(err, customerrors.WrapErrDecodeRequest, UpdateHandler)
 		return res, err
 	}
 
@@ -70,8 +66,7 @@ func HandleUpdate(w http.ResponseWriter, r *http.Request) (*api.Response, error)
 
 	err = UpdateComment(ctx, database.Client, c)
 	if err != nil {
-		res.Error = api.BuildError(err, WrapErrUpdateComment, UpdateHandler)
-		res.Message = WrapErrUpdateComment.Message
+		res = api.BuildError(err, WrapErrUpdateComment, UpdateHandler)
 		return res, err
 	}
 

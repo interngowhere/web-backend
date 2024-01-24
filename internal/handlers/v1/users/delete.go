@@ -31,27 +31,24 @@ func HandleDelete(w http.ResponseWriter, r *http.Request) (*api.Response, error)
 
 	userID, err := uuid.Parse(chi.URLParam(r, "userID"))
 	if err != nil {
-		res.Error = api.BuildError(err, WrapErrParseUserID, DeleteHandler)
-		res.Message = WrapErrParseUserID.Message
+		res = api.BuildError(err, WrapErrParseUserID, DeleteHandler)
 		return res, err
 	}
 
 	u, err := GetUserFromID(ctx, database.Client, userID)
 	if err != nil {
-		res.Error = api.BuildError(err, WrapErrGetUser, DeleteHandler)
-		res.Message = WrapErrGetUser.Message
+		res = api.BuildError(err, WrapErrGetUser, DeleteHandler)
 		return res, err
 	}
 	if u == nil {
-		res.Error = api.BuildError(customerrors.ErrResourceNotFound, customerrors.WrapErrNotFound, DeleteHandler)
+		res = api.BuildError(customerrors.ErrResourceNotFound, customerrors.WrapErrNotFound, DeleteHandler)
 		res.Message = customerrors.WrapErrNotFound.Message
 		return res, customerrors.ErrResourceNotFound
 	}
 
 	err = DeleteUser(ctx, database.Client, userID)
 	if err != nil {
-		res.Error = api.BuildError(err, WrapErrDeleteUser, DeleteHandler)
-		res.Message = WrapErrDeleteUser.Message
+		res = api.BuildError(err, WrapErrDeleteUser, DeleteHandler)
 		return res, err
 	}
 

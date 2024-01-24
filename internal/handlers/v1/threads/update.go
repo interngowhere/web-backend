@@ -41,18 +41,16 @@ func HandleUpdate(w http.ResponseWriter, r *http.Request) (*api.Response, error)
 	// Retrieve a reference to the thread
 	threadID, err := strconv.Atoi(chi.URLParam(r, "threadID"))
 	if err != nil {
-		res.Error = api.BuildError(err, customerrors.WrapErrStrToInt, UpdateHandler)
-		res.Message = customerrors.WrapErrStrToInt.Message
+		res = api.BuildError(err, customerrors.WrapErrStrToInt, UpdateHandler)
 		return res, err
 	}
 	t, err := GetThreadByID(ctx, threadID)
 	if err != nil {
-		res.Error = api.BuildError(err, WrapErrRetrieveThreads, UpdateHandler)
-		res.Message = WrapErrRetrieveThreads.Message
+		res = api.BuildError(err, WrapErrRetrieveThreads, UpdateHandler)
 		return res, err
 	}
 	if t == nil {
-		res.Error = api.BuildError(customerrors.ErrResourceNotFound, customerrors.WrapErrNotFound, UpdateHandler)
+		res = api.BuildError(customerrors.ErrResourceNotFound, customerrors.WrapErrNotFound, UpdateHandler)
 		res.Message = customerrors.WrapErrNotFound.Message
 		return res, customerrors.ErrResourceNotFound
 	}
@@ -62,8 +60,7 @@ func HandleUpdate(w http.ResponseWriter, r *http.Request) (*api.Response, error)
 	var data ThreadRequest
 	err = decoder.Decode(&data)
 	if err != nil {
-		res.Error = api.BuildError(err, customerrors.WrapErrDecodeRequest, UpdateHandler)
-		res.Message = customerrors.WrapErrDecodeRequest.Message
+		res = api.BuildError(err, customerrors.WrapErrDecodeRequest, UpdateHandler)
 		return res, err
 	}
 
@@ -78,8 +75,7 @@ func HandleUpdate(w http.ResponseWriter, r *http.Request) (*api.Response, error)
 
 	err = UpdateThread(ctx, database.Client, t, data.Tags)
 	if err != nil {
-		res.Error = api.BuildError(err, WrapErrUpdateThread, UpdateHandler)
-		res.Message = WrapErrUpdateThread.Message
+		res = api.BuildError(err, WrapErrUpdateThread, UpdateHandler)
 		return res, err
 	}
 

@@ -9,15 +9,11 @@ import (
 	"github.com/pkg/errors"
 )
 
-type ResponseError struct {
-	Cause string `json:"cause"`
-	Code  int    `json:"code"`
-}
-
 type Response struct {
 	Message string          `json:"message"`
 	Data    json.RawMessage `json:"data,omitempty"`
-	Error   *ResponseError  `json:"error,omitempty"`
+	Error   string  `json:"error,omitempty"`
+	Code	int             `json:"code"`
 }
 
 // ErrorMessage encodes data for custom errors
@@ -28,19 +24,20 @@ type ErrorMessage struct {
 	Code    int    `json:"code"`
 }
 
-func BuildError(e error, m ErrorMessage, handler string) *ResponseError {
+func BuildError(e error, m ErrorMessage, handler string) *Response {
 	e = errors.Wrap(e, fmt.Sprintf("%s via %s", m.Message, handler))
-	return &ResponseError{
-		Code:  m.Code,
-		Cause: e.Error(),
+	return &Response{
+		Message: m.Message,
+		Error: e.Error(),
+		Code: m.Code,
 	}
 }
 
 func BuildRouteHandler(f func(w http.ResponseWriter, r *http.Request) (*Response, error)) func(w http.ResponseWriter, req *http.Request) {
 	g := func(w http.ResponseWriter, req *http.Request) {
-		res, err := f(w, req)
-		if err != nil {
-			render.Status(req, res.Error.Code)
+		res, _ := f(w, req)
+		if res.Code != 0 {
+			render.Status(req, res.Code)
 		}
 		render.JSON(w, req, res)
 	}

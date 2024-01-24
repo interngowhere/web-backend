@@ -31,22 +31,19 @@ func HandleDelete(w http.ResponseWriter, r *http.Request) (*api.Response, error)
 
 	tagId, err := strconv.Atoi(chi.URLParam(r, "tagId"))
 	if err != nil {
-		res.Error = api.BuildError(err, customerrors.WrapErrStrToInt, DeleteHandler)
-		res.Message = customerrors.WrapErrStrToInt.Message
+		res = api.BuildError(err, customerrors.WrapErrStrToInt, DeleteHandler)
 		return res, err
 	}
 
 	t, err := GetTagByID(tagId)
 	if err != nil {
-		res.Error = api.BuildError(err, WrapErrRetrieveTags, DeleteHandler)
-		res.Message = WrapErrRetrieveTags.Message
+		res = api.BuildError(err, WrapErrRetrieveTags, DeleteHandler)
 		return res, err
 	}
 
 	err = DeleteTag(ctx, database.Client, t.ID)
 	if err != nil {
-		res.Error = api.BuildError(err, WrapErrDeleteTag, DeleteHandler)
-		res.Message = WrapErrDeleteTag.Message
+		res = api.BuildError(err, WrapErrDeleteTag, DeleteHandler)
 		return res, err
 	}
 

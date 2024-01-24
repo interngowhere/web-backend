@@ -37,12 +37,11 @@ func HandleUpdate(w http.ResponseWriter, r *http.Request) (*api.Response, error)
 	// Retrieve a reference to the topic
 	t, err := GetTopics(ctx, slug)
 	if err != nil {
-		res.Error = api.BuildError(err, WrapErrRetrieveTopics, UpdateHandler)
-		res.Message = WrapErrRetrieveTopics.Message
+		res = api.BuildError(err, WrapErrRetrieveTopics, UpdateHandler)
 		return res, err
 	}
 	if len(t) == 0 {
-		res.Error = api.BuildError(customerrors.ErrResourceNotFound, customerrors.WrapErrNotFound, UpdateHandler)
+		res = api.BuildError(customerrors.ErrResourceNotFound, customerrors.WrapErrNotFound, UpdateHandler)
 		res.Message = customerrors.WrapErrNotFound.Message
 		return res, customerrors.ErrResourceNotFound
 	}
@@ -52,8 +51,7 @@ func HandleUpdate(w http.ResponseWriter, r *http.Request) (*api.Response, error)
 	var data TopicRequest
 	err = decoder.Decode(&data)
 	if err != nil {
-		res.Error = api.BuildError(err, customerrors.WrapErrDecodeRequest, CreateHandler)
-		res.Message = customerrors.WrapErrDecodeRequest.Message
+		res = api.BuildError(err, customerrors.WrapErrDecodeRequest, CreateHandler)
 		return res, err
 	}
 
@@ -70,8 +68,7 @@ func HandleUpdate(w http.ResponseWriter, r *http.Request) (*api.Response, error)
 
 	err = UpdateTopic(ctx, database.Client, t[0])
 	if err != nil {
-		res.Error = api.BuildError(err, WrapErrUpdateTopic, UpdateHandler)
-		res.Message = WrapErrUpdateTopic.Message
+		res = api.BuildError(err, WrapErrUpdateTopic, UpdateHandler)
 		return res, err
 	}
 

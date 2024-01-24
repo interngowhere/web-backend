@@ -46,8 +46,7 @@ func HandleList(w http.ResponseWriter, r *http.Request) (*api.Response, error) {
 	q := chi.URLParam(r, "title")
 	topics, err := GetTopics(ctx, q)
 	if err != nil {
-		res.Error = api.BuildError(err, WrapErrRetrieveTopics, ReadHandler)
-		res.Message = WrapErrRetrieveTopics.Message
+		res = api.BuildError(err, WrapErrRetrieveTopics, ReadHandler)
 		return res, err
 	}
 
@@ -65,7 +64,7 @@ func HandleList(w http.ResponseWriter, r *http.Request) (*api.Response, error) {
 
 	encodedData, err := json.Marshal(data)
 	if err != nil {
-		res.Error = api.BuildError(err, customerrors.WrapErrEncodeView, ReadHandler)
+		res = api.BuildError(err, customerrors.WrapErrEncodeView, ReadHandler)
 		res.Message = customerrors.WrapErrEncodeView.Message
 	} else {
 		res.Data = encodedData

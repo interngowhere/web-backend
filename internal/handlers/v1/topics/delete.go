@@ -31,20 +31,18 @@ func HandleDelete(w http.ResponseWriter, r *http.Request) (*api.Response, error)
 	slug := chi.URLParam(r, "title")
 	t, err := GetTopics(ctx, slug)
 	if err != nil {
-		res.Error = api.BuildError(err, WrapErrRetrieveTopics, DeleteHandler)
-		res.Message = WrapErrRetrieveTopics.Message
+		res = api.BuildError(err, WrapErrRetrieveTopics, DeleteHandler)
 		return res, err
 	}
 	if len(t) == 0 {
-		res.Error = api.BuildError(customerrors.ErrResourceNotFound, customerrors.WrapErrNotFound, DeleteHandler)
+		res = api.BuildError(customerrors.ErrResourceNotFound, customerrors.WrapErrNotFound, DeleteHandler)
 		res.Message = customerrors.WrapErrNotFound.Message
 		return res, customerrors.ErrResourceNotFound
 	}
 
 	err = DeleteTopic(ctx, database.Client, t[0])
 	if err != nil {
-		res.Error = api.BuildError(err, WrapErrDeleteTopic, DeleteHandler)
-		res.Message = WrapErrDeleteTopic.Message
+		res = api.BuildError(err, WrapErrDeleteTopic, DeleteHandler)
 		return res, err
 	}
 

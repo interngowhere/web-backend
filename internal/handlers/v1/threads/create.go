@@ -46,15 +46,13 @@ func HandleCreate(w http.ResponseWriter, r *http.Request) (*api.Response, error)
 
 	userID, err := users.GetUserIDFromToken(r)
 	if err != nil {
-		res.Error = api.BuildError(err, users.WrapErrRetrieveIDFromJWT, CreateHandler)
-		res.Message = users.WrapErrRetrieveIDFromJWT.Message
+		res = api.BuildError(err, users.WrapErrRetrieveIDFromJWT, CreateHandler)
 		return res, err
 	}
 
 	topics, err := topics.GetTopics(ctx, chi.URLParam(r, "title"))
 	if err != nil {
-		res.Error = api.BuildError(err, WrapErrRetrieveTopic, CreateHandler)
-		res.Message = WrapErrRetrieveTopic.Message
+		res = api.BuildError(err, WrapErrRetrieveTopic, CreateHandler)
 		return res, err
 	}
 
@@ -63,15 +61,14 @@ func HandleCreate(w http.ResponseWriter, r *http.Request) (*api.Response, error)
 	var data ThreadRequest
 	err = decoder.Decode(&data)
 	if err != nil {
-		res.Error = api.BuildError(err, customerrors.WrapErrDecodeRequest, CreateHandler)
-		res.Message = customerrors.WrapErrDecodeRequest.Message
+		res = api.BuildError(err, customerrors.WrapErrDecodeRequest, CreateHandler)
 		return res, err
 	}
 
 	// Check for missing title in request body
 	// Note: title is the only required field in the POST request
 	if len(data.Title) == 0 {
-		res.Error = api.BuildError(customerrors.ErrMalformedRequest, customerrors.WrapErrRequestFormat, CreateHandler)
+		res = api.BuildError(customerrors.ErrMalformedRequest, customerrors.WrapErrRequestFormat, CreateHandler)
 		res.Message = customerrors.WrapErrRequestFormat.Message
 		return res, customerrors.ErrMalformedRequest
 	}
@@ -87,8 +84,7 @@ func HandleCreate(w http.ResponseWriter, r *http.Request) (*api.Response, error)
 
 	err = CreateThread(ctx, database.Client, topics[0], t, data.Tags)
 	if err != nil {
-		res.Error = api.BuildError(err, WrapErrCreateThread, CreateHandler)
-		res.Message = WrapErrCreateThread.Message
+		res = api.BuildError(err, WrapErrCreateThread, CreateHandler)
 		return res, err
 	}
 
@@ -114,15 +110,13 @@ func HandleAddKudo(w http.ResponseWriter, r *http.Request) (*api.Response, error
 
 	userID, err := users.GetUserIDFromToken(r)
 	if err != nil {
-		res.Error = api.BuildError(err, users.WrapErrRetrieveIDFromJWT, AddKudoHandler)
-		res.Message = users.WrapErrRetrieveIDFromJWT.Message
+		res = api.BuildError(err, users.WrapErrRetrieveIDFromJWT, AddKudoHandler)
 		return res, err
 	}
 
 	threadID, err := strconv.Atoi(chi.URLParam(r, "threadID"))
 	if err != nil {
-		res.Error = api.BuildError(err, customerrors.WrapErrStrToInt, AddKudoHandler)
-		res.Message = customerrors.WrapErrStrToInt.Message
+		res = api.BuildError(err, customerrors.WrapErrStrToInt, AddKudoHandler)
 		return res, err
 	}
 
@@ -131,10 +125,10 @@ func HandleAddKudo(w http.ResponseWriter, r *http.Request) (*api.Response, error
 	if err != nil {
 		switch t := err.(type) {
 		default:
-			res.Error = api.BuildError(t, WrapErrCheckThreadKudo, AddKudoHandler)
+			res = api.BuildError(t, WrapErrCheckThreadKudo, AddKudoHandler)
 			res.Message = WrapErrCheckThreadKudo.Message
 		case *ent.NotFoundError:
-			res.Error = api.BuildError(t, customerrors.WrapErrNotFound, AddKudoHandler)
+			res = api.BuildError(t, customerrors.WrapErrNotFound, AddKudoHandler)
 			res.Message = customerrors.WrapErrNotFound.Message
 		}
 		return res, err
@@ -149,25 +143,23 @@ func HandleAddKudo(w http.ResponseWriter, r *http.Request) (*api.Response, error
 		).
 		Count(ctx)
 	if err != nil {
-		res.Error = api.BuildError(err, WrapErrCheckThreadKudo, AddKudoHandler)
-		res.Message = WrapErrCheckThreadKudo.Message
+		res = api.BuildError(err, WrapErrCheckThreadKudo, AddKudoHandler)
 		return res, err
 	}
 
 	if c != 0 {
-		res.Error = api.BuildError(ErrThreadKudoExist, WrapErrThreadKudoExist, AddKudoHandler)
-		res.Message = ErrThreadKudoExist.Error()
+		res = api.BuildError(ErrThreadKudoExist, WrapErrThreadKudoExist, AddKudoHandler)
 		return res, ErrThreadKudoExist
 	}
 
 	err = AddKudo(ctx, database.Client, userID, threadID)
 	if err != nil {
-		res.Error = api.BuildError(err, WrapErrAddKudo, AddKudoHandler)
-		res.Message = WrapErrAddKudo.Message
+		res = api.BuildError(err, WrapErrAddKudo, AddKudoHandler)
 		return res, err
 	}
 
 	res.Message = SuccessfulCreateThreadMessage
+	res.Code = 201
 
 	return res, err
 }

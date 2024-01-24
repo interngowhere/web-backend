@@ -37,9 +37,13 @@ func HandleCreate(w http.ResponseWriter, r *http.Request) (*api.Response, error)
 	decoder := json.NewDecoder(r.Body)
 	var data UserRequest
 	err := decoder.Decode(&data)
+	// if err != nil {
+	// 	res = api.BuildError(err, customerrors.WrapErrDecodeRequest, CreateHandler)
+	// 	res.Message = customerrors.WrapErrDecodeRequest.Message
+	// 	return res, err
+	// }
 	if err != nil {
-		res.Error = api.BuildError(err, customerrors.WrapErrDecodeRequest, CreateHandler)
-		res.Message = customerrors.WrapErrDecodeRequest.Message
+		res := api.BuildError(err, customerrors.WrapErrDecodeRequest, CreateHandler)
 		return res, err
 	}
 
@@ -47,8 +51,7 @@ func HandleCreate(w http.ResponseWriter, r *http.Request) (*api.Response, error)
 	if len(data.Email) == 0 ||
 		len(data.Password) == 0 ||
 		len(data.Username) == 0 {
-		res.Error = api.BuildError(customerrors.ErrMalformedRequest, customerrors.WrapErrRequestFormat, CreateHandler)
-		res.Message = customerrors.WrapErrRequestFormat.Message
+		res = api.BuildError(customerrors.ErrMalformedRequest, customerrors.WrapErrRequestFormat, CreateHandler)
 		return res, customerrors.ErrMalformedRequest
 	}
 
@@ -61,14 +64,12 @@ func HandleCreate(w http.ResponseWriter, r *http.Request) (*api.Response, error)
 		).
 		Count(ctx)
 	if err != nil {
-		res.Error = api.BuildError(err, WrapErrCheckEmail, CreateHandler)
-		res.Message = WrapErrCheckEmail.Message
+		res = api.BuildError(err, WrapErrCheckEmail, CreateHandler)
 		return res, err
 	}
 	if c != 0 {
-		res.Error = api.BuildError(ErrEmailAlreadyRegistered, customerrors.WrapErrResourceExist, CreateHandler)
-		res.Message = ErrEmailAlreadyRegistered.Error()
-		return res, ErrUsernameAlreadyRegistered
+		res = api.BuildError(ErrEmailAlreadyRegistered, customerrors.WrapErrResourceExist, CreateHandler)
+		return res, ErrEmailAlreadyRegistered
 	}
 
 	// check if username has already been registered
@@ -80,21 +81,18 @@ func HandleCreate(w http.ResponseWriter, r *http.Request) (*api.Response, error)
 		).
 		Count(ctx)
 	if err != nil {
-		res.Error = api.BuildError(err, WrapErrCheckUsername, CreateHandler)
-		res.Message = WrapErrCheckUsername.Message
+		res = api.BuildError(err, WrapErrCheckUsername, CreateHandler)
 		return res, err
 	}
 	if c != 0 {
-		res.Error = api.BuildError(ErrUsernameAlreadyRegistered, customerrors.WrapErrResourceExist, CreateHandler)
-		res.Message = ErrUsernameAlreadyRegistered.Error()
+		res = api.BuildError(ErrUsernameAlreadyRegistered, customerrors.WrapErrResourceExist, CreateHandler)
 		return res, ErrUsernameAlreadyRegistered
 	}
 
 	// hash password using bcrypt
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(data.Password), bcrypt.DefaultCost)
 	if err != nil {
-		res.Error = api.BuildError(err, WrapErrHashPassword, CreateHandler)
-		res.Message = WrapErrHashPassword.Message
+		res = api.BuildError(err, WrapErrHashPassword, CreateHandler)
 		return res, err
 	}
 
@@ -106,12 +104,12 @@ func HandleCreate(w http.ResponseWriter, r *http.Request) (*api.Response, error)
 
 	err = CreateUser(ctx, database.Client, u)
 	if err != nil {
-		res.Error = api.BuildError(err, WrapErrCreateUser, CreateHandler)
-		res.Message = WrapErrCreateUser.Message
+		res = api.BuildError(err, WrapErrCreateUser, CreateHandler)
 		return res, err
 	}
 
 	res.Message = SuccessfulCreateUserMessage
+	res.Code = 201
 
 	return res, err
 }

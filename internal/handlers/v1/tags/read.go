@@ -41,8 +41,7 @@ func HandleList(w http.ResponseWriter, r *http.Request) (*api.Response, error) {
 	q = strings.ToLower(q)
 	t, err := GetTags(q)
 	if err != nil {
-		res.Error = api.BuildError(err, WrapErrRetrieveTags, ReadHandler)
-		res.Message = WrapErrRetrieveTags.Message
+		res = api.BuildError(err, WrapErrRetrieveTags, ReadHandler)
 		return res, err
 	}
 
@@ -56,7 +55,7 @@ func HandleList(w http.ResponseWriter, r *http.Request) (*api.Response, error) {
 
 	data, err := json.Marshal(formattedTags)
 	if err != nil {
-		res.Error = api.BuildError(err, customerrors.WrapErrEncodeView, ReadHandler)
+		res = api.BuildError(err, customerrors.WrapErrEncodeView, ReadHandler)
 		res.Message = customerrors.WrapErrEncodeView.Message
 	} else {
 		res.Data = data

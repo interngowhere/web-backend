@@ -34,15 +34,13 @@ func HandleCreate(w http.ResponseWriter, r *http.Request) (*api.Response, error)
 	var data TagRequest
 	err := decoder.Decode(&data)
 	if err != nil {
-		res.Error = api.BuildError(err, customerrors.WrapErrDecodeRequest, CreateHandler)
-		res.Message = customerrors.WrapErrDecodeRequest.Message
+		res = api.BuildError(err, customerrors.WrapErrDecodeRequest, CreateHandler)
 		return res, err
 	}
 
 	// Check for missing input fields in request body
 	if len(data.TagName) == 0 {
-		res.Error = api.BuildError(customerrors.ErrMalformedRequest, customerrors.WrapErrRequestFormat, CreateHandler)
-		res.Message = customerrors.WrapErrRequestFormat.Message
+		res = api.BuildError(customerrors.ErrMalformedRequest, customerrors.WrapErrRequestFormat, CreateHandler)
 		return res, customerrors.ErrMalformedRequest
 	}
 
@@ -52,13 +50,11 @@ func HandleCreate(w http.ResponseWriter, r *http.Request) (*api.Response, error)
 		Where(tag.TagName(data.TagName)).
 		Count(ctx)
 	if err != nil {
-		res.Error = api.BuildError(err, WrapErrCheckTagExist, CreateHandler)
-		res.Message = WrapErrCheckTagExist.Message
+		res = api.BuildError(err, WrapErrCheckTagExist, CreateHandler)
 		return res, err
 	}
 	if c != 0 {
-		res.Error = api.BuildError(ErrTagExist, customerrors.WrapErrResourceExist, CreateHandler)
-		res.Message = ErrTagExist.Error()
+		res = api.BuildError(ErrTagExist, customerrors.WrapErrResourceExist, CreateHandler)
 		return res, ErrTagExist
 	}
 
@@ -68,12 +64,12 @@ func HandleCreate(w http.ResponseWriter, r *http.Request) (*api.Response, error)
 
 	err = CreateTag(ctx, database.Client, t)
 	if err != nil {
-		res.Error = api.BuildError(err, WrapErrCreateTag, ReadHandler)
-		res.Message = WrapErrCreateTag.Message
+		res = api.BuildError(err, WrapErrCreateTag, ReadHandler)
 		return res, err
 	}
 
 	res.Message = SuccessfulCreateTagMessage
+	res.Code = 201
 
 	return res, err
 }

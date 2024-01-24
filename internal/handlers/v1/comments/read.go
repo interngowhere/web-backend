@@ -77,15 +77,13 @@ func HandleList(w http.ResponseWriter, r *http.Request) (*api.Response, error) {
 	data := []CommentsResponse{}
 	threadID, err := strconv.Atoi(chi.URLParam(r, "threadID"))
 	if err != nil {
-		res.Error = api.BuildError(err, customerrors.WrapErrStrToInt, ListHandler)
-		res.Message = customerrors.WrapErrStrToInt.Message
+		res = api.BuildError(err, customerrors.WrapErrStrToInt, ListHandler)
 		return res, err
 	}
 
 	parents, err := GetRootComments(ctx, threadID)
 	if err != nil {
-		res.Error = api.BuildError(err, WrapErrRetrieveComments, ListHandler)
-		res.Message = WrapErrRetrieveComments.Message
+		res = api.BuildError(err, WrapErrRetrieveComments, ListHandler)
 		return res, err
 	}
 
@@ -94,7 +92,7 @@ func HandleList(w http.ResponseWriter, r *http.Request) (*api.Response, error) {
 	for _, parent := range parents {
 		children, err := GetCommentsByParent(ctx, parent.ID)
 		if err != nil {
-			res.Error = api.BuildError(err, WrapErrRetrieveComments, ListHandler)
+			res = api.BuildError(err, WrapErrRetrieveComments, ListHandler)
 			res.Message = WrapErrRetrieveComments.Message
 			return res, err
 		}
@@ -103,21 +101,21 @@ func HandleList(w http.ResponseWriter, r *http.Request) (*api.Response, error) {
 		for _, child := range children {
 			c, err := GetCommentKudoCount(ctx, child.ID)
 			if err != nil {
-				res.Error = api.BuildError(err, WrapErrGetKudoCount, ListHandler)
+				res = api.BuildError(err, WrapErrGetKudoCount, ListHandler)
 				res.Message = WrapErrGetKudoCount.Message
 				return res, err
 			}
 
 			b, err := CheckDidUserKudo(ctx, child.ID, userID)
 			if err != nil {
-				res.Error = api.BuildError(err, WrapErrCheckDidUserKudo, ListHandler)
+				res = api.BuildError(err, WrapErrCheckDidUserKudo, ListHandler)
 				res.Message = WrapErrCheckDidUserKudo.Message
 				return res, err
 			}
 
 			u, err := users.GetUserFromID(ctx, database.Client, child.CreatedBy)
 			if err != nil {
-				res.Error = api.BuildError(err, WrapErrGetUserFromID, ListHandler)
+				res = api.BuildError(err, WrapErrGetUserFromID, ListHandler)
 				res.Message = WrapErrGetUserFromID.Message
 				return res, err
 			}
@@ -137,21 +135,21 @@ func HandleList(w http.ResponseWriter, r *http.Request) (*api.Response, error) {
 
 		c, err := GetCommentKudoCount(ctx, parent.ID)
 		if err != nil {
-			res.Error = api.BuildError(err, WrapErrGetKudoCount, ListHandler)
+			res = api.BuildError(err, WrapErrGetKudoCount, ListHandler)
 			res.Message = WrapErrGetKudoCount.Message
 			return res, err
 		}
 
 		b, err := CheckDidUserKudo(ctx, parent.ID, userID)
 		if err != nil {
-			res.Error = api.BuildError(err, WrapErrCheckDidUserKudo, ListHandler)
+			res = api.BuildError(err, WrapErrCheckDidUserKudo, ListHandler)
 			res.Message = WrapErrCheckDidUserKudo.Message
 			return res, err
 		}
 
 		u, err := users.GetUserFromID(ctx, database.Client, parent.CreatedBy)
 		if err != nil {
-			res.Error = api.BuildError(err, WrapErrGetUserFromID, ListHandler)
+			res = api.BuildError(err, WrapErrGetUserFromID, ListHandler)
 			res.Message = WrapErrGetUserFromID.Message
 			return res, err
 		}
@@ -171,14 +169,13 @@ func HandleList(w http.ResponseWriter, r *http.Request) (*api.Response, error) {
 	}
 
 	if err != nil {
-		res.Error = api.BuildError(err, WrapErrRetrieveComments, ListHandler)
-		res.Message = WrapErrRetrieveComments.Message
+		res = api.BuildError(err, WrapErrRetrieveComments, ListHandler)
 		return res, err
 	}
 
 	encodedData, err := json.Marshal(data)
 	if err != nil {
-		res.Error = api.BuildError(err, customerrors.WrapErrEncodeView, ListHandler)
+		res = api.BuildError(err, customerrors.WrapErrEncodeView, ListHandler)
 		res.Message = customerrors.WrapErrEncodeView.Message
 	} else {
 		res.Data = encodedData

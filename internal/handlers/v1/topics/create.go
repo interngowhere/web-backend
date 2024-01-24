@@ -41,8 +41,7 @@ func HandleCreate(w http.ResponseWriter, r *http.Request) (*api.Response, error)
 	var data TopicRequest
 	err := decoder.Decode(&data)
 	if err != nil {
-		res.Error = api.BuildError(err, customerrors.WrapErrDecodeRequest, CreateHandler)
-		res.Message = customerrors.WrapErrDecodeRequest.Message
+		res = api.BuildError(err, customerrors.WrapErrDecodeRequest, CreateHandler)
 		return res, err
 	}
 
@@ -50,7 +49,7 @@ func HandleCreate(w http.ResponseWriter, r *http.Request) (*api.Response, error)
 	if len(data.Title) == 0 ||
 		len(data.Description) == 0 ||
 		len(data.ShortDescription) == 0 {
-		res.Error = api.BuildError(customerrors.ErrMalformedRequest, customerrors.WrapErrRequestFormat, CreateHandler)
+		res = api.BuildError(customerrors.ErrMalformedRequest, customerrors.WrapErrRequestFormat, CreateHandler)
 		res.Message = customerrors.WrapErrRequestFormat.Message
 		return res, customerrors.ErrMalformedRequest
 	}
@@ -66,13 +65,11 @@ func HandleCreate(w http.ResponseWriter, r *http.Request) (*api.Response, error)
 		).
 		Count(ctx)
 	if err != nil {
-		res.Error = api.BuildError(err, WrapErrCheckTopicExist, CreateHandler)
-		res.Message = WrapErrCheckTopicExist.Message
+		res = api.BuildError(err, WrapErrCheckTopicExist, CreateHandler)
 		return res, err
 	}
 	if c != 0 {
-		res.Error = api.BuildError(ErrTopicExist, customerrors.WrapErrResourceExist, CreateHandler)
-		res.Message = ErrTopicExist.Error()
+		res = api.BuildError(ErrTopicExist, customerrors.WrapErrResourceExist, CreateHandler)
 		return res, ErrTopicExist
 	}
 
@@ -86,12 +83,12 @@ func HandleCreate(w http.ResponseWriter, r *http.Request) (*api.Response, error)
 
 	err = CreateTopic(ctx, database.Client, t)
 	if err != nil {
-		res.Error = api.BuildError(err, WrapErrCreateTopic, ReadHandler)
-		res.Message = WrapErrCreateTopic.Message
+		res = api.BuildError(err, WrapErrCreateTopic, ReadHandler)
 		return res, err
 	}
 
 	res.Message = SuccessfulCreateTopicMessage
+	res.Code = 201
 
 	return res, err
 }
