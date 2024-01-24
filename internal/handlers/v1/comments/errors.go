@@ -11,7 +11,7 @@ var (
 	ErrNoMatchFromThreadID  = errors.New("no comment is found associated to the thread id provided")
 	ErrNoMatchFromCommentID = errors.New("no comment is found associated to the comment id provided")
 	ErrCommentKudoExist     = errors.New("the user has already given a kudo to the same comment")
-	ErrNoCommentFound			  	 = errors.New("no comment found")
+	ErrNoCommentFound       = errors.New("no comment found")
 )
 
 // Custom error message wrappers
@@ -26,6 +26,6 @@ var (
 	WrapErrAddKudo          = api.ErrorMessage{Message: "Failed to add kudo", Code: 500}
 	WrapErrRemoveKudo       = api.ErrorMessage{Message: "Failed to remove kudo", Code: 500}
 
-	WrapErrGetKudoCount      = api.ErrorMessage{Message: "Failed to get kudo count on the comment", Code: 500}
-	WrapErrCheckDidUserKudo  = api.ErrorMessage{Message: "Something went wrong while checking if user gave a kudo to the comment", Code: 500}
+	WrapErrGetKudoCount     = api.ErrorMessage{Message: "Failed to get kudo count on the comment", Code: 500}
+	WrapErrCheckDidUserKudo = api.ErrorMessage{Message: "Something went wrong while checking if user gave a kudo to the comment", Code: 500}
 )

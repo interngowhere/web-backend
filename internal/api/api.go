@@ -12,8 +12,8 @@ import (
 type Response struct {
 	Message string          `json:"message"`
 	Data    json.RawMessage `json:"data,omitempty"`
-	Error   string  `json:"error,omitempty"`
-	Code	int             `json:"code"`
+	Error   string          `json:"error,omitempty"`
+	Code    int             `json:"code"`
 }
 
 // ErrorMessage encodes data for custom errors
@@ -28,8 +28,8 @@ func BuildError(e error, m ErrorMessage, handler string) *Response {
 	e = errors.Wrap(e, fmt.Sprintf("%s via %s", m.Message, handler))
 	return &Response{
 		Message: m.Message,
-		Error: e.Error(),
-		Code: m.Code,
+		Error:   e.Error(),
+		Code:    m.Code,
 	}
 }
 

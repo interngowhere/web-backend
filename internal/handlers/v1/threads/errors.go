@@ -9,7 +9,7 @@ import (
 // Custom errors
 var (
 	ErrThreadKudoExist = errors.New("the user has already given a kudo to the same thread")
-	ErrNoThreadFound			  	 = errors.New("no thread found")
+	ErrNoThreadFound   = errors.New("no thread found")
 )
 
 // Custom error messages

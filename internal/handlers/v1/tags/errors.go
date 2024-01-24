@@ -8,8 +8,8 @@ import (
 
 // Custom errors
 var (
-	ErrTagExist = errors.New("the tag already exists")
-	ErrNoTagFound			  	 = errors.New("no tag found")
+	ErrTagExist   = errors.New("the tag already exists")
+	ErrNoTagFound = errors.New("no tag found")
 )
 
 // Custom error messages
