@@ -36,7 +36,6 @@ func HandleDelete(w http.ResponseWriter, r *http.Request) (*api.Response, error)
 	}
 	if len(t) == 0 {
 		res = api.BuildError(customerrors.ErrResourceNotFound, customerrors.WrapErrNotFound, DeleteHandler)
-		res.Message = customerrors.WrapErrNotFound.Message
 		return res, customerrors.ErrResourceNotFound
 	}
 

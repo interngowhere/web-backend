@@ -69,7 +69,6 @@ func HandleCreate(w http.ResponseWriter, r *http.Request) (*api.Response, error)
 	// Note: title is the only required field in the POST request
 	if len(data.Title) == 0 {
 		res = api.BuildError(customerrors.ErrMalformedRequest, customerrors.WrapErrRequestFormat, CreateHandler)
-		res.Message = customerrors.WrapErrRequestFormat.Message
 		return res, customerrors.ErrMalformedRequest
 	}
 
@@ -126,10 +125,8 @@ func HandleAddKudo(w http.ResponseWriter, r *http.Request) (*api.Response, error
 		switch t := err.(type) {
 		default:
 			res = api.BuildError(t, WrapErrCheckThreadKudo, AddKudoHandler)
-			res.Message = WrapErrCheckThreadKudo.Message
 		case *ent.NotFoundError:
 			res = api.BuildError(t, customerrors.WrapErrNotFound, AddKudoHandler)
-			res.Message = customerrors.WrapErrNotFound.Message
 		}
 		return res, err
 	}

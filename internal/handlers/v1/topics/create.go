@@ -50,7 +50,6 @@ func HandleCreate(w http.ResponseWriter, r *http.Request) (*api.Response, error)
 		len(data.Description) == 0 ||
 		len(data.ShortDescription) == 0 {
 		res = api.BuildError(customerrors.ErrMalformedRequest, customerrors.WrapErrRequestFormat, CreateHandler)
-		res.Message = customerrors.WrapErrRequestFormat.Message
 		return res, customerrors.ErrMalformedRequest
 	}
 

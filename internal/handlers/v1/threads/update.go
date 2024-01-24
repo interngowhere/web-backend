@@ -51,7 +51,6 @@ func HandleUpdate(w http.ResponseWriter, r *http.Request) (*api.Response, error)
 	}
 	if t == nil {
 		res = api.BuildError(customerrors.ErrResourceNotFound, customerrors.WrapErrNotFound, UpdateHandler)
-		res.Message = customerrors.WrapErrNotFound.Message
 		return res, customerrors.ErrResourceNotFound
 	}
 

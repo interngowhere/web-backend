@@ -47,7 +47,6 @@ func HandleUpdate(w http.ResponseWriter, r *http.Request) (*api.Response, error)
 	}
 	if u == nil {
 		res = api.BuildError(customerrors.ErrResourceNotFound, customerrors.WrapErrNotFound, DeleteHandler)
-		res.Message = customerrors.WrapErrNotFound.Message
 		return res, customerrors.ErrResourceNotFound
 	}
 
@@ -72,7 +71,6 @@ func HandleUpdate(w http.ResponseWriter, r *http.Request) (*api.Response, error)
 		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(data.Password), bcrypt.DefaultCost)
 		if err != nil {
 			res = api.BuildError(err, WrapErrHashPassword, CreateHandler)
-			res.Message = WrapErrHashPassword.Message
 			return res, err
 		}
 		u.Hash = hashedPassword

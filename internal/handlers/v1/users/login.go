@@ -39,7 +39,6 @@ func HandleLogin(w http.ResponseWriter, r *http.Request) (*api.Response, error) 
 	if len(data.Email) == 0 ||
 		len(data.Password) == 0 {
 		res = api.BuildError(customerrors.ErrMalformedRequest, customerrors.WrapErrRequestFormat, CreateHandler)
-		res.Message = customerrors.WrapErrRequestFormat.Message
 		return res, customerrors.ErrMalformedRequest
 	}
 
@@ -49,10 +48,8 @@ func HandleLogin(w http.ResponseWriter, r *http.Request) (*api.Response, error) 
 		switch t := err.(type) {
 		default:
 			res = api.BuildError(t, WrapErrGetUser, LoginHandler)
-			res.Message = WrapErrGetUser.Message
 		case *ent.NotFoundError:
 			res = api.BuildError(t, customerrors.WrapErrNotFound, LoginHandler)
-			res.Message = customerrors.WrapErrNotFound.Message
 		}
 		return res, err
 	}

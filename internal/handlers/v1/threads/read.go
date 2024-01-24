@@ -98,7 +98,6 @@ func HandleList(w http.ResponseWriter, r *http.Request) (*api.Response, error) {
 		t, err := GetTagsByThread(ctx, thread)
 		if err != nil {
 			res = api.BuildError(err, WrapErrRetrieveTags, ReadHandler)
-			res.Message = WrapErrRetrieveTags.Message
 			return res, err
 		}
 
@@ -113,28 +112,24 @@ func HandleList(w http.ResponseWriter, r *http.Request) (*api.Response, error) {
 		c, err := GetThreadKudoCount(ctx, thread.ID)
 		if err != nil {
 			res = api.BuildError(err, WrapErrGetKudoCount, ReadHandler)
-			res.Message = WrapErrGetKudoCount.Message
 			return res, err
 		}
 
 		b, err := CheckDidUserKudo(ctx, thread.ID, userID)
 		if err != nil {
 			res = api.BuildError(err, WrapErrCheckDidUserKudo, ReadHandler)
-			res.Message = WrapErrCheckDidUserKudo.Message
 			return res, err
 		}
 
 		u, err := users.GetUserFromID(ctx, database.Client, thread.CreatedBy)
 		if err != nil {
 			res = api.BuildError(err, WrapErrGetUserFromID, ReadHandler)
-			res.Message = WrapErrGetUserFromID.Message
 			return res, err
 		}
 
 		topic, err := topics.ListByThread(ctx, thread)
 		if err != nil {
 			res = api.BuildError(err, WrapErrGetTopicFromThread, ReadHandler)
-			res.Message = WrapErrGetTopicFromThread.Message
 			return res, err
 		}
 
@@ -157,7 +152,6 @@ func HandleList(w http.ResponseWriter, r *http.Request) (*api.Response, error) {
 	encodedData, err := json.Marshal(data)
 	if err != nil {
 		res = api.BuildError(err, customerrors.WrapErrEncodeView, ReadHandler)
-		res.Message = customerrors.WrapErrEncodeView.Message
 	} else {
 		res.Data = encodedData
 		res.Message = SuccessfulListThreadsMessage

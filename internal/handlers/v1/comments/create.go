@@ -75,7 +75,6 @@ func HandleCreate(w http.ResponseWriter, r *http.Request) (*api.Response, error)
 	// by default, i.e., the comment has no parent.
 	if len(data.Content) == 0 {
 		res = api.BuildError(customerrors.ErrMalformedRequest, customerrors.WrapErrRequestFormat, CreateHandler)
-		res.Message = customerrors.WrapErrRequestFormat.Message
 		return res, customerrors.ErrMalformedRequest
 	}
 
@@ -139,10 +138,8 @@ func HandleAddKudo(w http.ResponseWriter, r *http.Request) (*api.Response, error
 		switch t := err.(type) {
 		default:
 			res = api.BuildError(t, WrapErrCheckCommentKudo, AddKudoHandler)
-			res.Message = WrapErrCheckCommentKudo.Message
 		case *ent.NotFoundError:
 			res = api.BuildError(t, customerrors.WrapErrNotFound, AddKudoHandler)
-			res.Message = customerrors.WrapErrNotFound.Message
 		}
 		return res, err
 	}
