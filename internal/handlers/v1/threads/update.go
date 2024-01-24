@@ -39,13 +39,13 @@ func HandleUpdate(w http.ResponseWriter, r *http.Request) (*api.Response, error)
 	res := &api.Response{}
 
 	// Retrieve a reference to the thread
-	threadId, err := strconv.Atoi(chi.URLParam(r, "threadId"))
+	threadID, err := strconv.Atoi(chi.URLParam(r, "threadID"))
 	if err != nil {
 		res.Error = api.BuildError(err, customerrors.WrapErrStrToInt, UpdateHandler)
 		res.Message = customerrors.WrapErrStrToInt.Message
 		return res, err
 	}
-	t, err := GetThreadByID(ctx, threadId)
+	t, err := GetThreadByID(ctx, threadID)
 	if err != nil {
 		res.Error = api.BuildError(err, WrapErrRetrieveThreads, UpdateHandler)
 		res.Message = WrapErrRetrieveThreads.Message

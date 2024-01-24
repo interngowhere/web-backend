@@ -44,7 +44,7 @@ func HandleCreate(w http.ResponseWriter, r *http.Request) (*api.Response, error)
 	ctx := context.Background()
 	res := &api.Response{}
 
-	userId, err := users.GetUserIDFromToken(r)
+	userID, err := users.GetUserIDFromToken(r)
 	if err != nil {
 		res.Error = api.BuildError(err, users.WrapErrRetrieveIDFromJWT, CreateHandler)
 		res.Message = users.WrapErrRetrieveIDFromJWT.Message
@@ -82,7 +82,7 @@ func HandleCreate(w http.ResponseWriter, r *http.Request) (*api.Response, error)
 		Title:       data.Title,
 		Slug:        slug,
 		Description: data.Description,
-		CreatedBy:   userId,
+		CreatedBy:   userID,
 	}
 
 	err = CreateThread(ctx, database.Client, topics[0], t, data.Tags)
@@ -98,11 +98,11 @@ func HandleCreate(w http.ResponseWriter, r *http.Request) (*api.Response, error)
 }
 
 // AddKudo adds a new kudo for the given user and thread in the database
-func AddKudo(ctx context.Context, client *ent.Client, userId uuid.UUID, threadId int) error {
+func AddKudo(ctx context.Context, client *ent.Client, userID uuid.UUID, threadID int) error {
 	return client.ThreadKudo.
 		Create().
-		SetUserID(userId).
-		SetThreadID(threadId).
+		SetUserID(userID).
+		SetThreadID(threadID).
 		Exec(ctx)
 }
 
@@ -112,14 +112,14 @@ func HandleAddKudo(w http.ResponseWriter, r *http.Request) (*api.Response, error
 	ctx := context.Background()
 	res := &api.Response{}
 
-	userId, err := users.GetUserIDFromToken(r)
+	userID, err := users.GetUserIDFromToken(r)
 	if err != nil {
 		res.Error = api.BuildError(err, users.WrapErrRetrieveIDFromJWT, AddKudoHandler)
 		res.Message = users.WrapErrRetrieveIDFromJWT.Message
 		return res, err
 	}
 
-	threadId, err := strconv.Atoi(chi.URLParam(r, "threadId"))
+	threadID, err := strconv.Atoi(chi.URLParam(r, "threadID"))
 	if err != nil {
 		res.Error = api.BuildError(err, customerrors.WrapErrStrToInt, AddKudoHandler)
 		res.Message = customerrors.WrapErrStrToInt.Message
@@ -127,7 +127,7 @@ func HandleAddKudo(w http.ResponseWriter, r *http.Request) (*api.Response, error
 	}
 
 	// Check if thread exists
-	_, err = GetThreadByID(ctx, threadId)
+	_, err = GetThreadByID(ctx, threadID)
 	if err != nil {
 		switch t := err.(type) {
 		default:
@@ -144,8 +144,8 @@ func HandleAddKudo(w http.ResponseWriter, r *http.Request) (*api.Response, error
 	c, err := database.Client.ThreadKudo.
 		Query().
 		Where(
-			threadkudo.UserID(userId),
-			threadkudo.ThreadID(threadId),
+			threadkudo.UserID(userID),
+			threadkudo.ThreadID(threadID),
 		).
 		Count(ctx)
 	if err != nil {
@@ -160,7 +160,7 @@ func HandleAddKudo(w http.ResponseWriter, r *http.Request) (*api.Response, error
 		return res, ErrThreadKudoExist
 	}
 
-	err = AddKudo(ctx, database.Client, userId, threadId)
+	err = AddKudo(ctx, database.Client, userID, threadID)
 	if err != nil {
 		res.Error = api.BuildError(err, WrapErrAddKudo, AddKudoHandler)
 		res.Message = WrapErrAddKudo.Message

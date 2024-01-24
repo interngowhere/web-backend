@@ -35,13 +35,13 @@ func HandleDelete(w http.ResponseWriter, r *http.Request) (*api.Response, error)
 	res := &api.Response{}
 
 	// Retrieve a reference to the thread
-	threadId, err := strconv.Atoi(chi.URLParam(r, "threadId"))
+	threadID, err := strconv.Atoi(chi.URLParam(r, "threadID"))
 	if err != nil {
 		res.Error = api.BuildError(err, customerrors.WrapErrStrToInt, UpdateHandler)
 		res.Message = customerrors.WrapErrStrToInt.Message
 		return res, err
 	}
-	t, err := GetThreadByID(ctx, threadId)
+	t, err := GetThreadByID(ctx, threadID)
 	if err != nil {
 		res.Error = api.BuildError(err, WrapErrRetrieveThreads, DeleteHandler)
 		res.Message = WrapErrRetrieveThreads.Message
@@ -66,12 +66,12 @@ func HandleDelete(w http.ResponseWriter, r *http.Request) (*api.Response, error)
 }
 
 // RemoveKudo deletes an existing kudo entry consisting user_id and thread_id
-func RemoveKudo(ctx context.Context, client *ent.Client, userId uuid.UUID, threadId int) (int, error) {
+func RemoveKudo(ctx context.Context, client *ent.Client, userID uuid.UUID, threadID int) (int, error) {
 	return client.ThreadKudo.
 		Delete().
 		Where(
-			threadkudo.UserID(userId),
-			threadkudo.ThreadID(threadId),
+			threadkudo.UserID(userID),
+			threadkudo.ThreadID(threadID),
 		).
 		Exec(ctx)
 }
@@ -82,21 +82,21 @@ func HandleRemoveKudo(w http.ResponseWriter, r *http.Request) (*api.Response, er
 	ctx := context.Background()
 	res := &api.Response{}
 
-	userId, err := users.GetUserIDFromToken(r)
+	userID, err := users.GetUserIDFromToken(r)
 	if err != nil {
 		res.Error = api.BuildError(err, users.WrapErrRetrieveIDFromJWT, CreateHandler)
 		res.Message = users.WrapErrRetrieveIDFromJWT.Message
 		return res, err
 	}
 
-	threadId, err := strconv.Atoi(chi.URLParam(r, "threadId"))
+	threadID, err := strconv.Atoi(chi.URLParam(r, "threadID"))
 	if err != nil {
 		res.Error = api.BuildError(err, customerrors.WrapErrStrToInt, AddKudoHandler)
 		res.Message = customerrors.WrapErrStrToInt.Message
 		return res, err
 	}
 
-	_, err = RemoveKudo(ctx, database.Client, userId, threadId)
+	_, err = RemoveKudo(ctx, database.Client, userID, threadID)
 	if err != nil {
 		res.Error = api.BuildError(err, WrapErrRemoveKudo, DeleteHandler)
 		res.Message = WrapErrRemoveKudo.Message

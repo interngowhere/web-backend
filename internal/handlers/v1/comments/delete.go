@@ -35,14 +35,14 @@ func HandleDelete(w http.ResponseWriter, r *http.Request) (*api.Response, error)
 	res := &api.Response{}
 
 	// Retrieve a reference to the comment
-	commentId, err := strconv.Atoi(chi.URLParam(r, "commentId"))
+	commentID, err := strconv.Atoi(chi.URLParam(r, "commentID"))
 	if err != nil {
 		res.Error = api.BuildError(err, customerrors.WrapErrStrToInt, ListHandler)
 		res.Message = customerrors.WrapErrStrToInt.Message
 		return res, err
 	}
 
-	c, err := GetCommentById(ctx, commentId)
+	c, err := GetCommentById(ctx, commentID)
 	if err != nil {
 		res.Error = api.BuildError(err, WrapErrRetrieveComments, UpdateHandler)
 		res.Message = WrapErrRetrieveComments.Message
@@ -67,12 +67,12 @@ func HandleDelete(w http.ResponseWriter, r *http.Request) (*api.Response, error)
 }
 
 // RemoveKudo deletes an existing kudo entry consisting user_id and comment_id
-func RemoveKudo(ctx context.Context, client *ent.Client, userId uuid.UUID, commentId int) (int, error) {
+func RemoveKudo(ctx context.Context, client *ent.Client, userID uuid.UUID, commentID int) (int, error) {
 	return client.CommentKudo.
 		Delete().
 		Where(
-			commentkudo.UserID(userId),
-			commentkudo.CommentID(commentId),
+			commentkudo.UserID(userID),
+			commentkudo.CommentID(commentID),
 		).
 		Exec(ctx)
 }
@@ -83,21 +83,21 @@ func HandleRemoveKudo(w http.ResponseWriter, r *http.Request) (*api.Response, er
 	ctx := context.Background()
 	res := &api.Response{}
 
-	userId, err := users.GetUserIDFromToken(r)
+	userID, err := users.GetUserIDFromToken(r)
 	if err != nil {
 		res.Error = api.BuildError(err, users.WrapErrRetrieveIDFromJWT, CreateHandler)
 		res.Message = users.WrapErrRetrieveIDFromJWT.Message
 		return res, err
 	}
 
-	commentId, err := strconv.Atoi(chi.URLParam(r, "commentId"))
+	commentID, err := strconv.Atoi(chi.URLParam(r, "commentID"))
 	if err != nil {
 		res.Error = api.BuildError(err, customerrors.WrapErrStrToInt, AddKudoHandler)
 		res.Message = customerrors.WrapErrStrToInt.Message
 		return res, err
 	}
 
-	_, err = RemoveKudo(ctx, database.Client, userId, commentId)
+	_, err = RemoveKudo(ctx, database.Client, userID, commentID)
 	if err != nil {
 		res.Error = api.BuildError(err, WrapErrRemoveKudo, DeleteHandler)
 		res.Message = WrapErrRemoveKudo.Message

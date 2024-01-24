@@ -34,14 +34,14 @@ func HandleUpdate(w http.ResponseWriter, r *http.Request) (*api.Response, error)
 	res := &api.Response{}
 
 	// Retrieve a reference to the thread
-	commentId, err := strconv.Atoi(chi.URLParam(r, "commentId"))
+	commentID, err := strconv.Atoi(chi.URLParam(r, "commentID"))
 	if err != nil {
 		res.Error = api.BuildError(err, customerrors.WrapErrStrToInt, ListHandler)
 		res.Message = customerrors.WrapErrStrToInt.Message
 		return res, err
 	}
 
-	c, err := GetCommentById(ctx, commentId)
+	c, err := GetCommentById(ctx, commentID)
 	if err != nil {
 		res.Error = api.BuildError(err, WrapErrRetrieveComments, UpdateHandler)
 		res.Message = WrapErrRetrieveComments.Message

@@ -24,7 +24,7 @@ const SuccessfulCreateCommentMessage = "Successfully created comment"
 const SuccessfulAddKudoMessage = "Successfully added kudo to comment"
 
 // CreateComment adds a new comment entry in the database
-func CreateComment(ctx context.Context, client *ent.Client, threadId int, comment ent.Comment) error {
+func CreateComment(ctx context.Context, client *ent.Client, threadID int, comment ent.Comment) error {
 	return client.Comment.
 		Create().
 		SetParentID(comment.ParentID).
@@ -32,7 +32,7 @@ func CreateComment(ctx context.Context, client *ent.Client, threadId int, commen
 		SetCreatedBy(comment.CreatedBy).
 		SetCreatedAt(comment.CreatedAt).
 		SetCommentAuthorsID(comment.CreatedBy).
-		SetThreadsID(threadId).
+		SetThreadsID(threadID).
 		Exec(ctx)
 }
 
@@ -42,21 +42,21 @@ func HandleCreate(w http.ResponseWriter, r *http.Request) (*api.Response, error)
 	ctx := context.Background()
 	res := &api.Response{}
 
-	userId, err := users.GetUserIDFromToken(r)
+	userID, err := users.GetUserIDFromToken(r)
 	if err != nil {
 		res.Error = api.BuildError(err, users.WrapErrRetrieveIDFromJWT, CreateHandler)
 		res.Message = users.WrapErrRetrieveIDFromJWT.Message
 		return res, err
 	}
 
-	threadId, err := strconv.Atoi(chi.URLParam(r, "threadId"))
+	threadID, err := strconv.Atoi(chi.URLParam(r, "threadID"))
 	if err != nil {
 		res.Error = api.BuildError(err, customerrors.WrapErrStrToInt, ListHandler)
 		res.Message = customerrors.WrapErrStrToInt.Message
 		return res, err
 	}
 
-	_, err = threads.GetThreadByID(ctx, threadId)
+	_, err = threads.GetThreadByID(ctx, threadID)
 	if err != nil {
 		res.Error = api.BuildError(err, threads.WrapErrRetrieveThreads, CreateHandler)
 		res.Message = threads.WrapErrRetrieveThreads.Message
@@ -96,11 +96,11 @@ func HandleCreate(w http.ResponseWriter, r *http.Request) (*api.Response, error)
 	c := ent.Comment{
 		ParentID:  parentId,
 		Content:   data.Content,
-		CreatedBy: userId,
+		CreatedBy: userID,
 		CreatedAt: time.Now(),
 	}
 
-	err = CreateComment(ctx, database.Client, threadId, c)
+	err = CreateComment(ctx, database.Client, threadID, c)
 	if err != nil {
 		res.Error = api.BuildError(err, WrapErrCreateComment, CreateHandler)
 		res.Message = WrapErrCreateComment.Message
@@ -113,11 +113,11 @@ func HandleCreate(w http.ResponseWriter, r *http.Request) (*api.Response, error)
 }
 
 // AddKudo adds a new kudo for the given user and comment in the database
-func AddKudo(ctx context.Context, client *ent.Client, userId uuid.UUID, commentId int) error {
+func AddKudo(ctx context.Context, client *ent.Client, userID uuid.UUID, commentID int) error {
 	return client.CommentKudo.
 		Create().
-		SetUserID(userId).
-		SetCommentID(commentId).
+		SetUserID(userID).
+		SetCommentID(commentID).
 		Exec(ctx)
 }
 
@@ -127,14 +127,14 @@ func HandleAddKudo(w http.ResponseWriter, r *http.Request) (*api.Response, error
 	ctx := context.Background()
 	res := &api.Response{}
 
-	userId, err := users.GetUserIDFromToken(r)
+	userID, err := users.GetUserIDFromToken(r)
 	if err != nil {
 		res.Error = api.BuildError(err, customerrors.WrapErrNotFound, CreateHandler)
 		res.Message = customerrors.WrapErrNotFound.Message
 		return res, err
 	}
 
-	commentId, err := strconv.Atoi(chi.URLParam(r, "commentId"))
+	commentID, err := strconv.Atoi(chi.URLParam(r, "commentID"))
 	if err != nil {
 		res.Error = api.BuildError(err, customerrors.WrapErrStrToInt, AddKudoHandler)
 		res.Message = customerrors.WrapErrStrToInt.Message
@@ -142,7 +142,7 @@ func HandleAddKudo(w http.ResponseWriter, r *http.Request) (*api.Response, error
 	}
 
 	// Check if thread exists
-	_, err = GetCommentById(ctx, commentId)
+	_, err = GetCommentById(ctx, commentID)
 	if err != nil {
 		switch t := err.(type) {
 		default:
@@ -159,8 +159,8 @@ func HandleAddKudo(w http.ResponseWriter, r *http.Request) (*api.Response, error
 	c, err := database.Client.CommentKudo.
 		Query().
 		Where(
-			commentkudo.UserID(userId),
-			commentkudo.CommentID(commentId),
+			commentkudo.UserID(userID),
+			commentkudo.CommentID(commentID),
 		).
 		Count(ctx)
 	if err != nil {
@@ -175,7 +175,7 @@ func HandleAddKudo(w http.ResponseWriter, r *http.Request) (*api.Response, error
 		return res, ErrCommentKudoExist
 	}
 
-	err = AddKudo(ctx, database.Client, userId, commentId)
+	err = AddKudo(ctx, database.Client, userID, commentID)
 	if err != nil {
 		res.Error = api.BuildError(err, WrapErrAddKudo, AddKudoHandler)
 		res.Message = WrapErrAddKudo.Message

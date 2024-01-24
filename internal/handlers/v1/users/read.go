@@ -30,11 +30,11 @@ func GetUserIDFromToken(r *http.Request) (uuid.UUID, error) {
 	}
 
 	id, _ := token.Get("id")
-	userId, err := uuid.Parse(fmt.Sprintf("%s", id))
+	userID, err := uuid.Parse(fmt.Sprintf("%s", id))
 	if err != nil {
 		return uuid.Nil, err
 	}
-	return userId, err
+	return userID, err
 }
 
 // GetUsernameFromID queries the database for a user with the given ID
