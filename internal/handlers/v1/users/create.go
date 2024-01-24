@@ -2,7 +2,7 @@ package users
 
 import (
 	"context"
-	"fmt"
+	"encoding/json"
 	"net/http"
 	"time"
 
@@ -32,26 +32,31 @@ func HandleCreate(w http.ResponseWriter, r *http.Request) (*api.Response, error)
 	ctx := context.Background()
 	res := &api.Response{}
 
-	r.ParseForm()
-	if len(r.Form["email"]) == 0 ||
-		len(r.Form["password"]) == 0 ||
-		len(r.Form["username"]) == 0 {
-		err := fmt.Errorf("there is one or more more missing form input(s) in the request. Received: %v", r.Form)
-		res.Error = api.BuildError(err, WrapErrRequestFormat, CreateHandler)
-		res.Message = WrapErrRequestFormat.Message
+	// Read JSON body in request into a new CreateUserRequest object for use
+	decoder := json.NewDecoder(r.Body)
+	var data CreateUserRequest
+	err := decoder.Decode(&data)
+	if err != nil {
+		res.Error = api.BuildError(err, WrapErrDecodeRequest, CreateHandler)
+		res.Message = WrapErrDecodeRequest.Message
 		return res, err
 	}
 
-	email := r.Form["email"][0]
-	password := r.Form["password"][0]
-	username := r.Form["username"][0]
+	// Check for missing input fields in request body
+	if len(data.Email) == 0 ||
+		len(data.Password) == 0 ||
+		len(data.Username) == 0 {
+		res.Error = api.BuildError(ErrMissingInputField, WrapErrRequestFormat, CreateHandler)
+		res.Message = WrapErrRequestFormat.Message
+		return res, ErrMissingInputField
+	}
 
 	// check if email has already been registerd
 	c, err := database.Client.User.
 		Query().
 		Where(
 			user.
-				EmailEQ(email),
+				EmailEQ(data.Email),
 		).
 		Count(ctx)
 	if err != nil {
@@ -72,7 +77,7 @@ func HandleCreate(w http.ResponseWriter, r *http.Request) (*api.Response, error)
 		Query().
 		Where(
 			user.
-				UsernameEQ(username),
+				UsernameEQ(data.Username),
 		).
 		Count(ctx)
 	if err != nil {
@@ -89,7 +94,7 @@ func HandleCreate(w http.ResponseWriter, r *http.Request) (*api.Response, error)
 	}
 
 	// hash password using bcrypt
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(data.Password), bcrypt.DefaultCost)
 	if err != nil {
 		res.Error = api.BuildError(err, WrapErrHashPassword, CreateHandler)
 		res.Message = WrapErrHashPassword.Message
@@ -97,8 +102,8 @@ func HandleCreate(w http.ResponseWriter, r *http.Request) (*api.Response, error)
 	}
 
 	u := ent.User{
-		Email:    email,
-		Username: username,
+		Email:    data.Email,
+		Username: data.Username,
 		Hash:     hashedPassword,
 	}
 

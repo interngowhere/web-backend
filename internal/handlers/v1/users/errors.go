@@ -10,6 +10,7 @@ import (
 var (
 	ErrUsernameAlreadyRegistered = errors.New("username has already been taken up by someone else")
 	ErrEmailAlreadyRegistered    = errors.New("email has already been used to register for another account")
+	ErrMissingInputField         = errors.New("there is one or more more missing input field(s) in the request body")
 )
 
 // Custom error message wrappers
@@ -25,4 +26,5 @@ var (
 	WrapErrEncodeJWT         = api.ErrorMessage{Message: "Failed to encode JWT", Code: 500}
 	WrapErrEncodeView        = api.ErrorMessage{Message: "Failed to obtain JSON encoding of API response", Code: 500}
 	WrapErrRetrieveUserID    = api.ErrorMessage{Message: "Failed to retrieve user ID from JWT", Code: 500}
+	WrapErrDecodeRequest     = api.ErrorMessage{Message: "Failed to decode request body", Code: 500}
 )

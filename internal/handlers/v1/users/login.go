@@ -24,12 +24,26 @@ func HandleLogin(w http.ResponseWriter, r *http.Request) (*api.Response, error) 
 	ctx := context.Background()
 	res := &api.Response{}
 
-	r.ParseForm()
-	email := r.Form["email"][0]
-	password := r.Form["password"][0]
+	// Read JSON body in request into a new LoginRequest object for use
+	decoder := json.NewDecoder(r.Body)
+	var data LoginRequest
+	err := decoder.Decode(&data)
+	if err != nil {
+		res.Error = api.BuildError(err, WrapErrDecodeRequest, CreateHandler)
+		res.Message = WrapErrDecodeRequest.Message
+		return res, err
+	}
+
+	// Check for missing input fields in request body
+	if len(data.Email) == 0 ||
+		len(data.Password) == 0 {
+		res.Error = api.BuildError(ErrMissingInputField, WrapErrRequestFormat, CreateHandler)
+		res.Message = WrapErrRequestFormat.Message
+		return res, ErrMissingInputField
+	}
 
 	// get user from email
-	u, err := GetUserFromEmail(ctx, database.Client, email)
+	u, err := GetUserFromEmail(ctx, database.Client, data.Email)
 	if err != nil {
 		e := WrapErrGetUser
 		if err.Error() == "ent: user not found" {
@@ -40,7 +54,7 @@ func HandleLogin(w http.ResponseWriter, r *http.Request) (*api.Response, error) 
 		return res, err
 	}
 
-	err = bcrypt.CompareHashAndPassword(u.Hash, []byte(password))
+	err = bcrypt.CompareHashAndPassword(u.Hash, []byte(data.Password))
 	if err != nil {
 		res.Error = api.BuildError(err, WrapErrIncorrectPassword, LoginHandler)
 		res.Message = WrapErrIncorrectPassword.Message
@@ -62,12 +76,12 @@ func HandleLogin(w http.ResponseWriter, r *http.Request) (*api.Response, error) 
 		return res, err
 	}
 
-	data, err := json.Marshal(JWTResponse{Token: tokenString})
+	encodedData, err := json.Marshal(JWTResponse{Token: tokenString})
 	if err != nil {
 		res.Error = api.BuildError(err, WrapErrEncodeView, LoginHandler)
 		res.Message = WrapErrEncodeView.Message
 	} else {
-		res.Data = data
+		res.Data = encodedData
 		res.Message = SuccessfulUserLoginMessage
 	}
 
