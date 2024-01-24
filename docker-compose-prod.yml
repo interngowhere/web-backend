@@ -5,6 +5,8 @@ services:
     image: postgres:16.1
     container_name: database
     restart: always
+    ports:
+      - ${DB_PORT}:${DB_PORT}
     volumes:
       - db_data:/var/lib/postgresql/data
     environment:
