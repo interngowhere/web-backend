@@ -38,6 +38,8 @@ func BuildRouteHandler(f func(w http.ResponseWriter, r *http.Request) (*Response
 		res, _ := f(w, req)
 		if res.Code != 0 {
 			render.Status(req, res.Code)
+		} else {
+			res.Code = 200
 		}
 		render.JSON(w, req, res)
 	}
