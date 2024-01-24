@@ -87,12 +87,7 @@ func HandleList(w http.ResponseWriter, r *http.Request) (*api.Response, error) {
 		return res, err
 	}
 
-	userId, err := users.GetUserIDFromToken(r)
-	if err != nil {
-		res.Error = api.BuildError(err, users.WrapErrRetrieveUserID, ListHandler)
-		res.Message = users.WrapErrRetrieveUserID.Message
-		return res, err
-	}
+	userId, _ := users.GetUserIDFromToken(r)
 
 	for _, parent := range parents {
 		children, err := GetCommentsByParent(parent.ID)
