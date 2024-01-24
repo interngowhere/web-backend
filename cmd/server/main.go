@@ -6,18 +6,18 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/go-chi/chi/v5"
 	jwt "github.com/interngowhere/web-backend/internal/auth"
 	"github.com/interngowhere/web-backend/internal/database"
 	"github.com/interngowhere/web-backend/internal/middleware"
 	"github.com/interngowhere/web-backend/internal/router"
+	"github.com/interngowhere/web-backend/internal/server"
 
 	_ "github.com/lib/pq"
 )
 
 func main() {
 	// Set up server
-	s := CreateNewServer()
+	s := server.New()
 	r := s.Router
 	jwt.Init(os.Getenv("JWT_SIGKEY"))
 	middleware.Setup(r)
@@ -32,13 +32,3 @@ func main() {
 	log.Fatalln(http.ListenAndServe(fmt.Sprintf("%s:8000", os.Getenv("SERVER_HOST")), r))
 }
 
-type Server struct {
-	Router *chi.Mux
-	// additional server config can be added here
-}
-
-func CreateNewServer() *Server {
-	s := &Server{}
-	s.Router = chi.NewRouter()
-	return s
-}
