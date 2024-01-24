@@ -115,10 +115,10 @@ func HandleList(w http.ResponseWriter, r *http.Request) (*api.Response, error) {
 				return res, err
 			}
 
-			u, err := users.GetUsernameFromID(ctx, database.Client, child.CreatedBy)
+			u, err := users.GetUserFromID(ctx, database.Client, child.CreatedBy)
 			if err != nil {
-				res.Error = api.BuildError(err, WrapErrGetUsernameFromID, ListHandler)
-				res.Message = WrapErrGetUsernameFromID.Message
+				res.Error = api.BuildError(err, WrapErrGetUserFromID, ListHandler)
+				res.Message = WrapErrGetUserFromID.Message
 				return res, err
 			}
 
@@ -128,7 +128,7 @@ func HandleList(w http.ResponseWriter, r *http.Request) (*api.Response, error) {
 				Content:           child.Content,
 				ModifiedAt:        child.ModifiedAt,
 				CreatedByID:       child.CreatedBy,
-				CreatedByUsername: u,
+				CreatedByUsername: u.Username,
 				CreatedAt:         child.CreatedAt,
 				KudoCount:         c,
 				UserKudoed:        b,
@@ -149,10 +149,10 @@ func HandleList(w http.ResponseWriter, r *http.Request) (*api.Response, error) {
 			return res, err
 		}
 
-		u, err := users.GetUsernameFromID(ctx, database.Client, parent.CreatedBy)
+		u, err := users.GetUserFromID(ctx, database.Client, parent.CreatedBy)
 		if err != nil {
-			res.Error = api.BuildError(err, WrapErrGetUsernameFromID, ListHandler)
-			res.Message = WrapErrGetUsernameFromID.Message
+			res.Error = api.BuildError(err, WrapErrGetUserFromID, ListHandler)
+			res.Message = WrapErrGetUserFromID.Message
 			return res, err
 		}
 
@@ -162,7 +162,7 @@ func HandleList(w http.ResponseWriter, r *http.Request) (*api.Response, error) {
 			Content:           parent.Content,
 			ModifiedAt:        parent.ModifiedAt,
 			CreatedByID:       parent.CreatedBy,
-			CreatedByUsername: u,
+			CreatedByUsername: u.Username,
 			CreatedAt:         parent.CreatedAt,
 			KudoCount:         c,
 			UserKudoed:        b,

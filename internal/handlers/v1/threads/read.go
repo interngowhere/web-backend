@@ -125,10 +125,10 @@ func HandleList(w http.ResponseWriter, r *http.Request) (*api.Response, error) {
 			return res, err
 		}
 
-		u, err := users.GetUsernameFromID(ctx, database.Client, thread.CreatedBy)
+		u, err := users.GetUserFromID(ctx, database.Client, thread.CreatedBy)
 		if err != nil {
-			res.Error = api.BuildError(err, WrapErrGetUsernameFromID, ReadHandler)
-			res.Message = WrapErrGetUsernameFromID.Message
+			res.Error = api.BuildError(err, WrapErrGetUserFromID, ReadHandler)
+			res.Message = WrapErrGetUserFromID.Message
 			return res, err
 		}
 
@@ -146,7 +146,7 @@ func HandleList(w http.ResponseWriter, r *http.Request) (*api.Response, error) {
 			Description:       thread.Description,
 			ModifiedAt:        thread.ModifiedAt,
 			CreatedByID:       thread.CreatedBy,
-			CreatedByUsername: u,
+			CreatedByUsername: u.Username,
 			CreatedAt:         thread.CreatedAt,
 			Tags:              &formattedTags,
 			KudoCount:         c,

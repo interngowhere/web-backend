@@ -27,5 +27,5 @@ var (
 
 	WrapErrGetKudoCount      = api.ErrorMessage{Message: "Failed to get kudo count on the comment", Code: 500}
 	WrapErrCheckDidUserKudo  = api.ErrorMessage{Message: "Something went wrong while checking if user gave a kudo to the comment", Code: 500}
-	WrapErrGetUsernameFromID = api.ErrorMessage{Message: "Failed to get username from ID", Code: 500}
+	WrapErrGetUserFromID = api.ErrorMessage{Message: "Failed to get username from ID", Code: 500}
 )

@@ -29,6 +29,6 @@ var (
 	WrapErrRetrieveTags       = api.ErrorMessage{Message: "Failed to get the tags associated with the thread", Code: 500}
 	WrapErrGetKudoCount       = api.ErrorMessage{Message: "Failed to get kudo count on the thread", Code: 500}
 	WrapErrCheckDidUserKudo   = api.ErrorMessage{Message: "Something went wrong while checking if user gave a kudo to the thread", Code: 500}
-	WrapErrGetUsernameFromID  = api.ErrorMessage{Message: "Failed to get username from ID", Code: 500}
+	WrapErrGetUserFromID  = api.ErrorMessage{Message: "Failed to get username from ID", Code: 500}
 	WrapErrGetTopicFromThread = api.ErrorMessage{Message: "Failed to get topic from thread", Code: 500}
 )
