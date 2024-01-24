@@ -47,7 +47,7 @@ services:
     container_name: reverse-proxy
     volumes:
       - type: bind
-        source: ./nginx.conf
+        source: ./nginx-prod.conf
         target: /etc/nginx/conf.d/default.conf
         read_only: true
       - type: bind
