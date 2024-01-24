@@ -33,12 +33,12 @@ var (
 	WrapErrAddKudo         = api.ErrorMessage{Message: "Failed to add kudo", Code: 500}
 	WrapErrRemoveKudo      = api.ErrorMessage{Message: "Failed to remove kudo", Code: 500}
 
-	WrapErrStrToInt         = api.ErrorMessage{Message: "Failed to convert type string to type int", Code: 500}
-	WrapErrDecodeRequest    = api.ErrorMessage{Message: "Failed to decode request body", Code: 500}
-	WrapErrRetrieveUserID   = api.ErrorMessage{Message: "Failed to retrieve user ID from JWT", Code: 500}
-	WrapErrRetrieveTags     = api.ErrorMessage{Message: "Failed to get the tags associated with the thread", Code: 500}
-	WrapErrGetKudoCount     = api.ErrorMessage{Message: "Failed to get kudo count on the thread", Code: 500}
-	WrapErrCheckDidUserKudo = api.ErrorMessage{Message: "Failed to check if user gave a kudo to the thread", Code: 500}
-	WrapErrGetUsernameFromID = api.ErrorMessage{Message: "Failed to get username from ID", Code: 500}
+	WrapErrStrToInt           = api.ErrorMessage{Message: "Failed to convert type string to type int", Code: 500}
+	WrapErrDecodeRequest      = api.ErrorMessage{Message: "Failed to decode request body", Code: 500}
+	WrapErrRetrieveUserID     = api.ErrorMessage{Message: "Failed to retrieve user ID from JWT", Code: 500}
+	WrapErrRetrieveTags       = api.ErrorMessage{Message: "Failed to get the tags associated with the thread", Code: 500}
+	WrapErrGetKudoCount       = api.ErrorMessage{Message: "Failed to get kudo count on the thread", Code: 500}
+	WrapErrCheckDidUserKudo   = api.ErrorMessage{Message: "Failed to check if user gave a kudo to the thread", Code: 500}
+	WrapErrGetUsernameFromID  = api.ErrorMessage{Message: "Failed to get username from ID", Code: 500}
 	WrapErrGetTopicFromThread = api.ErrorMessage{Message: "Failed to get topic from thread", Code: 500}
 )

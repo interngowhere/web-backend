@@ -86,12 +86,12 @@ func HandleList(w http.ResponseWriter, r *http.Request) (*api.Response, error) {
 	}
 
 	threads, err := GetThreads(ctx, threadId)
-		if err != nil {
-			res.Error = api.BuildError(err, WrapErrRetrieveThreads, ReadHandler)
-			res.Message = WrapErrRetrieveThreads.Message
-			return res, err
-		}
-	
+	if err != nil {
+		res.Error = api.BuildError(err, WrapErrRetrieveThreads, ReadHandler)
+		res.Message = WrapErrRetrieveThreads.Message
+		return res, err
+	}
+
 	userId, _ := users.GetUserIDFromToken(r)
 
 	for _, thread := range threads {
@@ -139,18 +139,18 @@ func HandleList(w http.ResponseWriter, r *http.Request) (*api.Response, error) {
 		}
 
 		data = append(data, ThreadsResponse{
-			ID:          thread.ID,
-			Title:       thread.Title,
-			Slug:        thread.Slug,
-			Description: thread.Description,
-			ModifiedAt:  thread.ModifiedAt,
-			CreatedByID:   thread.CreatedBy,
+			ID:                thread.ID,
+			Title:             thread.Title,
+			Slug:              thread.Slug,
+			Description:       thread.Description,
+			ModifiedAt:        thread.ModifiedAt,
+			CreatedByID:       thread.CreatedBy,
 			CreatedByUsername: u,
-			CreatedAt:   thread.CreatedAt,
-			Tags:        &formattedTags,
-			KudoCount:   c,
-			UserKudoed:  b,
-			TopicSlug: topic.Slug,
+			CreatedAt:         thread.CreatedAt,
+			Tags:              &formattedTags,
+			KudoCount:         c,
+			UserKudoed:        b,
+			TopicSlug:         topic.Slug,
 		})
 	}
 
