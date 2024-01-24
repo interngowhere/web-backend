@@ -112,7 +112,7 @@ func HandleList(w http.ResponseWriter, r *http.Request) (*api.Response, error) {
 
 			u, err := users.GetUserFromID(ctx, database.Client, child.CreatedBy)
 			if err != nil {
-				res = api.BuildError(err, WrapErrGetUserFromID, ListHandler)
+				res = api.BuildError(err, users.WrapErrGetUserFromID, ListHandler)
 				return res, err
 			}
 
@@ -143,7 +143,7 @@ func HandleList(w http.ResponseWriter, r *http.Request) (*api.Response, error) {
 
 		u, err := users.GetUserFromID(ctx, database.Client, parent.CreatedBy)
 		if err != nil {
-			res = api.BuildError(err, WrapErrGetUserFromID, ListHandler)
+			res = api.BuildError(err, users.WrapErrGetUserFromID, ListHandler)
 			return res, err
 		}
 

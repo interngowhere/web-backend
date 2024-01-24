@@ -17,9 +17,9 @@ const SuccessfulDeleteUserMessage = "Successfully deleted user"
 
 // DeleteUser deletes an existing user entry in the database
 // based on ent.User object provided
-func DeleteUser(ctx context.Context, client *ent.Client, userID uuid.UUID) error {
+func DeleteUser(ctx context.Context, client *ent.Client, user *ent.User) error {
 	return client.User.
-		DeleteOneID(userID).
+		DeleteOne(user).
 		Exec(ctx)
 }
 
@@ -37,15 +37,16 @@ func HandleDelete(w http.ResponseWriter, r *http.Request) (*api.Response, error)
 
 	u, err := GetUserFromID(ctx, database.Client, userID)
 	if err != nil {
-		res = api.BuildError(err, WrapErrGetUser, DeleteHandler)
+		switch t := err.(type) {
+		default:
+			res = api.BuildError(t, WrapErrGetUser, DeleteHandler)
+		case *ent.NotFoundError:
+			res = api.BuildError(t, customerrors.WrapErrNotFound, DeleteHandler)
+		}
 		return res, err
 	}
-	if u == nil {
-		res = api.BuildError(customerrors.ErrResourceNotFound, customerrors.WrapErrNotFound, DeleteHandler)
-		return res, customerrors.ErrResourceNotFound
-	}
 
-	err = DeleteUser(ctx, database.Client, userID)
+	err = DeleteUser(ctx, database.Client, u)
 	if err != nil {
 		res = api.BuildError(err, WrapErrDeleteUser, DeleteHandler)
 		return res, err

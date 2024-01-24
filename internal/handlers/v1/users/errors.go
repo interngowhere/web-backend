@@ -26,4 +26,5 @@ var (
 	WrapErrSetExpiry         = api.ErrorMessage{Message: "Failed to set JWT expiration", Code: 500}
 	WrapErrEncodeJWT         = api.ErrorMessage{Message: "Failed to encode JWT", Code: 500}
 	WrapErrRetrieveIDFromJWT = api.ErrorMessage{Message: "Failed to retrieve user ID from JWT", Code: 500}
+	WrapErrGetUserFromID  = api.ErrorMessage{Message: "Failed to get username from ID", Code: 500}
 )

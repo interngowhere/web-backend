@@ -123,7 +123,7 @@ func HandleList(w http.ResponseWriter, r *http.Request) (*api.Response, error) {
 
 		u, err := users.GetUserFromID(ctx, database.Client, thread.CreatedBy)
 		if err != nil {
-			res = api.BuildError(err, WrapErrGetUserFromID, ReadHandler)
+			res = api.BuildError(err, users.WrapErrGetUserFromID, ReadHandler)
 			return res, err
 		}
 
