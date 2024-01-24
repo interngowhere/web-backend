@@ -5,8 +5,6 @@ services:
     image: postgres:16.1
     container_name: database
     restart: always
-    expose:
-      - ${DB_PORT}
     ports:
       - ${DB_PORT}:${DB_PORT}
     volumes:
