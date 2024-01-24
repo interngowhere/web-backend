@@ -49,8 +49,8 @@ func HandleLogin(w http.ResponseWriter, r *http.Request) (*api.Response, error) 
 	if err != nil {
 		switch t := err.(type) {
 		default:
-			res.Error = api.BuildError(t, WrapErrGetUserFromEmail, LoginHandler)
-			res.Message = WrapErrGetUserFromEmail.Message
+			res.Error = api.BuildError(t, WrapErrGetUser, LoginHandler)
+			res.Message = WrapErrGetUser.Message
 		case *ent.NotFoundError:
 			res.Error = api.BuildError(t, customerrors.WrapErrNotFound, LoginHandler)
 			res.Message = customerrors.WrapErrNotFound.Message

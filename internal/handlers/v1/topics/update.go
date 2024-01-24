@@ -70,8 +70,8 @@ func HandleUpdate(w http.ResponseWriter, r *http.Request) (*api.Response, error)
 
 	err = UpdateTopic(ctx, database.Client, t[0])
 	if err != nil {
-		res.Error = api.BuildError(err, WrapErrCreateTopic, UpdateHandler)
-		res.Message = WrapErrCreateTopic.Message
+		res.Error = api.BuildError(err, WrapErrUpdateTopic, UpdateHandler)
+		res.Message = WrapErrUpdateTopic.Message
 		return res, err
 	}
 

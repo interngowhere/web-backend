@@ -33,9 +33,9 @@ func HandleCreate(w http.ResponseWriter, r *http.Request) (*api.Response, error)
 	ctx := context.Background()
 	res := &api.Response{}
 
-	// Read JSON body in request into a new CreateUserRequest object for use
+	// Read JSON body in request into a new UserRequest object for use
 	decoder := json.NewDecoder(r.Body)
-	var data CreateUserRequest
+	var data UserRequest
 	err := decoder.Decode(&data)
 	if err != nil {
 		res.Error = api.BuildError(err, customerrors.WrapErrDecodeRequest, CreateHandler)

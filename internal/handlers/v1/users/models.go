@@ -2,9 +2,9 @@ package users
 
 import "time"
 
-// CreateUserRequest models the JSON request body
-// for creating a new user.
-type CreateUserRequest struct {
+// UserRequest models the JSON request body
+// for creating or updating a new user.
+type UserRequest struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
 	Username string `json:"username"`
