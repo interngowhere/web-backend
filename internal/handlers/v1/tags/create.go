@@ -64,7 +64,7 @@ func HandleCreate(w http.ResponseWriter, r *http.Request) (*api.Response, error)
 
 	err = CreateTag(ctx, database.Client, t)
 	if err != nil {
-		res = api.BuildError(err, WrapErrCreateTag, ReadHandler)
+		res = api.BuildError(err, WrapErrCreateTag, ListHandler)
 		return res, err
 	}
 

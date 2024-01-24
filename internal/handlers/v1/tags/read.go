@@ -13,7 +13,7 @@ import (
 	customerrors "github.com/interngowhere/web-backend/internal/errors"
 )
 
-const ReadHandler = "tags.HandleList"
+const ListHandler = "tags.HandleList"
 const SuccessfulListTagsMessage = "Listed all tags found"
 
 // GetTags returns a list of matching tags based on the query parameter provided.
@@ -41,7 +41,7 @@ func HandleList(w http.ResponseWriter, r *http.Request) (*api.Response, error) {
 	q = strings.ToLower(q)
 	t, err := GetTags(q)
 	if err != nil {
-		res = api.BuildError(err, WrapErrRetrieveTags, ReadHandler)
+		res = api.BuildError(err, WrapErrRetrieveTags, ListHandler)
 		return res, err
 	}
 
@@ -54,13 +54,13 @@ func HandleList(w http.ResponseWriter, r *http.Request) (*api.Response, error) {
 	}
 
 	if len(data) == 0 {
-		res = api.BuildError(ErrNoTagFound, customerrors.WrapErrNotFound, ReadHandler)
+		res = api.BuildError(ErrNoTagFound, customerrors.WrapErrNotFound, ListHandler)
 		return res, ErrNoTagFound
 	}
 
 	encodedData, err := json.Marshal(data)
 	if err != nil {
-		res = api.BuildError(err, customerrors.WrapErrEncodeView, ReadHandler)
+		res = api.BuildError(err, customerrors.WrapErrEncodeView, ListHandler)
 		res.Message = customerrors.WrapErrEncodeView.Message
 	} else {
 		res.Data = encodedData

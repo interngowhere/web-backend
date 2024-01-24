@@ -13,7 +13,7 @@ import (
 	customerrors "github.com/interngowhere/web-backend/internal/errors"
 )
 
-const ReadHandler = "topics.HandleList"
+const ListHandler = "topics.HandleList"
 const SuccessfulListTopicsMessage = "Listed all topics found"
 
 // GetTopics returns the matching topic based on topic title slug provided
@@ -46,7 +46,7 @@ func HandleList(w http.ResponseWriter, r *http.Request) (*api.Response, error) {
 	q := chi.URLParam(r, "title")
 	topics, err := GetTopics(ctx, q)
 	if err != nil {
-		res = api.BuildError(err, WrapErrRetrieveTopics, ReadHandler)
+		res = api.BuildError(err, WrapErrRetrieveTopics, ListHandler)
 		return res, err
 	}
 
@@ -63,13 +63,13 @@ func HandleList(w http.ResponseWriter, r *http.Request) (*api.Response, error) {
 	}
 
 	if len(data) == 0 {
-		res = api.BuildError(ErrNoTopicFound, customerrors.WrapErrNotFound, ReadHandler)
+		res = api.BuildError(ErrNoTopicFound, customerrors.WrapErrNotFound, ListHandler)
 		return res, ErrNoTopicFound
 	}
 
 	encodedData, err := json.Marshal(data)
 	if err != nil {
-		res = api.BuildError(err, customerrors.WrapErrEncodeView, ReadHandler)
+		res = api.BuildError(err, customerrors.WrapErrEncodeView, ListHandler)
 		res.Message = customerrors.WrapErrEncodeView.Message
 	} else {
 		res.Data = encodedData

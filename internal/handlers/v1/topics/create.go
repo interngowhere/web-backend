@@ -82,7 +82,7 @@ func HandleCreate(w http.ResponseWriter, r *http.Request) (*api.Response, error)
 
 	err = CreateTopic(ctx, database.Client, t)
 	if err != nil {
-		res = api.BuildError(err, WrapErrCreateTopic, ReadHandler)
+		res = api.BuildError(err, WrapErrCreateTopic, ListHandler)
 		return res, err
 	}
 

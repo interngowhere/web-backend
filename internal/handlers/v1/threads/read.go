@@ -19,7 +19,7 @@ import (
 	"github.com/interngowhere/web-backend/internal/handlers/v1/users"
 )
 
-const ReadHandler = "threads.HandleList"
+const ListHandler = "threads.HandleList"
 const SuccessfulListThreadsMessage = "Listed all threads found"
 
 // GetThreads returns the matching threads based on thread id
@@ -88,7 +88,7 @@ func HandleList(w http.ResponseWriter, r *http.Request) (*api.Response, error) {
 
 	threads, err := GetThreads(ctx, threadID)
 	if err != nil {
-		res = api.BuildError(err, WrapErrRetrieveThreads, ReadHandler)
+		res = api.BuildError(err, WrapErrRetrieveThreads, ListHandler)
 		return res, err
 	}
 
@@ -97,7 +97,7 @@ func HandleList(w http.ResponseWriter, r *http.Request) (*api.Response, error) {
 	for _, thread := range threads {
 		t, err := GetTagsByThread(ctx, thread)
 		if err != nil {
-			res = api.BuildError(err, WrapErrRetrieveTags, ReadHandler)
+			res = api.BuildError(err, WrapErrRetrieveTags, ListHandler)
 			return res, err
 		}
 
@@ -111,25 +111,25 @@ func HandleList(w http.ResponseWriter, r *http.Request) (*api.Response, error) {
 
 		c, err := GetThreadKudoCount(ctx, thread.ID)
 		if err != nil {
-			res = api.BuildError(err, WrapErrGetKudoCount, ReadHandler)
+			res = api.BuildError(err, WrapErrGetKudoCount, ListHandler)
 			return res, err
 		}
 
 		b, err := CheckDidUserKudo(ctx, thread.ID, userID)
 		if err != nil {
-			res = api.BuildError(err, WrapErrCheckDidUserKudo, ReadHandler)
+			res = api.BuildError(err, WrapErrCheckDidUserKudo, ListHandler)
 			return res, err
 		}
 
 		u, err := users.GetUserFromID(ctx, database.Client, thread.CreatedBy)
 		if err != nil {
-			res = api.BuildError(err, users.WrapErrGetUserFromID, ReadHandler)
+			res = api.BuildError(err, users.WrapErrGetUserFromID, ListHandler)
 			return res, err
 		}
 
 		topic, err := topics.ListByThread(ctx, thread)
 		if err != nil {
-			res = api.BuildError(err, WrapErrGetTopicFromThread, ReadHandler)
+			res = api.BuildError(err, WrapErrGetTopicFromThread, ListHandler)
 			return res, err
 		}
 
@@ -150,13 +150,13 @@ func HandleList(w http.ResponseWriter, r *http.Request) (*api.Response, error) {
 	}
 
 	if len(data) == 0 {
-		res = api.BuildError(ErrNoThreadFound, customerrors.WrapErrNotFound, ReadHandler)
+		res = api.BuildError(ErrNoThreadFound, customerrors.WrapErrNotFound, ListHandler)
 		return res, ErrNoThreadFound
 	}
 
 	encodedData, err := json.Marshal(data)
 	if err != nil {
-		res = api.BuildError(err, customerrors.WrapErrEncodeView, ReadHandler)
+		res = api.BuildError(err, customerrors.WrapErrEncodeView, ListHandler)
 	} else {
 		res.Data = encodedData
 		res.Message = SuccessfulListThreadsMessage
