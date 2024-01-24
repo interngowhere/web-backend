@@ -14,6 +14,7 @@ import (
 	"github.com/interngowhere/web-backend/internal/api"
 	"github.com/interngowhere/web-backend/internal/database"
 	"github.com/interngowhere/web-backend/internal/handlers/v1/tags"
+	"github.com/interngowhere/web-backend/internal/handlers/v1/topics"
 	"github.com/interngowhere/web-backend/internal/handlers/v1/users"
 )
 
@@ -129,6 +130,13 @@ func HandleList(w http.ResponseWriter, r *http.Request) (*api.Response, error) {
 			return res, err
 		}
 
+		topic, err := topics.ListByThread(thread)
+		if err != nil {
+			res.Error = api.BuildError(err, WrapErrGetTopicFromThread, ReadHandler)
+			res.Message = WrapErrGetTopicFromThread.Message
+			return res, err
+		}
+
 		data = append(data, ThreadsResponse{
 			ID:          thread.ID,
 			Title:       thread.Title,
@@ -141,6 +149,7 @@ func HandleList(w http.ResponseWriter, r *http.Request) (*api.Response, error) {
 			Tags:        &formattedTags,
 			KudoCount:   c,
 			UserKudoed:  b,
+			TopicSlug: topic.Slug,
 		})
 	}
 

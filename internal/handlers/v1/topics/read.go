@@ -30,6 +30,11 @@ func GetTopics(q string) ([]*ent.Topic, error) {
 	}
 }
 
+// ListByThread returns the corresponding topic of a given thread
+func ListByThread(t *ent.Thread) (*ent.Topic, error) {
+	return t.QueryTopics().Only(context.Background())
+}
+
 // HandleList handles the GET request, calls
 // GetTopics if needed and returns a JSON encoded API response
 func HandleList(w http.ResponseWriter, r *http.Request) (*api.Response, error) {

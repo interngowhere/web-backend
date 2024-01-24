@@ -28,6 +28,7 @@ type ThreadsResponse struct {
 	CreatedByUsername string        `json:"createdByUsername,omitempty"`
 	CreatedAt   time.Time           `json:"createdAt,omitempty"`
 	Tags        *[]tags.TagResponse `json:"tags,omitempty"`
-	KudoCount   int                 `json:"kudoCount"`
-	UserKudoed  bool                `json:"userKudoed"`
+	KudoCount   int                 `json:"kudoCount,omitempty"`
+	UserKudoed  bool                `json:"userKudoed,omitempty"`
+	TopicSlug 	 string              `json:"topicSlug,omitempty"`
 }
