@@ -45,20 +45,25 @@ func HandleList(w http.ResponseWriter, r *http.Request) (*api.Response, error) {
 		return res, err
 	}
 
-	formattedTags := []TagResponse{}
+	data := []TagResponse{}
 	for _, tag := range t {
-		formattedTags = append(formattedTags, TagResponse{
+		data = append(data, TagResponse{
 			ID:      tag.ID,
 			TagName: tag.TagName,
 		})
 	}
 
-	data, err := json.Marshal(formattedTags)
+	if len(data) == 0 {
+		res = api.BuildError(ErrNoTagFound, customerrors.WrapErrNotFound, ReadHandler)
+		return res, ErrNoTagFound
+	}
+
+	encodedData, err := json.Marshal(data)
 	if err != nil {
 		res = api.BuildError(err, customerrors.WrapErrEncodeView, ReadHandler)
 		res.Message = customerrors.WrapErrEncodeView.Message
 	} else {
-		res.Data = data
+		res.Data = encodedData
 		res.Message = SuccessfulListTagsMessage
 	}
 

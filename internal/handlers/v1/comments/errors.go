@@ -11,6 +11,7 @@ var (
 	ErrNoMatchFromThreadID  = errors.New("no comment is found associated to the thread id provided")
 	ErrNoMatchFromCommentID = errors.New("no comment is found associated to the comment id provided")
 	ErrCommentKudoExist     = errors.New("the user has already given a kudo to the same comment")
+	ErrNoCommentFound			  	 = errors.New("no comment found")
 )
 
 // Custom error message wrappers

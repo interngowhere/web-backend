@@ -9,6 +9,7 @@ import (
 // Custom errors
 var (
 	ErrTopicExist = errors.New("topic already exists")
+	ErrNoTopicFound			  	 = errors.New("no topic found")
 )
 
 // Custom error message wrappers
