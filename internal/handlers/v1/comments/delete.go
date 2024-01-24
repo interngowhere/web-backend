@@ -41,7 +41,7 @@ func HandleDelete(w http.ResponseWriter, r *http.Request) (*api.Response, error)
 		return res, err
 	}
 
-	c, err := GetCommentById(commentId)
+	c, err := GetCommentById(ctx, commentId)
 	if err != nil {
 		res.Error = api.BuildError(err, WrapErrRetrieveComments, UpdateHandler)
 		res.Message = WrapErrRetrieveComments.Message

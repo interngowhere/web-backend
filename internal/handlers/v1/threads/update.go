@@ -44,7 +44,7 @@ func HandleUpdate(w http.ResponseWriter, r *http.Request) (*api.Response, error)
 		res.Message = WrapErrStrToInt.Message
 		return res, err
 	}
-	t, err := GetThreadByID(threadId)
+	t, err := GetThreadByID(ctx, threadId)
 	if err != nil {
 		res.Error = api.BuildError(err, WrapErrRetrieveThreads, UpdateHandler)
 		res.Message = WrapErrRetrieveThreads.Message

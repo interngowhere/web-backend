@@ -28,7 +28,7 @@ func HandleDelete(w http.ResponseWriter, r *http.Request) (*api.Response, error)
 	res := &api.Response{}
 
 	slug := chi.URLParam(r, "title")
-	t, err := GetTopics(slug)
+	t, err := GetTopics(ctx, slug)
 	if err != nil {
 		res.Error = api.BuildError(err, WrapErrRetrieveTopics, DeleteHandler)
 		res.Message = WrapErrRetrieveTopics.Message

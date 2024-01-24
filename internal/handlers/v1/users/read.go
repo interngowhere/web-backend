@@ -38,11 +38,11 @@ func GetUserIDFromToken(r *http.Request) (uuid.UUID, error) {
 }
 
 // GetUsernameFromID queries the database for a user with the given ID
-func GetUsernameFromID(client *ent.Client, id uuid.UUID) (string, error) {
+func GetUsernameFromID(ctx context.Context, client *ent.Client, id uuid.UUID) (string, error) {
 	u, err := client.User.
 		Query().
 		Where(user.ID(id)).
-		Only(context.Background())
+		Only(ctx)
 	if err != nil {
 		return "", err
 	}

@@ -23,47 +23,47 @@ const SuccessfulListThreadsMessage = "Listed all threads found"
 
 // GetThreads returns the matching threads based on thread id
 // provided. If no id is provided, all threads will be returned
-func GetThreads(threadId int) ([]*ent.Thread, error) {
+func GetThreads(ctx context.Context, threadId int) ([]*ent.Thread, error) {
 	if threadId == 0 {
 		return database.Client.Thread.
 			Query().
-			All(context.Background())
+			All(ctx)
 	} else {
 		return database.Client.Thread.
 			Query().
 			Where(thread.ID(threadId)).
-			All(context.Background())
+			All(ctx)
 	}
 }
 
-func GetThreadByID(threadId int) (*ent.Thread, error) {
+func GetThreadByID(ctx context.Context, threadId int) (*ent.Thread, error) {
 	return database.Client.Thread.
 		Query().
 		Where(thread.ID(threadId)).
-		Only(context.Background())
+		Only(ctx)
 }
 
 // GetTagsByThread returns all tags associated with a given thread
-func GetTagsByThread(t *ent.Thread) ([]*ent.Tag, error) {
-	return t.QueryTags().All(context.Background())
+func GetTagsByThread(ctx context.Context, t *ent.Thread) ([]*ent.Tag, error) {
+	return t.QueryTags().All(ctx)
 }
 
 // GetThreadKudoCount returns the number of kudos a thread has received
-func GetThreadKudoCount(id int) (int, error) {
+func GetThreadKudoCount(ctx context.Context, id int) (int, error) {
 	return database.Client.ThreadKudo.
 		Query().
 		Where(threadkudo.ThreadID(id)).
-		Count(context.Background())
+		Count(ctx)
 }
 
 // CheckDidUserKudo checks if a user has given a kudo
 // to a particular thread and returns a boolean
-func CheckDidUserKudo(id int, userId uuid.UUID) (bool, error) {
+func CheckDidUserKudo(ctx context.Context, id int, userId uuid.UUID) (bool, error) {
 	c, err := database.Client.ThreadKudo.
 		Query().
 		Where(threadkudo.ThreadID(id)).
 		Where(threadkudo.UserID(userId)).
-		Count(context.Background())
+		Count(ctx)
 	if err != nil {
 		return false, err
 	}
@@ -73,6 +73,7 @@ func CheckDidUserKudo(id int, userId uuid.UUID) (bool, error) {
 // HandleList handles the GET request, calls
 // GetThreads if needed and returns a JSON encoded API response
 func HandleList(w http.ResponseWriter, r *http.Request) (*api.Response, error) {
+	ctx := context.Background()
 	res := &api.Response{}
 	data := []ThreadsResponse{}
 
@@ -84,7 +85,7 @@ func HandleList(w http.ResponseWriter, r *http.Request) (*api.Response, error) {
 		threadId, _ = strconv.Atoi(q)
 	}
 
-	threads, err := GetThreads(threadId)
+	threads, err := GetThreads(ctx, threadId)
 		if err != nil {
 			res.Error = api.BuildError(err, WrapErrRetrieveThreads, ReadHandler)
 			res.Message = WrapErrRetrieveThreads.Message
@@ -94,7 +95,7 @@ func HandleList(w http.ResponseWriter, r *http.Request) (*api.Response, error) {
 	userId, _ := users.GetUserIDFromToken(r)
 
 	for _, thread := range threads {
-		t, err := GetTagsByThread(thread)
+		t, err := GetTagsByThread(ctx, thread)
 		if err != nil {
 			res.Error = api.BuildError(err, WrapErrRetrieveTags, ReadHandler)
 			res.Message = WrapErrRetrieveTags.Message
@@ -109,28 +110,28 @@ func HandleList(w http.ResponseWriter, r *http.Request) (*api.Response, error) {
 			})
 		}
 
-		c, err := GetThreadKudoCount(thread.ID)
+		c, err := GetThreadKudoCount(ctx, thread.ID)
 		if err != nil {
 			res.Error = api.BuildError(err, WrapErrGetKudoCount, ReadHandler)
 			res.Message = WrapErrGetKudoCount.Message
 			return res, err
 		}
 
-		b, err := CheckDidUserKudo(thread.ID, userId)
+		b, err := CheckDidUserKudo(ctx, thread.ID, userId)
 		if err != nil {
 			res.Error = api.BuildError(err, WrapErrCheckDidUserKudo, ReadHandler)
 			res.Message = WrapErrCheckDidUserKudo.Message
 			return res, err
 		}
 
-		u, err := users.GetUsernameFromID(database.Client, thread.CreatedBy)
+		u, err := users.GetUsernameFromID(ctx, database.Client, thread.CreatedBy)
 		if err != nil {
 			res.Error = api.BuildError(err, WrapErrGetUsernameFromID, ReadHandler)
 			res.Message = WrapErrGetUsernameFromID.Message
 			return res, err
 		}
 
-		topic, err := topics.ListByThread(thread)
+		topic, err := topics.ListByThread(ctx, thread)
 		if err != nil {
 			res.Error = api.BuildError(err, WrapErrGetTopicFromThread, ReadHandler)
 			res.Message = WrapErrGetTopicFromThread.Message

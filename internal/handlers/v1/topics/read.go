@@ -17,32 +17,33 @@ const SuccessfulListTopicsMessage = "Listed all topics found"
 
 // GetTopics returns the matching topic based on topic title slug provided
 // If no slug is provided, all topics will be returned
-func GetTopics(q string) ([]*ent.Topic, error) {
+func GetTopics(ctx context.Context, q string) ([]*ent.Topic, error) {
 	if len(q) == 0 {
 		return database.Client.Topic.
 			Query().
-			All(context.Background())
+			All(ctx)
 	} else {
 		return database.Client.Topic.
 			Query().
 			Where(topic.SlugEQ(q)).
-			All(context.Background())
+			All(ctx)
 	}
 }
 
 // ListByThread returns the corresponding topic of a given thread
-func ListByThread(t *ent.Thread) (*ent.Topic, error) {
-	return t.QueryTopics().Only(context.Background())
+func ListByThread(ctx context.Context, t *ent.Thread) (*ent.Topic, error) {
+	return t.QueryTopics().Only(ctx)
 }
 
 // HandleList handles the GET request, calls
 // GetTopics if needed and returns a JSON encoded API response
 func HandleList(w http.ResponseWriter, r *http.Request) (*api.Response, error) {
+	ctx := context.Background()
 	res := &api.Response{}
 	data := []TopicResponse{}
 
 	q := chi.URLParam(r, "title")
-	topics, err := GetTopics(q)
+	topics, err := GetTopics(ctx, q)
 	if err != nil {
 		res.Error = api.BuildError(err, WrapErrRetrieveTopics, ReadHandler)
 		res.Message = WrapErrRetrieveTopics.Message

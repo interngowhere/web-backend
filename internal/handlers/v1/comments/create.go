@@ -55,7 +55,7 @@ func HandleCreate(w http.ResponseWriter, r *http.Request) (*api.Response, error)
 		return res, err
 	}
 
-	_, err = threads.GetThreadByID(threadId)
+	_, err = threads.GetThreadByID(ctx, threadId)
 	if err != nil {
 		res.Error = api.BuildError(err, threads.WrapErrRetrieveThreads, CreateHandler)
 		res.Message = threads.WrapErrRetrieveThreads.Message
@@ -146,7 +146,7 @@ func HandleAddKudo(w http.ResponseWriter, r *http.Request) (*api.Response, error
 	}
 
 	// Check if thread exists
-	_, err = GetCommentById(commentId)
+	_, err = GetCommentById(ctx, commentId)
 	if err != nil {
 		switch t := err.(type) {
 		default:

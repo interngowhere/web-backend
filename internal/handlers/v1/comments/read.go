@@ -22,7 +22,7 @@ const SuccessfulListCommentsMessage = "Listed all comments found"
 
 // GetRootComments return a list of root comments (comments
 // which do not have a parent) in a given thread
-func GetRootComments(threadId int) ([]*ent.Comment, error) {
+func GetRootComments(ctx context.Context, threadId int) ([]*ent.Comment, error) {
 	return database.Client.Comment.
 		Query().
 		Where(
@@ -31,39 +31,39 @@ func GetRootComments(threadId int) ([]*ent.Comment, error) {
 			),
 			comment.ParentID(0),
 		).
-		All(context.Background())
+		All(ctx)
 }
 
 // GetCommentById returns a single comment matching the ID provided
-func GetCommentById(commentId int) (*ent.Comment, error) {
+func GetCommentById(ctx context.Context, commentId int) (*ent.Comment, error) {
 	return database.Client.Comment.
 		Query().
 		Where(comment.ID(commentId)).
-		Only(context.Background())
+		Only(ctx)
 }
 
 // GetCommentsByParent returns a list of children comments
 // which are nested under the parent comment
-func GetCommentsByParent(parentId int) ([]*ent.Comment, error) {
+func GetCommentsByParent(ctx context.Context, parentId int) ([]*ent.Comment, error) {
 	return database.Client.Comment.
 		Query().
 		Where(comment.ParentID(parentId)).
-		All(context.Background())
+		All(ctx)
 }
 
-func GetCommentKudoCount(id int) (int, error) {
+func GetCommentKudoCount(ctx context.Context, id int) (int, error) {
 	return database.Client.CommentKudo.
 		Query().
 		Where(commentkudo.CommentID(id)).
-		Count(context.Background())
+		Count(ctx)
 }
 
-func CheckDidUserKudo(id int, userId uuid.UUID) (bool, error) {
+func CheckDidUserKudo(ctx context.Context, id int, userId uuid.UUID) (bool, error) {
 	c, err := database.Client.CommentKudo.
 		Query().
 		Where(commentkudo.CommentID(id)).
 		Where(commentkudo.UserID(userId)).
-		Count(context.Background())
+		Count(ctx)
 	if err != nil {
 		return false, err
 	}
@@ -71,6 +71,7 @@ func CheckDidUserKudo(id int, userId uuid.UUID) (bool, error) {
 }
 
 func HandleList(w http.ResponseWriter, r *http.Request) (*api.Response, error) {
+	ctx := context.Background()
 	res := &api.Response{}
 	data := []CommentsResponse{}
 	threadId, err := strconv.Atoi(chi.URLParam(r, "threadId"))
@@ -80,7 +81,7 @@ func HandleList(w http.ResponseWriter, r *http.Request) (*api.Response, error) {
 		return res, err
 	}
 
-	parents, err := GetRootComments(threadId)
+	parents, err := GetRootComments(ctx, threadId)
 	if err != nil {
 		res.Error = api.BuildError(err, WrapErrRetrieveComments, ListHandler)
 		res.Message = WrapErrRetrieveComments.Message
@@ -90,7 +91,7 @@ func HandleList(w http.ResponseWriter, r *http.Request) (*api.Response, error) {
 	userId, _ := users.GetUserIDFromToken(r)
 
 	for _, parent := range parents {
-		children, err := GetCommentsByParent(parent.ID)
+		children, err := GetCommentsByParent(ctx, parent.ID)
 		if err != nil {
 			res.Error = api.BuildError(err, WrapErrRetrieveComments, ListHandler)
 			res.Message = WrapErrRetrieveComments.Message
@@ -99,21 +100,21 @@ func HandleList(w http.ResponseWriter, r *http.Request) (*api.Response, error) {
 
 		formattedChildren := []CommentsResponse{}
 		for _, child := range children {
-			c, err := GetCommentKudoCount(child.ID)
+			c, err := GetCommentKudoCount(ctx, child.ID)
 			if err != nil {
 				res.Error = api.BuildError(err, WrapErrGetKudoCount, ListHandler)
 				res.Message = WrapErrGetKudoCount.Message
 				return res, err
 			}
 
-			b, err := CheckDidUserKudo(child.ID, userId)
+			b, err := CheckDidUserKudo(ctx, child.ID, userId)
 			if err != nil {
 				res.Error = api.BuildError(err, WrapErrCheckDidUserKudo, ListHandler)
 				res.Message = WrapErrCheckDidUserKudo.Message
 				return res, err
 			}
 
-			u, err := users.GetUsernameFromID(database.Client, child.CreatedBy)
+			u, err := users.GetUsernameFromID(ctx, database.Client, child.CreatedBy)
 			if err != nil {
 				res.Error = api.BuildError(err, WrapErrGetUsernameFromID, ListHandler)
 				res.Message = WrapErrGetUsernameFromID.Message
@@ -133,21 +134,21 @@ func HandleList(w http.ResponseWriter, r *http.Request) (*api.Response, error) {
 			})
 		}
 
-		c, err := GetCommentKudoCount(parent.ID)
+		c, err := GetCommentKudoCount(ctx, parent.ID)
 		if err != nil {
 			res.Error = api.BuildError(err, WrapErrGetKudoCount, ListHandler)
 			res.Message = WrapErrGetKudoCount.Message
 			return res, err
 		}
 
-		b, err := CheckDidUserKudo(parent.ID, userId)
+		b, err := CheckDidUserKudo(ctx, parent.ID, userId)
 		if err != nil {
 			res.Error = api.BuildError(err, WrapErrCheckDidUserKudo, ListHandler)
 			res.Message = WrapErrCheckDidUserKudo.Message
 			return res, err
 		}
 
-		u, err := users.GetUsernameFromID(database.Client, parent.CreatedBy)
+		u, err := users.GetUsernameFromID(ctx, database.Client, parent.CreatedBy)
 			if err != nil {
 				res.Error = api.BuildError(err, WrapErrGetUsernameFromID, ListHandler)
 				res.Message = WrapErrGetUsernameFromID.Message

@@ -50,7 +50,7 @@ func HandleCreate(w http.ResponseWriter, r *http.Request) (*api.Response, error)
 		return res, err
 	}
 
-	topics, err := topics.GetTopics(chi.URLParam(r, "title"))
+	topics, err := topics.GetTopics(ctx, chi.URLParam(r, "title"))
 	if err != nil {
 		res.Error = api.BuildError(err, WrapErrRetrieveTopic, CreateHandler)
 		res.Message = WrapErrRetrieveTopic.Message
@@ -126,7 +126,7 @@ func HandleAddKudo(w http.ResponseWriter, r *http.Request) (*api.Response, error
 	}
 
 	// Check if thread exists
-	_, err = GetThreadByID(threadId)
+	_, err = GetThreadByID(ctx, threadId)
 	if err != nil {
 		switch t := err.(type) {
 		default:
