@@ -122,7 +122,7 @@ func HandleAddKudo(w http.ResponseWriter, r *http.Request) (*api.Response, error
 
 	userID, err := users.GetUserIDFromToken(r)
 	if err != nil {
-		res = api.BuildError(err, customerrors.WrapErrNotFound, CreateHandler)
+		res = api.BuildError(err, users.WrapErrRetrieveIDFromJWT, CreateHandler)
 		return res, err
 	}
 
