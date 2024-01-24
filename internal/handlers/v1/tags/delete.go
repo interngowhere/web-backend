@@ -9,6 +9,7 @@ import (
 	"github.com/interngowhere/web-backend/ent"
 	"github.com/interngowhere/web-backend/internal/api"
 	"github.com/interngowhere/web-backend/internal/database"
+	customerrors "github.com/interngowhere/web-backend/internal/errors"
 )
 
 const DeleteHandler = "tags.HandleDelete"
@@ -30,8 +31,8 @@ func HandleDelete(w http.ResponseWriter, r *http.Request) (*api.Response, error)
 
 	tagId, err := strconv.Atoi(chi.URLParam(r, "tagId"))
 	if err != nil {
-		res.Error = api.BuildError(err, WrapErrStrToInt, DeleteHandler)
-		res.Message = WrapErrStrToInt.Message
+		res.Error = api.BuildError(err, customerrors.WrapErrStrToInt, DeleteHandler)
+		res.Message = customerrors.WrapErrStrToInt.Message
 		return res, err
 	}
 

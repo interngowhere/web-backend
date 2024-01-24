@@ -10,6 +10,7 @@ import (
 	"github.com/interngowhere/web-backend/ent/tag"
 	"github.com/interngowhere/web-backend/internal/api"
 	"github.com/interngowhere/web-backend/internal/database"
+	customerrors "github.com/interngowhere/web-backend/internal/errors"
 )
 
 const ReadHandler = "tags.HandleList"
@@ -55,8 +56,8 @@ func HandleList(w http.ResponseWriter, r *http.Request) (*api.Response, error) {
 
 	data, err := json.Marshal(formattedTags)
 	if err != nil {
-		res.Error = api.BuildError(err, WrapErrEncodeView, ReadHandler)
-		res.Message = WrapErrEncodeView.Message
+		res.Error = api.BuildError(err, customerrors.WrapErrEncodeView, ReadHandler)
+		res.Message = customerrors.WrapErrEncodeView.Message
 	} else {
 		res.Data = data
 		res.Message = SuccessfulListTagsMessage

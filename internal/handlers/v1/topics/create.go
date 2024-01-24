@@ -10,6 +10,7 @@ import (
 	"github.com/interngowhere/web-backend/ent/topic"
 	"github.com/interngowhere/web-backend/internal/api"
 	"github.com/interngowhere/web-backend/internal/database"
+	customerrors "github.com/interngowhere/web-backend/internal/errors"
 	mystr "github.com/interngowhere/web-backend/internal/utils"
 )
 
@@ -40,8 +41,8 @@ func HandleCreate(w http.ResponseWriter, r *http.Request) (*api.Response, error)
 	var data TopicRequest
 	err := decoder.Decode(&data)
 	if err != nil {
-		res.Error = api.BuildError(err, WrapErrDecodeRequest, CreateHandler)
-		res.Message = WrapErrDecodeRequest.Message
+		res.Error = api.BuildError(err, customerrors.WrapErrDecodeRequest, CreateHandler)
+		res.Message = customerrors.WrapErrDecodeRequest.Message
 		return res, err
 	}
 
@@ -49,9 +50,9 @@ func HandleCreate(w http.ResponseWriter, r *http.Request) (*api.Response, error)
 	if len(data.Title) == 0 ||
 		len(data.Description) == 0 ||
 		len(data.ShortDescription) == 0 {
-		res.Error = api.BuildError(ErrMissingInputField, WrapErrRequestFormat, CreateHandler)
-		res.Message = WrapErrRequestFormat.Message
-		return res, ErrMissingInputField
+		res.Error = api.BuildError(customerrors.ErrMalformedRequest, customerrors.WrapErrRequestFormat, CreateHandler)
+		res.Message = customerrors.WrapErrRequestFormat.Message
+		return res, customerrors.ErrMalformedRequest
 	}
 
 	slug := mystr.ToLowerKebab(data.Title)
@@ -70,9 +71,7 @@ func HandleCreate(w http.ResponseWriter, r *http.Request) (*api.Response, error)
 		return res, err
 	}
 	if c != 0 {
-		e := WrapErrCreateTopic
-		e.Code = 400
-		res.Error = api.BuildError(ErrTopicExist, e, CreateHandler)
+		res.Error = api.BuildError(ErrTopicExist, customerrors.WrapErrResourceExist, CreateHandler)
 		res.Message = ErrTopicExist.Error()
 		return res, ErrTopicExist
 	}

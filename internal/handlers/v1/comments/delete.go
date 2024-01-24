@@ -11,6 +11,7 @@ import (
 	"github.com/interngowhere/web-backend/ent/commentkudo"
 	"github.com/interngowhere/web-backend/internal/api"
 	"github.com/interngowhere/web-backend/internal/database"
+	customerrors "github.com/interngowhere/web-backend/internal/errors"
 	"github.com/interngowhere/web-backend/internal/handlers/v1/users"
 )
 
@@ -36,8 +37,8 @@ func HandleDelete(w http.ResponseWriter, r *http.Request) (*api.Response, error)
 	// Retrieve a reference to the comment
 	commentId, err := strconv.Atoi(chi.URLParam(r, "commentId"))
 	if err != nil {
-		res.Error = api.BuildError(err, WrapErrStrToInt, ListHandler)
-		res.Message = WrapErrStrToInt.Message
+		res.Error = api.BuildError(err, customerrors.WrapErrStrToInt, ListHandler)
+		res.Message = customerrors.WrapErrStrToInt.Message
 		return res, err
 	}
 
@@ -48,8 +49,8 @@ func HandleDelete(w http.ResponseWriter, r *http.Request) (*api.Response, error)
 		return res, err
 	}
 	if c == nil {
-		res.Error = api.BuildError(ErrNoMatchFromCommentID, WrapErrNoCommentFound, UpdateHandler)
-		res.Message = WrapErrNoCommentFound.Message
+		res.Error = api.BuildError(ErrNoMatchFromCommentID, customerrors.WrapErrNotFound, UpdateHandler)
+		res.Message = customerrors.WrapErrNotFound.Message
 		return res, ErrNoMatchFromCommentID
 	}
 
@@ -84,15 +85,15 @@ func HandleRemoveKudo(w http.ResponseWriter, r *http.Request) (*api.Response, er
 
 	userId, err := users.GetUserIDFromToken(r)
 	if err != nil {
-		res.Error = api.BuildError(err, WrapErrRetrieveUserID, CreateHandler)
-		res.Message = WrapErrRetrieveUserID.Message
+		res.Error = api.BuildError(err, users.WrapErrRetrieveIDFromJWT, CreateHandler)
+		res.Message = users.WrapErrRetrieveIDFromJWT.Message
 		return res, err
 	}
 
 	commentId, err := strconv.Atoi(chi.URLParam(r, "commentId"))
 	if err != nil {
-		res.Error = api.BuildError(err, WrapErrStrToInt, AddKudoHandler)
-		res.Message = WrapErrStrToInt.Message
+		res.Error = api.BuildError(err, customerrors.WrapErrStrToInt, AddKudoHandler)
+		res.Message = customerrors.WrapErrStrToInt.Message
 		return res, err
 	}
 

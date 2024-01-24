@@ -9,6 +9,7 @@ import (
 	"github.com/interngowhere/web-backend/ent"
 	"github.com/interngowhere/web-backend/internal/api"
 	"github.com/interngowhere/web-backend/internal/database"
+	customerrors "github.com/interngowhere/web-backend/internal/errors"
 )
 
 const UpdateHandler = "topics.HandleUpdate"
@@ -41,9 +42,9 @@ func HandleUpdate(w http.ResponseWriter, r *http.Request) (*api.Response, error)
 		return res, err
 	}
 	if len(t) == 0 {
-		res.Error = api.BuildError(ErrNoMatchFromSlug, WrapErrNoTopicFound, UpdateHandler)
-		res.Message = WrapErrNoTopicFound.Message
-		return res, ErrNoMatchFromSlug
+		res.Error = api.BuildError(customerrors.ErrResourceNotFound, customerrors.WrapErrNotFound, UpdateHandler)
+		res.Message = customerrors.WrapErrNotFound.Message
+		return res, customerrors.ErrResourceNotFound
 	}
 
 	// Read JSON body in request into a new TopicRequest object for use
@@ -51,8 +52,8 @@ func HandleUpdate(w http.ResponseWriter, r *http.Request) (*api.Response, error)
 	var data TopicRequest
 	err = decoder.Decode(&data)
 	if err != nil {
-		res.Error = api.BuildError(err, WrapErrDecodeRequest, CreateHandler)
-		res.Message = WrapErrDecodeRequest.Message
+		res.Error = api.BuildError(err, customerrors.WrapErrDecodeRequest, CreateHandler)
+		res.Message = customerrors.WrapErrDecodeRequest.Message
 		return res, err
 	}
 

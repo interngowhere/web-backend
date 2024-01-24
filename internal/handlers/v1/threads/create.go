@@ -13,6 +13,7 @@ import (
 	"github.com/interngowhere/web-backend/ent/threadkudo"
 	"github.com/interngowhere/web-backend/internal/api"
 	"github.com/interngowhere/web-backend/internal/database"
+	customerrors "github.com/interngowhere/web-backend/internal/errors"
 	"github.com/interngowhere/web-backend/internal/handlers/v1/topics"
 	"github.com/interngowhere/web-backend/internal/handlers/v1/users"
 	mystr "github.com/interngowhere/web-backend/internal/utils"
@@ -45,8 +46,8 @@ func HandleCreate(w http.ResponseWriter, r *http.Request) (*api.Response, error)
 
 	userId, err := users.GetUserIDFromToken(r)
 	if err != nil {
-		res.Error = api.BuildError(err, WrapErrRetrieveUserID, CreateHandler)
-		res.Message = WrapErrRetrieveUserID.Message
+		res.Error = api.BuildError(err, users.WrapErrRetrieveIDFromJWT, CreateHandler)
+		res.Message = users.WrapErrRetrieveIDFromJWT.Message
 		return res, err
 	}
 
@@ -62,17 +63,17 @@ func HandleCreate(w http.ResponseWriter, r *http.Request) (*api.Response, error)
 	var data ThreadRequest
 	err = decoder.Decode(&data)
 	if err != nil {
-		res.Error = api.BuildError(err, WrapErrDecodeRequest, CreateHandler)
-		res.Message = WrapErrDecodeRequest.Message
+		res.Error = api.BuildError(err, customerrors.WrapErrDecodeRequest, CreateHandler)
+		res.Message = customerrors.WrapErrDecodeRequest.Message
 		return res, err
 	}
 
 	// Check for missing title in request body
 	// Note: title is the only required field in the POST request
 	if len(data.Title) == 0 {
-		res.Error = api.BuildError(ErrMissingTitle, WrapErrRequestFormat, CreateHandler)
-		res.Message = WrapErrRequestFormat.Message
-		return res, ErrMissingTitle
+		res.Error = api.BuildError(customerrors.ErrMalformedRequest, customerrors.WrapErrRequestFormat, CreateHandler)
+		res.Message = customerrors.WrapErrRequestFormat.Message
+		return res, customerrors.ErrMalformedRequest
 	}
 
 	slug := mystr.ToLowerKebab(data.Title)
@@ -113,15 +114,15 @@ func HandleAddKudo(w http.ResponseWriter, r *http.Request) (*api.Response, error
 
 	userId, err := users.GetUserIDFromToken(r)
 	if err != nil {
-		res.Error = api.BuildError(err, WrapErrRetrieveUserID, AddKudoHandler)
-		res.Message = WrapErrRetrieveUserID.Message
+		res.Error = api.BuildError(err, users.WrapErrRetrieveIDFromJWT, AddKudoHandler)
+		res.Message = users.WrapErrRetrieveIDFromJWT.Message
 		return res, err
 	}
 
 	threadId, err := strconv.Atoi(chi.URLParam(r, "threadId"))
 	if err != nil {
-		res.Error = api.BuildError(err, WrapErrStrToInt, AddKudoHandler)
-		res.Message = WrapErrStrToInt.Message
+		res.Error = api.BuildError(err, customerrors.WrapErrStrToInt, AddKudoHandler)
+		res.Message = customerrors.WrapErrStrToInt.Message
 		return res, err
 	}
 
@@ -133,8 +134,8 @@ func HandleAddKudo(w http.ResponseWriter, r *http.Request) (*api.Response, error
 			res.Error = api.BuildError(t, WrapErrCheckThreadKudo, AddKudoHandler)
 			res.Message = WrapErrCheckThreadKudo.Message
 		case *ent.NotFoundError:
-			res.Error = api.BuildError(t, WrapErrNoThreadFound, AddKudoHandler)
-			res.Message = WrapErrNoThreadFound.Message
+			res.Error = api.BuildError(t, customerrors.WrapErrNotFound, AddKudoHandler)
+			res.Message = customerrors.WrapErrNotFound.Message
 		}
 		return res, err
 	}

@@ -11,6 +11,7 @@ import (
 	"github.com/interngowhere/web-backend/ent"
 	"github.com/interngowhere/web-backend/internal/api"
 	"github.com/interngowhere/web-backend/internal/database"
+	customerrors "github.com/interngowhere/web-backend/internal/errors"
 	mystr "github.com/interngowhere/web-backend/internal/utils"
 )
 
@@ -40,8 +41,8 @@ func HandleUpdate(w http.ResponseWriter, r *http.Request) (*api.Response, error)
 	// Retrieve a reference to the thread
 	threadId, err := strconv.Atoi(chi.URLParam(r, "threadId"))
 	if err != nil {
-		res.Error = api.BuildError(err, WrapErrStrToInt, UpdateHandler)
-		res.Message = WrapErrStrToInt.Message
+		res.Error = api.BuildError(err, customerrors.WrapErrStrToInt, UpdateHandler)
+		res.Message = customerrors.WrapErrStrToInt.Message
 		return res, err
 	}
 	t, err := GetThreadByID(ctx, threadId)
@@ -51,9 +52,9 @@ func HandleUpdate(w http.ResponseWriter, r *http.Request) (*api.Response, error)
 		return res, err
 	}
 	if t == nil {
-		res.Error = api.BuildError(ErrNoMatchFromID, WrapErrNoThreadFound, UpdateHandler)
-		res.Message = WrapErrNoThreadFound.Message
-		return res, ErrNoMatchFromID
+		res.Error = api.BuildError(customerrors.ErrResourceNotFound, customerrors.WrapErrNotFound, UpdateHandler)
+		res.Message = customerrors.WrapErrNotFound.Message
+		return res, customerrors.ErrResourceNotFound
 	}
 
 	// Read JSON body in request into a new ThreadRequest object for use
@@ -61,8 +62,8 @@ func HandleUpdate(w http.ResponseWriter, r *http.Request) (*api.Response, error)
 	var data ThreadRequest
 	err = decoder.Decode(&data)
 	if err != nil {
-		res.Error = api.BuildError(err, WrapErrDecodeRequest, UpdateHandler)
-		res.Message = WrapErrDecodeRequest.Message
+		res.Error = api.BuildError(err, customerrors.WrapErrDecodeRequest, UpdateHandler)
+		res.Message = customerrors.WrapErrDecodeRequest.Message
 		return res, err
 	}
 

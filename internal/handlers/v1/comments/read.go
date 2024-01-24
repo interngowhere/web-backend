@@ -14,6 +14,7 @@ import (
 	"github.com/interngowhere/web-backend/ent/thread"
 	"github.com/interngowhere/web-backend/internal/api"
 	"github.com/interngowhere/web-backend/internal/database"
+	customerrors "github.com/interngowhere/web-backend/internal/errors"
 	"github.com/interngowhere/web-backend/internal/handlers/v1/users"
 )
 
@@ -76,8 +77,8 @@ func HandleList(w http.ResponseWriter, r *http.Request) (*api.Response, error) {
 	data := []CommentsResponse{}
 	threadId, err := strconv.Atoi(chi.URLParam(r, "threadId"))
 	if err != nil {
-		res.Error = api.BuildError(err, WrapErrStrToInt, ListHandler)
-		res.Message = WrapErrStrToInt.Message
+		res.Error = api.BuildError(err, customerrors.WrapErrStrToInt, ListHandler)
+		res.Message = customerrors.WrapErrStrToInt.Message
 		return res, err
 	}
 
@@ -177,8 +178,8 @@ func HandleList(w http.ResponseWriter, r *http.Request) (*api.Response, error) {
 
 	encodedData, err := json.Marshal(data)
 	if err != nil {
-		res.Error = api.BuildError(err, WrapErrEncodeView, ListHandler)
-		res.Message = WrapErrEncodeView.Message
+		res.Error = api.BuildError(err, customerrors.WrapErrEncodeView, ListHandler)
+		res.Message = customerrors.WrapErrEncodeView.Message
 	} else {
 		res.Data = encodedData
 		res.Message = SuccessfulListCommentsMessage

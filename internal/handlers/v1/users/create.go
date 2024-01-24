@@ -12,6 +12,7 @@ import (
 	"github.com/interngowhere/web-backend/ent/user"
 	"github.com/interngowhere/web-backend/internal/api"
 	"github.com/interngowhere/web-backend/internal/database"
+	customerrors "github.com/interngowhere/web-backend/internal/errors"
 )
 
 const CreateHandler = "users.HandleCreate"
@@ -37,8 +38,8 @@ func HandleCreate(w http.ResponseWriter, r *http.Request) (*api.Response, error)
 	var data CreateUserRequest
 	err := decoder.Decode(&data)
 	if err != nil {
-		res.Error = api.BuildError(err, WrapErrDecodeRequest, CreateHandler)
-		res.Message = WrapErrDecodeRequest.Message
+		res.Error = api.BuildError(err, customerrors.WrapErrDecodeRequest, CreateHandler)
+		res.Message = customerrors.WrapErrDecodeRequest.Message
 		return res, err
 	}
 
@@ -46,9 +47,9 @@ func HandleCreate(w http.ResponseWriter, r *http.Request) (*api.Response, error)
 	if len(data.Email) == 0 ||
 		len(data.Password) == 0 ||
 		len(data.Username) == 0 {
-		res.Error = api.BuildError(ErrMissingInputField, WrapErrRequestFormat, CreateHandler)
-		res.Message = WrapErrRequestFormat.Message
-		return res, ErrMissingInputField
+		res.Error = api.BuildError(customerrors.ErrMalformedRequest, customerrors.WrapErrRequestFormat, CreateHandler)
+		res.Message = customerrors.WrapErrRequestFormat.Message
+		return res, customerrors.ErrMalformedRequest
 	}
 
 	// check if email has already been registerd
@@ -65,9 +66,7 @@ func HandleCreate(w http.ResponseWriter, r *http.Request) (*api.Response, error)
 		return res, err
 	}
 	if c != 0 {
-		e := WrapErrCreateUser
-		e.Code = 400
-		res.Error = api.BuildError(ErrEmailAlreadyRegistered, e, CreateHandler)
+		res.Error = api.BuildError(ErrEmailAlreadyRegistered, customerrors.WrapErrResourceExist, CreateHandler)
 		res.Message = ErrEmailAlreadyRegistered.Error()
 		return res, ErrUsernameAlreadyRegistered
 	}
@@ -86,9 +85,7 @@ func HandleCreate(w http.ResponseWriter, r *http.Request) (*api.Response, error)
 		return res, err
 	}
 	if c != 0 {
-		e := WrapErrCreateUser
-		e.Code = 400
-		res.Error = api.BuildError(ErrUsernameAlreadyRegistered, e, CreateHandler)
+		res.Error = api.BuildError(ErrUsernameAlreadyRegistered, customerrors.WrapErrResourceExist, CreateHandler)
 		res.Message = ErrUsernameAlreadyRegistered.Error()
 		return res, ErrUsernameAlreadyRegistered
 	}

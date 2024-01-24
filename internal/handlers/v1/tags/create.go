@@ -9,6 +9,7 @@ import (
 	"github.com/interngowhere/web-backend/ent/tag"
 	"github.com/interngowhere/web-backend/internal/api"
 	"github.com/interngowhere/web-backend/internal/database"
+	customerrors "github.com/interngowhere/web-backend/internal/errors"
 )
 
 const CreateHandler = "tags.HandleCreate"
@@ -33,16 +34,16 @@ func HandleCreate(w http.ResponseWriter, r *http.Request) (*api.Response, error)
 	var data TagRequest
 	err := decoder.Decode(&data)
 	if err != nil {
-		res.Error = api.BuildError(err, WrapErrDecodeRequest, CreateHandler)
-		res.Message = WrapErrDecodeRequest.Message
+		res.Error = api.BuildError(err, customerrors.WrapErrDecodeRequest, CreateHandler)
+		res.Message = customerrors.WrapErrDecodeRequest.Message
 		return res, err
 	}
 
 	// Check for missing input fields in request body
 	if len(data.TagName) == 0 {
-		res.Error = api.BuildError(ErrMissingTagName, WrapErrRequestFormat, CreateHandler)
-		res.Message = WrapErrRequestFormat.Message
-		return res, ErrMissingTagName
+		res.Error = api.BuildError(customerrors.ErrMalformedRequest, customerrors.WrapErrRequestFormat, CreateHandler)
+		res.Message = customerrors.WrapErrRequestFormat.Message
+		return res, customerrors.ErrMalformedRequest
 	}
 
 	// Check if tag already exist
@@ -56,9 +57,7 @@ func HandleCreate(w http.ResponseWriter, r *http.Request) (*api.Response, error)
 		return res, err
 	}
 	if c != 0 {
-		e := WrapErrCreateTag
-		e.Code = 400
-		res.Error = api.BuildError(ErrTagExist, e, CreateHandler)
+		res.Error = api.BuildError(ErrTagExist, customerrors.WrapErrResourceExist, CreateHandler)
 		res.Message = ErrTagExist.Error()
 		return res, ErrTagExist
 	}

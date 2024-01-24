@@ -8,6 +8,7 @@ import (
 	"github.com/interngowhere/web-backend/ent"
 	"github.com/interngowhere/web-backend/internal/api"
 	"github.com/interngowhere/web-backend/internal/database"
+	customerrors "github.com/interngowhere/web-backend/internal/errors"
 )
 
 const DeleteHandler = "topics.HandleDelete"
@@ -35,9 +36,9 @@ func HandleDelete(w http.ResponseWriter, r *http.Request) (*api.Response, error)
 		return res, err
 	}
 	if len(t) == 0 {
-		res.Error = api.BuildError(ErrNoMatchFromSlug, WrapErrNoTopicFound, DeleteHandler)
-		res.Message = WrapErrNoTopicFound.Message
-		return res, ErrNoMatchFromSlug
+		res.Error = api.BuildError(customerrors.ErrResourceNotFound, customerrors.WrapErrNotFound, DeleteHandler)
+		res.Message = customerrors.WrapErrNotFound.Message
+		return res, customerrors.ErrResourceNotFound
 	}
 
 	err = DeleteTopic(ctx, database.Client, t[0])

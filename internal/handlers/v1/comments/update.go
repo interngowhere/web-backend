@@ -11,6 +11,7 @@ import (
 	"github.com/interngowhere/web-backend/ent"
 	"github.com/interngowhere/web-backend/internal/api"
 	"github.com/interngowhere/web-backend/internal/database"
+	customerrors "github.com/interngowhere/web-backend/internal/errors"
 )
 
 const UpdateHandler = "comments.HandleUpdate"
@@ -35,8 +36,8 @@ func HandleUpdate(w http.ResponseWriter, r *http.Request) (*api.Response, error)
 	// Retrieve a reference to the thread
 	commentId, err := strconv.Atoi(chi.URLParam(r, "commentId"))
 	if err != nil {
-		res.Error = api.BuildError(err, WrapErrStrToInt, ListHandler)
-		res.Message = WrapErrStrToInt.Message
+		res.Error = api.BuildError(err, customerrors.WrapErrStrToInt, ListHandler)
+		res.Message = customerrors.WrapErrStrToInt.Message
 		return res, err
 	}
 
@@ -47,8 +48,8 @@ func HandleUpdate(w http.ResponseWriter, r *http.Request) (*api.Response, error)
 		return res, err
 	}
 	if c == nil {
-		res.Error = api.BuildError(ErrNoMatchFromCommentID, WrapErrNoCommentFound, UpdateHandler)
-		res.Message = WrapErrNoCommentFound.Message
+		res.Error = api.BuildError(ErrNoMatchFromCommentID, customerrors.WrapErrNotFound, UpdateHandler)
+		res.Message = customerrors.WrapErrNotFound.Message
 		return res, ErrNoMatchFromCommentID
 	}
 
@@ -57,8 +58,8 @@ func HandleUpdate(w http.ResponseWriter, r *http.Request) (*api.Response, error)
 	var data CommentRequest
 	err = decoder.Decode(&data)
 	if err != nil {
-		res.Error = api.BuildError(err, WrapErrDecodeRequest, UpdateHandler)
-		res.Message = WrapErrDecodeRequest.Message
+		res.Error = api.BuildError(err, customerrors.WrapErrDecodeRequest, UpdateHandler)
+		res.Message = customerrors.WrapErrDecodeRequest.Message
 		return res, err
 	}
 

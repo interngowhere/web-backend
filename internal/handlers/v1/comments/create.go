@@ -13,6 +13,7 @@ import (
 	"github.com/interngowhere/web-backend/ent/commentkudo"
 	"github.com/interngowhere/web-backend/internal/api"
 	"github.com/interngowhere/web-backend/internal/database"
+	customerrors "github.com/interngowhere/web-backend/internal/errors"
 	"github.com/interngowhere/web-backend/internal/handlers/v1/threads"
 	"github.com/interngowhere/web-backend/internal/handlers/v1/users"
 )
@@ -43,15 +44,15 @@ func HandleCreate(w http.ResponseWriter, r *http.Request) (*api.Response, error)
 
 	userId, err := users.GetUserIDFromToken(r)
 	if err != nil {
-		res.Error = api.BuildError(err, users.WrapErrRetrieveUserID, CreateHandler)
-		res.Message = users.WrapErrRetrieveUserID.Message
+		res.Error = api.BuildError(err, users.WrapErrRetrieveIDFromJWT, CreateHandler)
+		res.Message = users.WrapErrRetrieveIDFromJWT.Message
 		return res, err
 	}
 
 	threadId, err := strconv.Atoi(chi.URLParam(r, "threadId"))
 	if err != nil {
-		res.Error = api.BuildError(err, WrapErrStrToInt, ListHandler)
-		res.Message = WrapErrStrToInt.Message
+		res.Error = api.BuildError(err, customerrors.WrapErrStrToInt, ListHandler)
+		res.Message = customerrors.WrapErrStrToInt.Message
 		return res, err
 	}
 
@@ -61,19 +62,14 @@ func HandleCreate(w http.ResponseWriter, r *http.Request) (*api.Response, error)
 		res.Message = threads.WrapErrRetrieveThreads.Message
 		return res, err
 	}
-	// if len(t) == 0 {
-	// 	res.Error = api.BuildError(ErrNoMatchFromThreadID, threads.WrapErrRetrieveThreads, CreateHandler)
-	// 	res.Message = threads.WrapErrRetrieveThreads.Message
-	// 	return res, ErrNoMatchFromThreadID
-	// }
 
 	// Read JSON body in request into a new ThreadRequest object for use
 	decoder := json.NewDecoder(r.Body)
 	var data CommentRequest
 	err = decoder.Decode(&data)
 	if err != nil {
-		res.Error = api.BuildError(err, WrapErrDecodeRequest, CreateHandler)
-		res.Message = WrapErrDecodeRequest.Message
+		res.Error = api.BuildError(err, customerrors.WrapErrDecodeRequest, CreateHandler)
+		res.Message = customerrors.WrapErrDecodeRequest.Message
 		return res, err
 	}
 
@@ -82,9 +78,9 @@ func HandleCreate(w http.ResponseWriter, r *http.Request) (*api.Response, error)
 	// If parentId field is not provided, parentId will be set to 0
 	// by default, i.e., the comment has no parent.
 	if len(data.Content) == 0 {
-		res.Error = api.BuildError(ErrMissingContent, WrapErrRequestFormat, CreateHandler)
-		res.Message = WrapErrRequestFormat.Message
-		return res, ErrMissingContent
+		res.Error = api.BuildError(customerrors.ErrMalformedRequest, customerrors.WrapErrRequestFormat, CreateHandler)
+		res.Message = customerrors.WrapErrRequestFormat.Message
+		return res, customerrors.ErrMalformedRequest
 	}
 
 	if len(data.ParentID) == 0 {
@@ -92,8 +88,8 @@ func HandleCreate(w http.ResponseWriter, r *http.Request) (*api.Response, error)
 	}
 	parentId, err := strconv.Atoi(data.ParentID)
 	if err != nil {
-		res.Error = api.BuildError(err, WrapErrStrToInt, CreateHandler)
-		res.Message = WrapErrStrToInt.Message
+		res.Error = api.BuildError(err, customerrors.WrapErrStrToInt, CreateHandler)
+		res.Message = customerrors.WrapErrStrToInt.Message
 		return res, err
 	}
 
@@ -133,15 +129,15 @@ func HandleAddKudo(w http.ResponseWriter, r *http.Request) (*api.Response, error
 
 	userId, err := users.GetUserIDFromToken(r)
 	if err != nil {
-		res.Error = api.BuildError(err, WrapErrRetrieveUserID, CreateHandler)
-		res.Message = WrapErrRetrieveUserID.Message
+		res.Error = api.BuildError(err, customerrors.WrapErrNotFound, CreateHandler)
+		res.Message = customerrors.WrapErrNotFound.Message
 		return res, err
 	}
 
 	commentId, err := strconv.Atoi(chi.URLParam(r, "commentId"))
 	if err != nil {
-		res.Error = api.BuildError(err, WrapErrStrToInt, AddKudoHandler)
-		res.Message = WrapErrStrToInt.Message
+		res.Error = api.BuildError(err, customerrors.WrapErrStrToInt, AddKudoHandler)
+		res.Message = customerrors.WrapErrStrToInt.Message
 		return res, err
 	}
 
@@ -153,8 +149,8 @@ func HandleAddKudo(w http.ResponseWriter, r *http.Request) (*api.Response, error
 			res.Error = api.BuildError(t, WrapErrCheckCommentKudo, AddKudoHandler)
 			res.Message = WrapErrCheckCommentKudo.Message
 		case *ent.NotFoundError:
-			res.Error = api.BuildError(t, WrapErrNoCommentFound, AddKudoHandler)
-			res.Message = WrapErrNoCommentFound.Message
+			res.Error = api.BuildError(t, customerrors.WrapErrNotFound, AddKudoHandler)
+			res.Message = customerrors.WrapErrNotFound.Message
 		}
 		return res, err
 	}

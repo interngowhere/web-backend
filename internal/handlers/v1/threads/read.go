@@ -13,6 +13,7 @@ import (
 	"github.com/interngowhere/web-backend/ent/threadkudo"
 	"github.com/interngowhere/web-backend/internal/api"
 	"github.com/interngowhere/web-backend/internal/database"
+	customerrors "github.com/interngowhere/web-backend/internal/errors"
 	"github.com/interngowhere/web-backend/internal/handlers/v1/tags"
 	"github.com/interngowhere/web-backend/internal/handlers/v1/topics"
 	"github.com/interngowhere/web-backend/internal/handlers/v1/users"
@@ -156,8 +157,8 @@ func HandleList(w http.ResponseWriter, r *http.Request) (*api.Response, error) {
 
 	encodedData, err := json.Marshal(data)
 	if err != nil {
-		res.Error = api.BuildError(err, WrapErrEncodeView, ReadHandler)
-		res.Message = WrapErrEncodeView.Message
+		res.Error = api.BuildError(err, customerrors.WrapErrEncodeView, ReadHandler)
+		res.Message = customerrors.WrapErrEncodeView.Message
 	} else {
 		res.Data = encodedData
 		res.Message = SuccessfulListThreadsMessage

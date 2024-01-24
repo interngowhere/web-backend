@@ -11,6 +11,7 @@ import (
 	"github.com/interngowhere/web-backend/ent/threadkudo"
 	"github.com/interngowhere/web-backend/internal/api"
 	"github.com/interngowhere/web-backend/internal/database"
+	customerrors "github.com/interngowhere/web-backend/internal/errors"
 	"github.com/interngowhere/web-backend/internal/handlers/v1/users"
 )
 
@@ -36,8 +37,8 @@ func HandleDelete(w http.ResponseWriter, r *http.Request) (*api.Response, error)
 	// Retrieve a reference to the thread
 	threadId, err := strconv.Atoi(chi.URLParam(r, "threadId"))
 	if err != nil {
-		res.Error = api.BuildError(err, WrapErrStrToInt, UpdateHandler)
-		res.Message = WrapErrStrToInt.Message
+		res.Error = api.BuildError(err, customerrors.WrapErrStrToInt, UpdateHandler)
+		res.Message = customerrors.WrapErrStrToInt.Message
 		return res, err
 	}
 	t, err := GetThreadByID(ctx, threadId)
@@ -47,9 +48,9 @@ func HandleDelete(w http.ResponseWriter, r *http.Request) (*api.Response, error)
 		return res, err
 	}
 	if t == nil {
-		res.Error = api.BuildError(ErrNoMatchFromID, WrapErrNoThreadFound, DeleteHandler)
-		res.Message = WrapErrNoThreadFound.Message
-		return res, ErrNoMatchFromID
+		res.Error = api.BuildError(customerrors.ErrResourceNotFound, customerrors.WrapErrNotFound, DeleteHandler)
+		res.Message = customerrors.WrapErrNotFound.Message
+		return res, customerrors.ErrResourceNotFound
 	}
 
 	err = DeleteThread(ctx, database.Client, t)
@@ -83,15 +84,15 @@ func HandleRemoveKudo(w http.ResponseWriter, r *http.Request) (*api.Response, er
 
 	userId, err := users.GetUserIDFromToken(r)
 	if err != nil {
-		res.Error = api.BuildError(err, WrapErrRetrieveUserID, CreateHandler)
-		res.Message = WrapErrRetrieveUserID.Message
+		res.Error = api.BuildError(err, users.WrapErrRetrieveIDFromJWT, CreateHandler)
+		res.Message = users.WrapErrRetrieveIDFromJWT.Message
 		return res, err
 	}
 
 	threadId, err := strconv.Atoi(chi.URLParam(r, "threadId"))
 	if err != nil {
-		res.Error = api.BuildError(err, WrapErrStrToInt, AddKudoHandler)
-		res.Message = WrapErrStrToInt.Message
+		res.Error = api.BuildError(err, customerrors.WrapErrStrToInt, AddKudoHandler)
+		res.Message = customerrors.WrapErrStrToInt.Message
 		return res, err
 	}
 

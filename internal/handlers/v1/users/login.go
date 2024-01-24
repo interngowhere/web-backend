@@ -7,9 +7,11 @@ import (
 
 	"golang.org/x/crypto/bcrypt"
 
+	"github.com/interngowhere/web-backend/ent"
 	"github.com/interngowhere/web-backend/internal/api"
 	jwt "github.com/interngowhere/web-backend/internal/auth"
 	"github.com/interngowhere/web-backend/internal/database"
+	customerrors "github.com/interngowhere/web-backend/internal/errors"
 )
 
 const LoginHandler = "users.HandleLogin"
@@ -29,31 +31,34 @@ func HandleLogin(w http.ResponseWriter, r *http.Request) (*api.Response, error) 
 	var data LoginRequest
 	err := decoder.Decode(&data)
 	if err != nil {
-		res.Error = api.BuildError(err, WrapErrDecodeRequest, CreateHandler)
-		res.Message = WrapErrDecodeRequest.Message
+		res.Error = api.BuildError(err, customerrors.WrapErrDecodeRequest, CreateHandler)
+		res.Message = customerrors.WrapErrDecodeRequest.Message
 		return res, err
 	}
 
 	// Check for missing input fields in request body
 	if len(data.Email) == 0 ||
 		len(data.Password) == 0 {
-		res.Error = api.BuildError(ErrMissingInputField, WrapErrRequestFormat, CreateHandler)
-		res.Message = WrapErrRequestFormat.Message
-		return res, ErrMissingInputField
+		res.Error = api.BuildError(customerrors.ErrMalformedRequest, customerrors.WrapErrRequestFormat, CreateHandler)
+		res.Message = customerrors.WrapErrRequestFormat.Message
+		return res, customerrors.ErrMalformedRequest
 	}
 
 	// get user from email
 	u, err := GetUserFromEmail(ctx, database.Client, data.Email)
 	if err != nil {
-		e := WrapErrGetUser
-		if err.Error() == "ent: user not found" {
-			e.Code = 404
+		switch t := err.(type) {
+		default:
+			res.Error = api.BuildError(t, WrapErrGetUserFromEmail, LoginHandler)
+			res.Message = WrapErrGetUserFromEmail.Message
+		case *ent.NotFoundError:
+			res.Error = api.BuildError(t, customerrors.WrapErrNotFound, LoginHandler)
+			res.Message = customerrors.WrapErrNotFound.Message
 		}
-		res.Error = api.BuildError(err, e, LoginHandler)
-		res.Message = e.Message
 		return res, err
 	}
 
+	// Compare password hash
 	err = bcrypt.CompareHashAndPassword(u.Hash, []byte(data.Password))
 	if err != nil {
 		res.Error = api.BuildError(err, WrapErrIncorrectPassword, LoginHandler)
@@ -61,6 +66,7 @@ func HandleLogin(w http.ResponseWriter, r *http.Request) (*api.Response, error) 
 		return res, err
 	}
 
+	// Generate JWT token
 	claims := map[string]interface{}{"id": u.ID}
 	err = jwt.SetExpiry(claims)
 	if err != nil {
@@ -78,8 +84,8 @@ func HandleLogin(w http.ResponseWriter, r *http.Request) (*api.Response, error) 
 
 	encodedData, err := json.Marshal(JWTResponse{Token: tokenString})
 	if err != nil {
-		res.Error = api.BuildError(err, WrapErrEncodeView, LoginHandler)
-		res.Message = WrapErrEncodeView.Message
+		res.Error = api.BuildError(err, customerrors.WrapErrEncodeView, LoginHandler)
+		res.Message = customerrors.WrapErrEncodeView.Message
 	} else {
 		res.Data = encodedData
 		res.Message = SuccessfulUserLoginMessage
