@@ -7,7 +7,7 @@
 To run docker containers locally, run
 
 ```
-docker-compose up -d -f docker-compose-dev.yml
+docker-compose -f docker-compose-dev.yml up -d
 ```
 
 This will spin up docker containers for the backend go server, PostgreSQL database, and nginx reverse proxy respectively.
