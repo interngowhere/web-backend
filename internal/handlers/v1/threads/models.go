@@ -24,7 +24,8 @@ type ThreadsResponse struct {
 	Slug        string              `json:"slug,omitempty"`
 	Description string              `json:"description,omitempty"`
 	ModifiedAt  time.Time           `json:"modifiedAt,omitempty"`
-	CreatedBy   uuid.UUID           `json:"createdBy,omitempty"`
+	CreatedByID   uuid.UUID           `json:"createdByID,omitempty"`
+	CreatedByUsername string        `json:"createdByUsername,omitempty"`
 	CreatedAt   time.Time           `json:"createdAt,omitempty"`
 	Tags        *[]tags.TagResponse `json:"tags,omitempty"`
 	KudoCount   int                 `json:"kudoCount"`

@@ -21,8 +21,8 @@ func GetUserFromEmail(ctx context.Context, client *ent.Client, email string) (*e
 }
 
 // GetUserIDFromToken checks request context for
-// a valid JWT and returns the parsed user id.
-// Returns a nil UUID if an error occurs.
+// a valid JWT and returns the parsed user id or
+// a nil UUID if an error occurs.
 func GetUserIDFromToken(r *http.Request) (uuid.UUID, error) {
 	token, _, err := jwtauth.FromContext(r.Context())
 	if err != nil {
@@ -35,4 +35,16 @@ func GetUserIDFromToken(r *http.Request) (uuid.UUID, error) {
 		return uuid.Nil, err
 	}
 	return userId, err
+}
+
+// GetUsernameFromID queries the database for a user with the given ID
+func GetUsernameFromID(client *ent.Client, id uuid.UUID) (string, error) {
+	u, err := client.User.
+		Query().
+		Where(user.ID(id)).
+		Only(context.Background())
+	if err != nil {
+		return "", err
+	}
+	return u.Username, nil
 }

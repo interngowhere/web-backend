@@ -16,7 +16,8 @@ type CommentsResponse struct {
 	ParentID   int                 `json:"parentId"`
 	Content    string              `json:"content,omitempty"`
 	ModifiedAt time.Time           `json:"modifiedAt,omitempty"`
-	CreatedBy  uuid.UUID           `json:"createdBy,omitempty"`
+	CreatedByID  uuid.UUID           `json:"createdByID,omitempty"`
+	CreatedByUsername string        `json:"createdByUsername,omitempty"`
 	CreatedAt  time.Time           `json:"createdAt,omitempty"`
 	KudoCount  int                 `json:"kudoCount"`
 	UserKudoed bool                `json:"userKudoed"`

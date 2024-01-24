@@ -113,12 +113,20 @@ func HandleList(w http.ResponseWriter, r *http.Request) (*api.Response, error) {
 				return res, err
 			}
 
+			u, err := users.GetUsernameFromID(database.Client, child.CreatedBy)
+			if err != nil {
+				res.Error = api.BuildError(err, WrapErrGetUsernameFromID, ListHandler)
+				res.Message = WrapErrGetUsernameFromID.Message
+				return res, err
+			}
+
 			formattedChildren = append(formattedChildren, CommentsResponse{
 				ID:         child.ID,
 				ParentID:   child.ParentID,
 				Content:    child.Content,
 				ModifiedAt: child.ModifiedAt,
-				CreatedBy:  child.CreatedBy,
+				CreatedByID:  child.CreatedBy,
+				CreatedByUsername: u,
 				CreatedAt:  child.CreatedAt,
 				KudoCount:  c,
 				UserKudoed: b,
@@ -139,12 +147,20 @@ func HandleList(w http.ResponseWriter, r *http.Request) (*api.Response, error) {
 			return res, err
 		}
 
+		u, err := users.GetUsernameFromID(database.Client, parent.CreatedBy)
+			if err != nil {
+				res.Error = api.BuildError(err, WrapErrGetUsernameFromID, ListHandler)
+				res.Message = WrapErrGetUsernameFromID.Message
+				return res, err
+			}
+
 		data = append(data, CommentsResponse{
 			ID:         parent.ID,
 			ParentID:   parent.ParentID,
 			Content:    parent.Content,
 			ModifiedAt: parent.ModifiedAt,
-			CreatedBy:  parent.CreatedBy,
+			CreatedByID:  parent.CreatedBy,
+			CreatedByUsername: u,
 			CreatedAt:  parent.CreatedAt,
 			KudoCount:  c,
 			UserKudoed: b,

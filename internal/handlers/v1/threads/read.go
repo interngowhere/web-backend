@@ -122,13 +122,21 @@ func HandleList(w http.ResponseWriter, r *http.Request) (*api.Response, error) {
 			return res, err
 		}
 
+		u, err := users.GetUsernameFromID(database.Client, thread.CreatedBy)
+		if err != nil {
+			res.Error = api.BuildError(err, WrapErrGetUsernameFromID, ReadHandler)
+			res.Message = WrapErrGetUsernameFromID.Message
+			return res, err
+		}
+
 		data = append(data, ThreadsResponse{
 			ID:          thread.ID,
 			Title:       thread.Title,
 			Slug:        thread.Slug,
 			Description: thread.Description,
 			ModifiedAt:  thread.ModifiedAt,
-			CreatedBy:   thread.CreatedBy,
+			CreatedByID:   thread.CreatedBy,
+			CreatedByUsername: u,
 			CreatedAt:   thread.CreatedAt,
 			Tags:        &formattedTags,
 			KudoCount:   c,
