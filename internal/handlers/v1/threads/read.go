@@ -149,11 +149,6 @@ func HandleList(w http.ResponseWriter, r *http.Request) (*api.Response, error) {
 		})
 	}
 
-	if len(data) == 0 {
-		res = api.BuildError(ErrNoThreadFound, customerrors.WrapErrNotFound, ListHandler)
-		return res, ErrNoThreadFound
-	}
-
 	encodedData, err := json.Marshal(data)
 	if err != nil {
 		res = api.BuildError(err, customerrors.WrapErrEncodeView, ListHandler)
