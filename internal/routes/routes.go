@@ -22,7 +22,7 @@ func PublicRoutes() func(r chi.Router) {
 
 		// Threads
 		r.Get("/threads", api.BuildRouteHandler(threads.HandleList))
-		r.Get("/{threadID}", api.BuildRouteHandler(threads.HandleList))
+		r.Get("/threads/{threadID}", api.BuildRouteHandler(threads.HandleList))
 
 		// Comments
 		r.Get("/threads/{threadID}/comments", api.BuildRouteHandler(comments.HandleList))
