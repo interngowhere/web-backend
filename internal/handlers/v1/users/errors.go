@@ -22,7 +22,8 @@ var (
 	WrapErrCheckUsername     = api.ErrorMessage{Message: "Something went wrong while checking if username has already been taken up by someone else", Code: 500}
 	WrapErrHashPassword      = api.ErrorMessage{Message: "Failed to hash given password", Code: 500}
 	WrapErrGetUser           = api.ErrorMessage{Message: "Failed to retrieve user", Code: 500}
-	WrapErrIncorrectPassword = api.ErrorMessage{Message: "Password provided is incorrect", Code: 400}
+	WrapErrInvalidEmail	  	 = api.ErrorMessage{Message: "Invalid email", Code: 401}
+	WrapErrIncorrectPassword = api.ErrorMessage{Message: "Invalid password", Code: 401}
 	WrapErrSetExpiry         = api.ErrorMessage{Message: "Failed to set JWT expiration", Code: 500}
 	WrapErrEncodeJWT         = api.ErrorMessage{Message: "Failed to encode JWT", Code: 500}
 	WrapErrRetrieveIDFromJWT = api.ErrorMessage{Message: "Failed to retrieve user ID from JWT", Code: 500}

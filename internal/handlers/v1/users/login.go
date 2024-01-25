@@ -49,7 +49,7 @@ func HandleLogin(w http.ResponseWriter, r *http.Request) (*api.Response, error) 
 		default:
 			res = api.BuildError(t, WrapErrGetUser, LoginHandler)
 		case *ent.NotFoundError:
-			res = api.BuildError(t, customerrors.WrapErrNotFound, LoginHandler)
+			res = api.BuildError(t, WrapErrInvalidEmail, LoginHandler)
 		}
 		return res, err
 	}
