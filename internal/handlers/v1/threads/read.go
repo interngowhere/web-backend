@@ -11,6 +11,7 @@ import (
 	"github.com/interngowhere/web-backend/ent"
 	"github.com/interngowhere/web-backend/ent/thread"
 	"github.com/interngowhere/web-backend/ent/threadkudo"
+	"github.com/interngowhere/web-backend/ent/topic"
 	"github.com/interngowhere/web-backend/internal/api"
 	"github.com/interngowhere/web-backend/internal/database"
 	customerrors "github.com/interngowhere/web-backend/internal/errors"
@@ -23,7 +24,7 @@ const ListHandler = "threads.HandleList"
 const SuccessfulListThreadsMessage = "Listed all threads found"
 
 // GetThreads returns the matching threads based on thread id
-// provided. If no id is provided, all threads will be returned
+// provided. If id = 0 (nil value), all threads will be returned
 func GetThreads(ctx context.Context, threadID int) ([]*ent.Thread, error) {
 	if threadID == 0 {
 		return database.Client.Thread.
@@ -37,6 +38,19 @@ func GetThreads(ctx context.Context, threadID int) ([]*ent.Thread, error) {
 	}
 }
 
+// GetThreadsByTopic returns a list of threads associated with the given topic
+func GetThreadsByTopic(ctx context.Context, topicTitle string) ([]*ent.Thread, error) {
+	return database.Client.Thread.
+			Query().
+			Where(
+				thread.HasTopicsWith(
+					topic.Slug(topicTitle),
+				),
+			).
+			All(ctx)
+}
+
+// GetThreadByID returns a single thread matching the ID provided
 func GetThreadByID(ctx context.Context, threadID int) (*ent.Thread, error) {
 	return database.Client.Thread.
 		Query().
@@ -79,14 +93,20 @@ func HandleList(w http.ResponseWriter, r *http.Request) (*api.Response, error) {
 	data := []ThreadsResponse{}
 
 	// get threads
-	q := chi.URLParam(r, "threadID")
-	threadID := 0
+	var threads []*ent.Thread
+	var err error
 
-	if len(q) != 0 {
-		threadID, _ = strconv.Atoi(q)
+	if len(chi.URLParam(r, "title")) != 0 {
+		threads, err = GetThreadsByTopic(ctx, chi.URLParam(r, "title"))
+	} else {
+		param := chi.URLParam(r, "threadID")
+		threadID := 0
+
+		if len(param) != 0 {
+			threadID, _ = strconv.Atoi(param)
+		}
+		threads, err = GetThreads(ctx, threadID)
 	}
-
-	threads, err := GetThreads(ctx, threadID)
 	if err != nil {
 		res = api.BuildError(err, WrapErrRetrieveThreads, ListHandler)
 		return res, err
