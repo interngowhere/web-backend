@@ -19,10 +19,10 @@ func Setup(r chi.Router) {
 	r.Use(middleware.CleanPath)
 	r.Use(middleware.RedirectSlashes)
 	r.Use(middleware.Heartbeat("/ping"))
-	r.Use(httprate.LimitByIP(120, time.Minute))
+	r.Use(httprate.LimitByIP(600, time.Minute))
 	r.Use(jwtauth.Verifier(jwt.TokenAuth))
 	r.Use(cors.Handler(cors.Options{
-		AllowedOrigins: []string{os.Getenv("PROD_ORIGIN"), os.Getenv("DEV_ORIGIN")},
+		AllowedOrigins: []string{"*", os.Getenv("PROD_ORIGIN"), os.Getenv("DEV_ORIGIN")},
 		AllowedMethods: []string{"GET", "POST", "PUT", "DELETE"},
 		AllowedHeaders: []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
 		ExposedHeaders: []string{"Link"},
