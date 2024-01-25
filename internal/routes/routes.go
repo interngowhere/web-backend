@@ -21,11 +21,11 @@ func PublicRoutes() func(r chi.Router) {
 		r.Get("/topics/{title}", api.BuildRouteHandler(topics.HandleList))
 
 		// Threads
-		r.Get("/topics/{title}/threads", api.BuildRouteHandler(threads.HandleList))
-		r.Get("/topics/{title}/threads/{threadID}", api.BuildRouteHandler(threads.HandleList))
+		r.Get("/threads", api.BuildRouteHandler(threads.HandleList))
+		r.Get("/{threadID}", api.BuildRouteHandler(threads.HandleList))
 
 		// Comments
-		r.Get("/topics/{title}/threads/{threadID}/comments", api.BuildRouteHandler(comments.HandleList))
+		r.Get("/threads/{threadID}/comments", api.BuildRouteHandler(comments.HandleList))
 
 		// Tags
 		r.Get("/tags", api.BuildRouteHandler(tags.HandleList))
@@ -56,17 +56,17 @@ func ProtectedRoutes() func(r chi.Router) {
 
 		// Threads
 		r.Post("/topics/{title}/threads", api.BuildRouteHandler(threads.HandleCreate))
-		r.Put("/topics/{title}/threads/{threadID}", api.BuildRouteHandler(threads.HandleUpdate))
-		r.Delete("/topics/{title}/threads/{threadID}", api.BuildRouteHandler(threads.HandleDelete))
-		r.Post("/topics/{title}/threads/{threadID}/kudo", api.BuildRouteHandler(threads.HandleAddKudo))
-		r.Delete("/topics/{title}/threads/{threadID}/kudo", api.BuildRouteHandler(threads.HandleRemoveKudo))
+		r.Put("/threads/{threadID}", api.BuildRouteHandler(threads.HandleUpdate))
+		r.Delete("/threads/{threadID}", api.BuildRouteHandler(threads.HandleDelete))
+		r.Post("/threads/{threadID}/kudo", api.BuildRouteHandler(threads.HandleAddKudo))
+		r.Delete("/threads/{threadID}/kudo", api.BuildRouteHandler(threads.HandleRemoveKudo))
 
 		// Comments
-		r.Post("/topics/{title}/threads/{threadID}/comments", api.BuildRouteHandler(comments.HandleCreate))
-		r.Put("/topics/{title}/threads/{threadID}/comments/{commentID}", api.BuildRouteHandler(comments.HandleUpdate))
-		r.Delete("/topics/{title}/threads/{threadID}/comments/{commentID}", api.BuildRouteHandler(comments.HandleDelete))
-		r.Post("/topics/{title}/threads/{threadID}/comments/{commentID}/kudo", api.BuildRouteHandler(comments.HandleAddKudo))
-		r.Delete("/topics/{title}/threads/{threadID}/comments/{commentID}/kudo", api.BuildRouteHandler(comments.HandleRemoveKudo))
+		r.Post("/threads/{threadID}/comments", api.BuildRouteHandler(comments.HandleCreate))
+		r.Put("/threads/{threadID}/comments/{commentID}", api.BuildRouteHandler(comments.HandleUpdate))
+		r.Delete("/threads/{threadID}/comments/{commentID}", api.BuildRouteHandler(comments.HandleDelete))
+		r.Post("/threads/{threadID}/comments/{commentID}/kudo", api.BuildRouteHandler(comments.HandleAddKudo))
+		r.Delete("/threads/{threadID}/comments/{commentID}/kudo", api.BuildRouteHandler(comments.HandleRemoveKudo))
 
 		// Tags
 		r.Post("/tags", api.BuildRouteHandler(tags.HandleCreate))
