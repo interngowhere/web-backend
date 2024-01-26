@@ -78,17 +78,8 @@ func HandleCreate(w http.ResponseWriter, r *http.Request) (*api.Response, error)
 		return res, customerrors.ErrMalformedRequest
 	}
 
-	if len(data.ParentID) == 0 {
-		data.ParentID = "0"
-	}
-	parentId, err := strconv.Atoi(data.ParentID)
-	if err != nil {
-		res = api.BuildError(err, customerrors.WrapErrStrToInt, CreateHandler)
-		return res, err
-	}
-
 	c := ent.Comment{
-		ParentID:  parentId,
+		ParentID:  data.ParentID,
 		Content:   data.Content,
 		CreatedBy: userID,
 		CreatedAt: time.Now(),
@@ -102,7 +93,7 @@ func HandleCreate(w http.ResponseWriter, r *http.Request) (*api.Response, error)
 
 	res.Message = SuccessfulCreateCommentMessage
 	res.Code = 201
-	
+
 	return res, err
 }
 

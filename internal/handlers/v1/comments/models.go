@@ -7,7 +7,7 @@ import (
 )
 
 type CommentRequest struct {
-	ParentID string `json:"parentId"`
+	ParentID int `json:"parentId"`
 	Content  string `json:"content"`
 }
 
