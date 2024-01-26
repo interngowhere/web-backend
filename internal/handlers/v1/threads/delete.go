@@ -40,14 +40,17 @@ func HandleDelete(w http.ResponseWriter, r *http.Request) (*api.Response, error)
 		res = api.BuildError(err, customerrors.WrapErrStrToInt, UpdateHandler)
 		return res, err
 	}
+
+	// Check if thread exists
 	t, err := GetThreadByID(ctx, threadID)
 	if err != nil {
-		res = api.BuildError(err, WrapErrRetrieveThreads, DeleteHandler)
+		switch t := err.(type) {
+		default:
+			res = api.BuildError(t, WrapErrCheckThreadKudo, AddKudoHandler)
+		case *ent.NotFoundError:
+			res = api.BuildError(t, customerrors.WrapErrNotFound, AddKudoHandler)
+		}
 		return res, err
-	}
-	if t == nil {
-		res = api.BuildError(customerrors.ErrResourceNotFound, customerrors.WrapErrNotFound, DeleteHandler)
-		return res, customerrors.ErrResourceNotFound
 	}
 
 	err = DeleteThread(ctx, database.Client, t)
