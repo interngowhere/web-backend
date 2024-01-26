@@ -19,6 +19,7 @@ const SuccessfulUserLoginMessage = "User logged in successfully"
 
 type JWTResponse struct {
 	Token string `json:"token"`
+	UserID string `json:"userId"`
 	// other JWT related payload can be added here
 }
 
@@ -75,7 +76,7 @@ func HandleLogin(w http.ResponseWriter, r *http.Request) (*api.Response, error) 
 		return res, err
 	}
 
-	encodedData, err := json.Marshal(JWTResponse{Token: tokenString})
+	encodedData, err := json.Marshal(JWTResponse{Token: tokenString, UserID: u.ID.String()})
 	if err != nil {
 		res = api.BuildError(err, customerrors.WrapErrEncodeView, LoginHandler)
 		res.Message = customerrors.WrapErrEncodeView.Message
