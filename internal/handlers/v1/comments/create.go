@@ -101,7 +101,8 @@ func HandleCreate(w http.ResponseWriter, r *http.Request) (*api.Response, error)
 	}
 
 	res.Message = SuccessfulCreateCommentMessage
-
+	res.Code = 201
+	
 	return res, err
 }
 

@@ -88,6 +88,7 @@ func HandleCreate(w http.ResponseWriter, r *http.Request) (*api.Response, error)
 	}
 
 	res.Message = SuccessfulCreateThreadMessage
+	res.Code = 201
 
 	return res, err
 }
@@ -155,8 +156,8 @@ func HandleAddKudo(w http.ResponseWriter, r *http.Request) (*api.Response, error
 		return res, err
 	}
 
-	res.Message = SuccessfulCreateThreadMessage
-	res.Code = 201
+	res.Message = SuccessfulAddKudoMessage
+	res.Code = 200
 
 	return res, err
 }
