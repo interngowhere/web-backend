@@ -32,6 +32,7 @@ func GetRootComments(ctx context.Context, threadID int) ([]*ent.Comment, error) 
 			),
 			comment.ParentID(0),
 		).
+		Order(ent.Desc(comment.FieldCreatedAt)).
 		All(ctx)
 }
 
