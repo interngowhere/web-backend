@@ -29,10 +29,16 @@ func GetThreads(ctx context.Context, threadID int) ([]*ent.Thread, error) {
 	if threadID == 0 {
 		return database.Client.Thread.
 			Query().
+			Order(
+				ent.Desc(thread.FieldCreatedAt),
+			).
 			All(ctx)
 	} else {
 		return database.Client.Thread.
 			Query().
+			Order(
+				ent.Desc(thread.FieldCreatedAt),
+			).
 			Where(thread.ID(threadID)).
 			All(ctx)
 	}
@@ -46,6 +52,9 @@ func GetThreadsByTopic(ctx context.Context, topicTitle string) ([]*ent.Thread, e
 				thread.HasTopicsWith(
 					topic.Slug(topicTitle),
 				),
+			).
+			Order(
+				ent.Desc(thread.FieldCreatedAt),
 			).
 			All(ctx)
 }
